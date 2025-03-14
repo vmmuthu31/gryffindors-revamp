@@ -15,8 +15,8 @@ export default function Home() {
       <VisionMission />
       <StatsSection />
       <ServicesSection />
-      <TestimonialsSection />
       <TeamSection />
+      <TestimonialsSection />
       <Footer />
     </main>
   );

@@ -49,7 +49,7 @@ const TestimonialsSection = () => {
   };
 
   return (
-    <div className="container">
+    <div>
       <RunningHeading
         words={[
           { text: "BUILT", isOutline: false },
@@ -58,6 +58,7 @@ const TestimonialsSection = () => {
         ]}
         speed={40}
         direction="left"
+        className="container"
       />
       <section className="lg:py-16 bg-background" id="testimonials">
         <div className="lg:px-20 px-4">
@@ -97,7 +98,7 @@ const TestimonialsSection = () => {
                   >
                     <Card className="bg-[#770002] border-none shadow-[0px_0px_35px_0px_#FFFFFFCC_inset] h-full transform hover:scale-105 transition-transform duration-300">
                       <CardContent className="p-8">
-                        <p className="text-white font-dmsans font-medium text-xl lg:text-2xl mb-6">
+                        <p className="text-white font-dmsans font-medium text-xl mb-6">
                           &quot;{testimonial.text}&quot;
                         </p>
                         <div>

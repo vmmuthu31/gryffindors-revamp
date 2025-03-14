@@ -54,57 +54,43 @@ const teamMembers = [
 const extendedTeamMembers = [
   {
     id: 5,
-    name: "Dev 1",
+    name: "Vishal",
     role: "Frontend Developer",
-    image: "/assets/team/dev1.png", // You'll need to add these images to your assets folder
-    twitter: "#",
-    github: "#",
-    linkedin: "#",
+    image: "/assets/team/vishal.png",
   },
   {
     id: 6,
-    name: "Dev 2",
+    name: "Deepak Raja",
     role: "Blockchain Developer",
-    image: "/assets/team/dev2.png",
-    twitter: "#",
-    github: "#",
-    linkedin: "#",
+    image: "/assets/team/deepak.png",
   },
   {
     id: 7,
-    name: "Dev 3",
+    name: "Sunil",
     role: "Full Stack Developer",
-    image: "/assets/team/dev3.png",
-    twitter: "#",
-    github: "#",
-    linkedin: "#",
+    image: "/assets/team/sunil.png",
   },
   {
     id: 8,
-    name: "Dev 4",
+    name: "Rajan",
     role: "Blockchain Developer",
-    image: "/assets/team/dev4.png",
-    twitter: "#",
-    github: "#",
-    linkedin: "#",
+    image: "/assets/team/rajan.png",
   },
   {
     id: 9,
-    name: "Dev 5",
+    name: "Ganesh",
     role: "Web Developer",
-    image: "/assets/team/dev5.png",
-    twitter: "#",
-    github: "#",
-    linkedin: "#",
+    image: "/assets/team/ganesh.png",
   },
 ];
 
 const TeamSection = () => {
   const [positions, setPositions] = useState(teamMembers.map((_, i) => i));
-  const [extendedPositions, setExtendedPositions] = useState(
-    extendedTeamMembers.map((_, i) => i)
-  );
+  const [currentCarouselIndex, setCurrentCarouselIndex] = useState(0);
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const [direction, setDirection] = useState(1); // 1 for right, -1 for left
 
+  // For main team members - keep the shuffling animation
   const shufflePositions = () => {
     setPositions((prevPositions) => {
       const newPositions = [...prevPositions];
@@ -116,25 +102,52 @@ const TeamSection = () => {
     });
   };
 
-  const shuffleExtendedPositions = () => {
-    setExtendedPositions((prevPositions) => {
-      const newPositions = [...prevPositions];
-      for (let i = newPositions.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [newPositions[i], newPositions[j]] = [newPositions[j], newPositions[i]];
-      }
-      return newPositions;
-    });
+  // For extended team members - carousel functionality
+  const nextSlide = () => {
+    setDirection(1);
+    setCurrentCarouselIndex((prev) =>
+      prev === extendedTeamMembers.length - 4 ? 0 : prev + 1
+    );
+  };
+
+  const prevSlide = () => {
+    setDirection(-1);
+    setCurrentCarouselIndex((prev) =>
+      prev === 0 ? extendedTeamMembers.length - 4 : prev - 1
+    );
+  };
+
+  // Get visible extended team members for the carousel
+  const getVisibleExtendedMembers = () => {
+    const result = [];
+    for (let i = 0; i < 4; i++) {
+      const index = (currentCarouselIndex + i) % extendedTeamMembers.length;
+      result.push({ ...extendedTeamMembers[index], order: i });
+    }
+    return result;
   };
 
   useEffect(() => {
+    // Main team members shuffling
     const interval = setInterval(shufflePositions, 3000);
-    const extendedInterval = setInterval(shuffleExtendedPositions, 4000); // Different timing for variation
+
+    // Extended team carousel auto-play
+    let carouselInterval;
+    if (isAutoPlaying) {
+      carouselInterval = setInterval(() => {
+        nextSlide();
+      }, 4000);
+    }
+
     return () => {
       clearInterval(interval);
-      clearInterval(extendedInterval);
+      if (carouselInterval) clearInterval(carouselInterval);
     };
-  }, []);
+  }, [isAutoPlaying]);
+
+  // Pause auto-play when hovering over carousel
+  const handleMouseEnter = () => setIsAutoPlaying(false);
+  const handleMouseLeave = () => setIsAutoPlaying(true);
 
   return (
     <div className="container">
@@ -148,7 +161,7 @@ const TeamSection = () => {
         direction="left"
       />
       <section className="md:py-14 py-10 bg-muted/30" id="team">
-        <div className="container">
+        <div className="">
           <div className="mb-10 overflow-hidden">
             <p className="text-center text-lg text-foreground/80 max-w-3xl mx-auto mt-4">
               What started with a group of passionate Web3 builders has grown
@@ -232,77 +245,164 @@ const TeamSection = () => {
             </AnimatePresence>
           </div>
 
-          {/* Extended team members - smaller cards in a horizontal row */}
-          <div className="mt-16">
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 max-w-7xl mx-auto">
-              <AnimatePresence>
-                {extendedPositions.map((position) => (
-                  <motion.div
-                    key={extendedTeamMembers[position].id}
-                    layout
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{
-                      opacity: 1,
-                      y: 0,
-                      transition: {
-                        type: "spring",
-                        stiffness: 300,
-                        damping: 25,
-                      },
-                    }}
-                    exit={{ opacity: 0, y: 20 }}
-                    transition={{
-                      duration: 0.4,
-                      layout: { duration: 0.5 },
-                    }}
-                  >
-                    <Card className="overflow-hidden border-none bg-muted/20 h-full">
-                      <CardContent className="p-0">
-                        <div className="aspect-square relative overflow-hidden">
-                          <Image
-                            src={extendedTeamMembers[position].image}
-                            alt={extendedTeamMembers[position].name}
-                            fill
-                            className="object-cover grayscale hover:grayscale-0 transition-all duration-300"
-                          />
-                        </div>
-                        <div className="p-3">
-                          <p className="text-sm font-bold text-primary">
-                            {extendedTeamMembers[position].name}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {extendedTeamMembers[position].role}
-                          </p>
-                          <div className="flex space-x-2 mt-2">
-                            <Link
-                              href={extendedTeamMembers[position].twitter}
-                              className="text-foreground/60 hover:text-primary"
-                            >
+          <div
+            className="mt-16 relative"
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+          >
+            <div className="absolute top-1/2 -left-12 transform -translate-y-1/2 z-10">
+              <motion.button
+                onClick={prevSlide}
+                className="bg-primary/80 hover:bg-primary text-white p-3 rounded-full shadow-lg"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                initial={{ opacity: 0.6 }}
+                animate={{ opacity: 1 }}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M15 18l-6-6 6-6" />
+                </svg>
+              </motion.button>
+            </div>
+
+            <div className="absolute top-1/2 -right-12 transform -translate-y-1/2 z-10">
+              <motion.button
+                onClick={nextSlide}
+                className="bg-primary/80 hover:bg-primary text-white p-3 rounded-full shadow-lg"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                initial={{ opacity: 0.6 }}
+                animate={{ opacity: 1 }}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M9 18l6-6-6-6" />
+                </svg>
+              </motion.button>
+            </div>
+
+            {/* Carousel Container */}
+            <div className="overflow-hidden max-w-7xl mx-auto">
+              <div className="relative">
+                <motion.div className="grid grid-cols-4 gap-6" initial={false}>
+                  <AnimatePresence mode="popLayout" initial={false}>
+                    {getVisibleExtendedMembers().map((member) => (
+                      <motion.div
+                        key={`${member.id}-${member.order}`}
+                        initial={{
+                          opacity: 0,
+                          x: direction > 0 ? 100 : -100,
+                          rotateY: direction > 0 ? 45 : -45,
+                          scale: 0.8,
+                        }}
+                        animate={{
+                          opacity: 1,
+                          x: 0,
+                          rotateY: 0,
+                          scale: 1,
+                          transition: {
+                            type: "spring",
+                            stiffness: 300,
+                            damping: 25,
+                            delay: member.order * 0.1,
+                          },
+                        }}
+                        exit={{
+                          opacity: 0,
+                          x: direction > 0 ? -100 : 100,
+                          rotateY: direction > 0 ? -45 : 45,
+                          scale: 0.8,
+                          transition: { duration: 0.3 },
+                        }}
+                        className="h-full transform-gpu"
+                      >
+                        <Card className="overflow-hidden border-none bg-muted/20 h-full hover:shadow-lg transition-all duration-300">
+                          <CardContent className="p-0">
+                            <div className="aspect-square relative overflow-hidden">
                               <Image
-                                src="/assets/x.svg"
-                                alt="Twitter"
-                                width={16}
-                                height={16}
+                                src={member.image}
+                                alt={member.name}
+                                fill
+                                className="object-cover grayscale hover:grayscale-0 transition-all duration-300"
                               />
-                            </Link>
-                            <Link
-                              href={extendedTeamMembers[position].linkedin}
-                              className="text-foreground/60 hover:text-primary"
+                              <motion.div
+                                className="absolute inset-0 bg-primary/10"
+                                initial={{ opacity: 0 }}
+                                whileHover={{ opacity: 1 }}
+                              />
+                            </div>
+                            <motion.div
+                              className="p-4"
+                              whileHover={{
+                                backgroundColor: "rgba(132, 26, 28, 0.05)",
+                              }}
                             >
-                              <Image
-                                src="/assets/linkedin.svg"
-                                alt="LinkedIn"
-                                width={16}
-                                height={16}
-                              />
-                            </Link>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
+                              <p className="text-lg font-bold text-primary">
+                                {member.name}
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                {member.role}
+                              </p>
+                            </motion.div>
+                          </CardContent>
+                        </Card>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                </motion.div>
+              </div>
+            </div>
+
+            {/* Carousel Indicators */}
+            <div className="flex justify-center gap-2 mt-8">
+              {Array.from({
+                length: Math.ceil(extendedTeamMembers.length / 4),
+              }).map((_, index) => {
+                const isActive = Math.floor(currentCarouselIndex / 4) === index;
+                return (
+                  <motion.button
+                    key={index}
+                    onClick={() => {
+                      const newDirection =
+                        index > Math.floor(currentCarouselIndex / 4) ? 1 : -1;
+                      setDirection(newDirection);
+                      setCurrentCarouselIndex(index * 4);
+                    }}
+                    className={`w-3 h-3 rounded-full transition-colors ${
+                      isActive ? "bg-primary" : "bg-primary/30"
+                    }`}
+                    whileHover={{ scale: 1.5 }}
+                    whileTap={{ scale: 0.9 }}
+                    animate={
+                      isActive
+                        ? {
+                            scale: [1, 1.2, 1],
+                            transition: { repeat: Infinity, repeatDelay: 2 },
+                          }
+                        : {}
+                    }
+                  />
+                );
+              })}
             </div>
           </div>
         </div>
