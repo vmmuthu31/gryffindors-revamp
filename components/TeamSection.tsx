@@ -1,6 +1,10 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 
 const teamMembers = [
   {
@@ -46,13 +50,36 @@ const teamMembers = [
 ];
 
 const TeamSection = () => {
+  const [positions, setPositions] = useState(teamMembers.map((_, i) => i));
+
+  const shufflePositions = () => {
+    setPositions((prevPositions) => {
+      const newPositions = [...prevPositions];
+      for (let i = newPositions.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [newPositions[i], newPositions[j]] = [newPositions[j], newPositions[i]];
+      }
+      return newPositions;
+    });
+  };
+
+  useEffect(() => {
+    const interval = setInterval(shufflePositions, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <section className="py-16 bg-muted/30" id="team">
       <div className="container">
-        <div className="mb-10">
-          <h2 className="text-4xl md:text-5xl font-bold text-primary text-center">
-            THE TEAM
-          </h2>
+        <div className="mb-10 overflow-hidden">
+          <motion.div
+            initial={{ x: "100%" }}
+            animate={{ x: "-100%" }}
+            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+            className="whitespace-nowrap text-4xl md:text-5xl font-bold text-primary text-center"
+          >
+            MEET THE TEAM • MEET THE TEAM • MEET THE TEAM • MEET THE TEAM •
+          </motion.div>
           <p className="text-center text-lg text-foreground/80 max-w-3xl mx-auto mt-4">
             What started with a group of passionate Web3 builders has grown into
             a powerhouse team helping the most ambitious projects in blockchain
@@ -60,59 +87,78 @@ const TeamSection = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {teamMembers.map((member) => (
-            <Card
-              key={member.id}
-              className="overflow-hidden border-none bg-muted/30"
-            >
-              <CardContent className="p-0">
-                <div className="aspect-square relative overflow-hidden">
-                  <Image
-                    src={member.image}
-                    alt={member.name}
-                    fill
-                    className="object-cover grayscale hover:grayscale-0 transition-all duration-300"
-                  />
-                </div>
-                <div className="p-4">
-                  <p className="text-xl font-thunder lg:text-3xl font-bold text-primary">
-                    {member.name}
-                  </p>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    {member.role}
-                  </p>
-                  <p className="text-sm h-32 text-foreground/80 mb-4">
-                    {member.bio}
-                  </p>
-                  <div className="flex space-x-3">
-                    <Link
-                      href={member.twitter}
-                      className="text-foreground/60 hover:text-primary"
-                    >
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
+          <AnimatePresence>
+            {positions.map((position) => (
+              <motion.div
+                key={teamMembers[position].id}
+                layout
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{
+                  opacity: 1,
+                  scale: 1,
+                  transition: {
+                    type: "spring",
+                    stiffness: 300,
+                    damping: 25,
+                  },
+                }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{
+                  duration: 0.5,
+                  layout: { duration: 0.6 },
+                }}
+              >
+                <Card className="overflow-hidden border-none bg-muted/30 h-full">
+                  <CardContent className="p-0">
+                    <div className="aspect-square relative overflow-hidden">
                       <Image
-                        src="/assets/x.svg"
-                        alt="Twitter"
-                        width={20}
-                        height={20}
+                        src={teamMembers[position].image}
+                        alt={teamMembers[position].name}
+                        fill
+                        className="object-cover grayscale hover:grayscale-0 transition-all duration-300"
                       />
-                    </Link>
-                    <Link
-                      href={member.linkedin}
-                      className="text-foreground/60 hover:text-primary"
-                    >
-                      <Image
-                        src="/assets/linkedin.svg"
-                        alt="LinkedIn"
-                        width={20}
-                        height={20}
-                      />
-                    </Link>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                    </div>
+                    <div className="p-4">
+                      <p className="text-xl font-thunder lg:text-3xl font-bold text-primary">
+                        {teamMembers[position].name}
+                      </p>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        {teamMembers[position].role}
+                      </p>
+                      <p className="text-sm h-32 text-foreground/80 mb-4">
+                        {teamMembers[position].bio}
+                      </p>
+                      <div className="flex space-x-3">
+                        <Link
+                          href={teamMembers[position].twitter}
+                          className="text-foreground/60 hover:text-primary"
+                        >
+                          <Image
+                            src="/assets/x.svg"
+                            alt="Twitter"
+                            width={20}
+                            height={20}
+                          />
+                        </Link>
+                        <Link
+                          href={teamMembers[position].linkedin}
+                          className="text-foreground/60 hover:text-primary"
+                        >
+                          <Image
+                            src="/assets/linkedin.svg"
+                            alt="LinkedIn"
+                            width={20}
+                            height={20}
+                          />
+                        </Link>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </div>
       </div>
     </section>
