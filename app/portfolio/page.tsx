@@ -61,6 +61,7 @@ const PortfolioPage = () => {
   );
 
   // Animation variants
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const containerVariants: Record<string, any> = {
     hidden: { opacity: 0 },
     visible: {
@@ -71,6 +72,7 @@ const PortfolioPage = () => {
     },
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const itemVariants: Record<string, any> = {
     hidden: { opacity: 0, y: 20 },
     visible: {
