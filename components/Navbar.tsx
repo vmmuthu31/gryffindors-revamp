@@ -67,7 +67,7 @@ const Navbar = () => {
 
       {/* Mobile Navigation */}
       {isMenuOpen && (
-        <div className="md:hidden bg-background border-t border-border py-4 px-4 absolute w-full">
+        <div className="md:hidden bg-[#fbf2f1] border-t border-border py-4 px-4 absolute w-full">
           <div className="flex flex-col space-y-4">
             <Link
               href="/about"
