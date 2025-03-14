@@ -132,7 +132,7 @@ const TeamSection = () => {
     const interval = setInterval(shufflePositions, 3000);
 
     // Extended team carousel auto-play
-    let carouselInterval;
+    let carouselInterval: NodeJS.Timeout | undefined;
     if (isAutoPlaying) {
       carouselInterval = setInterval(() => {
         nextSlide();
