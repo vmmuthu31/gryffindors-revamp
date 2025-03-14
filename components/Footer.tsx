@@ -4,7 +4,7 @@ const Footer = () => {
   return (
     <footer className="bg-[#FCE0E1] font-dmsans text-[#770002] rounded-t-3xl pt-10 ">
       <div className="container mx-auto px-4">
-        <div className="flex flex-row justify-between items-start md:items-center mb-8">
+        <div className="flex flex-row justify-between w-full gap-5 items-start md:items-center mb-8">
           <div className="mb-6 md:mb-0 max-w-sm">
             <p className="text-sm lg:text-lg  mb-4">
               Fueling innovation. Building the <br /> future of Web3. Join us in{" "}
@@ -12,9 +12,11 @@ const Footer = () => {
             </p>
           </div>
 
-          <div className="flex gap-16">
+          <div className="flex lg:gap-16 gap-4">
             <div>
-              <p className="text-lg font-dmsans mb-3">COMMUNITY</p>
+              <p className="lg:text-lg text-sm font-semibold font-dmsans mb-3">
+                COMMUNITY
+              </p>
               <ul className="space-y-2 text-sm">
                 <li>
                   <Link
@@ -44,7 +46,9 @@ const Footer = () => {
             </div>
 
             <div>
-              <p className="text-lg font-dmsans mb-3">SOCIAL MEDIA</p>
+              <p className="lg:text-lg text-sm font-semibold font-dmsans mb-3">
+                SOCIAL MEDIA
+              </p>
               <ul className="space-y-2 text-sm">
                 <li>
                   <Link

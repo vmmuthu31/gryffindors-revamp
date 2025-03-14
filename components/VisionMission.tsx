@@ -14,7 +14,7 @@ const VisionMission = () => {
   });
 
   return (
-    <section className="py-16 bg-muted/30 relative overflow-hidden">
+    <section className="lg:py-16 py-6 bg-muted/30 relative overflow-hidden">
       {/* Decorative Elements */}
       <div className="circle-decoration w-72 h-72 -top-36 right-36 opacity-10"></div>
 
