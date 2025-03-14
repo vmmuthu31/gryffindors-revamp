@@ -60,7 +60,7 @@ const ServicesSection = () => {
   const handleMouseLeave = () => setHoveredIndex(null);
 
   return (
-    <section className="md:py-16 px-0.5 bg-background">
+    <section id="services" className="md:py-16 px-0.5 bg-background">
       <div className="max-w-7xl mx-auto border-x-[3px] px-2 md:px-20 border-[#770002]">
         {services.map((service, index) => (
           <div
