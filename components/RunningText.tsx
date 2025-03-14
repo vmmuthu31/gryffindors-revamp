@@ -13,7 +13,7 @@ const tickerItems = [
   "DAO Infrastructure",
 ];
 
-const RunningWordsTicker = ({
+const RunningText = ({
   direction = "right",
 }: {
   direction?: "right" | "left";
@@ -52,4 +52,4 @@ const RunningWordsTicker = ({
   );
 };
 
-export default RunningWordsTicker;
+export default RunningText;

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { motion, AnimatePresence } from "framer-motion";
+import RunningHeading from "./RunningHeading";
 
 const testimonials = [
   {
@@ -48,90 +49,93 @@ const TestimonialsSection = () => {
   };
 
   return (
-    <section className="lg:py-16 bg-background" id="testimonials">
-      <div className="lg:px-20 px-4">
-        <div className="mb-12 overflow-hidden">
-          <motion.div
-            initial={{ x: "100%" }}
-            animate={{ x: "-100%" }}
-            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-            className="whitespace-nowrap text-4xl md:text-5xl font-bold text-primary text-center mb-4"
-          >
-            BUILT ON TRUST • BUILT ON TRUST • BUILT ON TRUST • BUILT ON TRUST •
-          </motion.div>
-          <p className="text-center text-lg font-medium lowercase text-foreground/80 max-w-3xl mx-auto">
-            Over the past three years, we&apos;ve had the privilege of working
-            with incredible teams, founders, and developers in the Web3 space.
-            Here&apos;s what they have to say!
-          </p>
-        </div>
+    <div className="container">
+      <RunningHeading
+        words={[
+          { text: "BUILT", isOutline: false },
+          { text: "ON", isOutline: false },
+          { text: "TRUST", isOutline: true },
+        ]}
+        speed={40}
+        direction="left"
+      />
+      <section className="lg:py-16 bg-background" id="testimonials">
+        <div className="lg:px-20 px-4">
+          <div className="mb-12 overflow-hidden">
+            <p className="text-center text-lg font-medium lowercase text-foreground/80 max-w-3xl mx-auto">
+              Over the past three years, we&apos;ve had the privilege of working
+              with incredible teams, founders, and developers in the Web3 space.
+              Here&apos;s what they have to say!
+            </p>
+          </div>
 
-        <div className="relative w-full max-w-7xl mx-auto min-h-[400px]">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <AnimatePresence mode="popLayout">
-              {getVisibleTestimonials().map((testimonial) => (
-                <motion.div
-                  key={`${testimonial.id}-${testimonial.order}`}
-                  initial={{ opacity: 0, scale: 0.8, y: 20 }}
-                  animate={{
-                    opacity: 1,
-                    scale: 1,
-                    y: 0,
-                    transition: {
-                      type: "spring",
-                      stiffness: 300,
-                      damping: 25,
-                      delay: testimonial.order * 0.1,
-                    },
-                  }}
-                  exit={{
-                    opacity: 0,
-                    scale: 0.8,
-                    y: -20,
-                    transition: { duration: 0.3 },
-                  }}
-                  className="h-full"
-                >
-                  <Card className="bg-[#770002] border-none shadow-[0px_0px_35px_0px_#FFFFFFCC_inset] h-full transform hover:scale-105 transition-transform duration-300">
-                    <CardContent className="p-8">
-                      <p className="text-white font-dmsans font-medium text-xl lg:text-2xl mb-6">
-                        &quot;{testimonial.text}&quot;
-                      </p>
-                      <div>
-                        <p className="font-bold font-thunder text-3xl lg:text-4xl text-white">
-                          - {testimonial.author}
+          <div className="relative w-full max-w-7xl mx-auto min-h-[400px]">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <AnimatePresence mode="popLayout">
+                {getVisibleTestimonials().map((testimonial) => (
+                  <motion.div
+                    key={`${testimonial.id}-${testimonial.order}`}
+                    initial={{ opacity: 0, scale: 0.8, y: 20 }}
+                    animate={{
+                      opacity: 1,
+                      scale: 1,
+                      y: 0,
+                      transition: {
+                        type: "spring",
+                        stiffness: 300,
+                        damping: 25,
+                        delay: testimonial.order * 0.1,
+                      },
+                    }}
+                    exit={{
+                      opacity: 0,
+                      scale: 0.8,
+                      y: -20,
+                      transition: { duration: 0.3 },
+                    }}
+                    className="h-full"
+                  >
+                    <Card className="bg-[#770002] border-none shadow-[0px_0px_35px_0px_#FFFFFFCC_inset] h-full transform hover:scale-105 transition-transform duration-300">
+                      <CardContent className="p-8">
+                        <p className="text-white font-dmsans font-medium text-xl lg:text-2xl mb-6">
+                          &quot;{testimonial.text}&quot;
                         </p>
-                        <p className="text-sm font-dmsans lg:text-xl font-medium text-white">
-                          {testimonial.position}
-                        </p>
-                        <div className="flex">
-                          <div className="bg-white px-2 py-1 mt-2">
-                            <p className="text-xs lg:text-base text-[#770002] uppercase">
-                              {testimonial.category}
-                            </p>
+                        <div>
+                          <p className="font-bold font-thunder text-3xl lg:text-4xl text-white">
+                            - {testimonial.author}
+                          </p>
+                          <p className="text-sm font-dmsans lg:text-xl font-medium text-white">
+                            {testimonial.position}
+                          </p>
+                          <div className="flex">
+                            <div className="bg-white px-2 py-1 mt-2">
+                              <p className="text-xs lg:text-base text-[#770002] uppercase">
+                                {testimonial.category}
+                              </p>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+            <div className="flex justify-center gap-2 mt-8">
+              {testimonials.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentIndex(index)}
+                  className={`w-3 h-3 rounded-full transition-colors ${
+                    index === currentIndex ? "bg-primary" : "bg-primary/30"
+                  }`}
+                />
               ))}
-            </AnimatePresence>
-          </div>
-          <div className="flex justify-center gap-2 mt-8">
-            {testimonials.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentIndex(index)}
-                className={`w-3 h-3 rounded-full transition-colors ${
-                  index === currentIndex ? "bg-primary" : "bg-primary/30"
-                }`}
-              />
-            ))}
+            </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </div>
   );
 };
 

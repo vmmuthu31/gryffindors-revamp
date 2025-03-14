@@ -1,14 +1,35 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import RunningWordsTicker from "@/components/RunningWordsTicker";
+import { useEffect, useState, useRef } from "react";
+import RunningText from "@/components/RunningText";
 import Image from "next/image";
+import { motion } from "framer-motion";
 
 const HeroSection = () => {
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const playRoar = () => {
+    if (audioRef.current) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play();
+      setIsPlaying(true);
+    }
+  };
 
   useEffect(() => {
     setIsLoaded(true);
+    audioRef.current = new Audio("/audio/lion.mp3");
+    audioRef.current.addEventListener("ended", () => setIsPlaying(false));
+
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.removeEventListener("ended", () =>
+          setIsPlaying(false)
+        );
+      }
+    };
   }, []);
 
   return (
@@ -127,21 +148,30 @@ const HeroSection = () => {
                 />
               </div>
               <div className="flex flex-col w-full items-center md:items-start gap-2 ">
-                <p className="flex items-center md:gap-4 gap-2">
+                <div className="flex items-center md:gap-4 gap-2">
                   <span className="text-lg lg:text-[38px] uppercase font-bold">
                     Gryffindors
                   </span>{" "}
                   <span className="text-lg lg:text-[22px] text-black/60 uppercase font-medium">
                     [grif−in−dorz]
                   </span>
-                  <Image
-                    src="/assets/sound.svg"
-                    alt="Arrow"
-                    className="w-6 h-6 mt-1"
-                    width={28}
-                    height={28}
-                  />
-                </p>
+                  <motion.div
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    animate={isPlaying ? { rotate: [0, 15, -15, 0] } : {}}
+                    transition={{ duration: 0.5 }}
+                    onClick={playRoar}
+                    className="cursor-pointer"
+                  >
+                    <Image
+                      src="/assets/sound.svg"
+                      alt="Play Sound"
+                      className="w-6 h-6 mt-1"
+                      width={28}
+                      height={28}
+                    />
+                  </motion.div>
+                </div>
                 <p>noun</p>
                 <div className="flex items-start gap-4">
                   <p className="text-lg font-bold">1</p>
@@ -162,7 +192,7 @@ const HeroSection = () => {
               isLoaded ? "animate-fade-in animate-delay-300" : ""
             }`}
           >
-            <RunningWordsTicker direction="left" />
+            <RunningText direction="left" />
           </div>
 
           <Image
@@ -177,7 +207,7 @@ const HeroSection = () => {
               isLoaded ? "animate-fade-in animate-delay-300" : ""
             }`}
           >
-            <RunningWordsTicker />
+            <RunningText direction="left" />
           </div>
         </div>
       </div>

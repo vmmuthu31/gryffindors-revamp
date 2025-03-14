@@ -65,6 +65,23 @@
   }
   body {
     @apply bg-background text-foreground;
+    cursor: none;
+  }
+}
+
+@layer utilities {
+  .text-stroke-2 {
+    -webkit-text-stroke-width: 2px;
+    text-stroke-width: 2px;
+  }
+  .text-stroke-4 {
+    -webkit-text-stroke-width: 4px;
+    text-stroke-width: 4px;
+  }
+
+  .text-stroke-841a1c {
+    -webkit-text-stroke-color: #841a1c;
+    text-stroke-color: #841a1c;
   }
 }
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import RunningHeading from "./RunningHeading";
 
 const services = [
   {
@@ -61,6 +62,16 @@ const ServicesSection = () => {
 
   return (
     <div className="container">
+      <div className="mb-10 overflow-hidden">
+        <RunningHeading
+          words={[
+            { text: "OUR", isOutline: false },
+            { text: "SERVICES", isOutline: true },
+          ]}
+          speed={40}
+          direction="right"
+        />
+      </div>
       <p className="text-center text-2xl lowercase font-medium">
         Building secure, scalable, and user-friendly Web3 solutions
       </p>
