@@ -219,6 +219,7 @@ const StatsSection = () => {
               variants={itemVariants}
               whileHover="hover"
               initial="initial"
+              // eslint-disable-next-line
               variants={hoverVariants}
             >
               <p className="text-sm lg:text-xl font-dmsans text-foreground font-medium">
