@@ -103,7 +103,7 @@ const HeroSection = () => {
                 >
                   <div className="flex items-center bg-[#D99F65] p-6">
                     <p className="text-white font-dmsans font-semibold text-lg lg:text-2xl">
-                      a web3-native agency specializing <br /> in blockchain
+                      a web3-native Solutions specializing <br /> in blockchain
                       solutions.
                     </p>
                   </div>
@@ -177,9 +177,10 @@ const HeroSection = () => {
                   <p className="text-lg font-bold">1</p>
                   <p className="text-lg max-w-xl text-foreground/90">
                     <span className="font-bold">Gryffindors</span> is a Web3
-                    agency specializing in blockchain smart contracts, dApps and
-                    crypto solutions that scale. We create elegant experiences
-                    and decentralized solutions that takes the Web3 products.
+                    Solutions specializing in blockchain smart contracts, dApps
+                    and crypto solutions that scale. We create elegant
+                    experiences and decentralized solutions that takes the Web3
+                    products.
                   </p>
                 </div>
               </div>

@@ -10,9 +10,9 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Gryffindors | Web3 Blockchain Development Agency",
+  title: "Gryffindors | Web3 Blockchain Development Solutions",
   description:
-    "Gryffindors is a Web3 native agency specializing in blockchain smart contracts, dApps and crypto solutions that scale. We create elegant experiences and decentralized solutions.",
+    "Gryffindors is a Web3 native Solutions specializing in blockchain smart contracts, dApps and crypto solutions that scale. We create elegant experiences and decentralized solutions.",
   keywords: [
     "blockchain",
     "web3",
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     "dApps",
     "defi",
     "nft",
-    "blockchain agency",
+    "blockchain Solutions",
   ],
 };
 
