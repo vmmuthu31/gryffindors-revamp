@@ -13,11 +13,19 @@ const tickerItems = [
   "DAO Infrastructure",
 ];
 
-const RunningWordsTicker = () => {
+const RunningWordsTicker = ({
+  direction = "right",
+}: {
+  direction?: "right" | "left";
+}) => {
   return (
     <div className="ticker-container">
       <div className="flex">
-        <div className="ticker-wrapper animate-marquee">
+        <div
+          className={`ticker-wrapper animate-marquee ${
+            direction === "left" ? "animate-marquee-reverse" : ""
+          }`}
+        >
           {tickerItems.map((item, index) => (
             <span key={`ticker-1-${index}`} className="ticker-item">
               {item}
@@ -27,7 +35,11 @@ const RunningWordsTicker = () => {
         </div>
 
         {/* Duplicate for seamless loop */}
-        <div className="ticker-wrapper animate-marquee">
+        <div
+          className={`ticker-wrapper animate-marquee ${
+            direction === "left" ? "animate-marquee-reverse" : ""
+          }`}
+        >
           {tickerItems.map((item, index) => (
             <span key={`ticker-2-${index}`} className="ticker-item">
               {item}

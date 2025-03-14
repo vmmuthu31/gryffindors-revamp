@@ -67,25 +67,25 @@ const Navbar = () => {
 
       {/* Mobile Navigation */}
       {isMenuOpen && (
-        <div className="md:hidden bg-white border-t border-border py-4 px-4 absolute w-full z-50">
+        <div className="md:hidden bg-[#fff8f9] border-t border-border py-4 px-4 absolute w-full z-50">
           <div className="flex flex-col space-y-4">
             <Link
-              href="/about"
-              className="text-foreground hover:text-primary transition-colors"
+              href="#about"
+              className="text-foreground hover:text-primary font-medium transition-colors"
               onClick={toggleMenu}
             >
               About
             </Link>
             <Link
-              href="/our-services"
-              className="text-foreground hover:text-primary transition-colors"
+              href="#services"
+              className="text-foreground hover:text-primary font-medium transition-colors"
               onClick={toggleMenu}
             >
               Our Services
             </Link>
             <Link
-              href="/our-team"
-              className="text-foreground hover:text-primary transition-colors"
+              href="#team"
+              className="text-foreground hover:text-primary font-medium transition-colors"
               onClick={toggleMenu}
             >
               Our Team

@@ -2,11 +2,11 @@ import Link from "next/link";
 
 const Footer = () => {
   return (
-    <footer className="bg-[#FCE0E1] font-dmsans rounded-t-3xl pt-10 ">
+    <footer className="bg-[#FCE0E1] font-dmsans text-[#770002] rounded-t-3xl pt-10 ">
       <div className="container mx-auto px-4">
         <div className="flex flex-row justify-between items-start md:items-center mb-8">
           <div className="mb-6 md:mb-0 max-w-sm">
-            <p className="text-sm lg:text-lg text-[#770002] mb-4">
+            <p className="text-sm lg:text-lg  mb-4">
               Fueling innovation. Building the <br /> future of Web3. Join us in{" "}
               <br /> redefining the decentralized <br /> world.
             </p>
@@ -14,14 +14,12 @@ const Footer = () => {
 
           <div className="flex gap-16">
             <div>
-              <h3 className="text-sm font-semibold mb-3 text-foreground">
-                COMMUNITY
-              </h3>
+              <p className="text-lg font-dmsans mb-3">COMMUNITY</p>
               <ul className="space-y-2 text-sm">
                 <li>
                   <Link
                     href="/about"
-                    className="text-foreground/70 hover:text-primary transition-colors"
+                    className=" hover:text-primary transition-colors"
                   >
                     About Us
                   </Link>
@@ -29,7 +27,7 @@ const Footer = () => {
                 <li>
                   <Link
                     href="/services"
-                    className="text-foreground/70 hover:text-primary transition-colors"
+                    className=" hover:text-primary transition-colors"
                   >
                     Services
                   </Link>
@@ -37,7 +35,7 @@ const Footer = () => {
                 <li>
                   <Link
                     href="/team"
-                    className="text-foreground/70 hover:text-primary transition-colors"
+                    className=" hover:text-primary transition-colors"
                   >
                     Team
                   </Link>
@@ -46,14 +44,12 @@ const Footer = () => {
             </div>
 
             <div>
-              <h3 className="text-sm font-semibold mb-3 text-foreground">
-                SOCIAL MEDIA
-              </h3>
+              <p className="text-lg font-dmsans mb-3">SOCIAL MEDIA</p>
               <ul className="space-y-2 text-sm">
                 <li>
                   <Link
                     href="#"
-                    className="text-foreground/70 hover:text-primary transition-colors"
+                    className=" hover:text-primary transition-colors"
                   >
                     Twitter
                   </Link>
@@ -61,7 +57,7 @@ const Footer = () => {
                 <li>
                   <Link
                     href="#"
-                    className="text-foreground/70 hover:text-primary transition-colors"
+                    className=" hover:text-primary transition-colors"
                   >
                     Telegram
                   </Link>
@@ -69,7 +65,7 @@ const Footer = () => {
                 <li>
                   <Link
                     href="#"
-                    className="text-foreground/70 hover:text-primary transition-colors"
+                    className=" hover:text-primary transition-colors"
                   >
                     LinkedIn
                   </Link>
