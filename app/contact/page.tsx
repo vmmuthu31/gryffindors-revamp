@@ -258,7 +258,7 @@ const ContactPage = () => {
                 </p>
                 <div className="flex space-x-4">
                   <Link
-                    href="#"
+                    href="https://x.com/Gryffindor_W3"
                     className="bg-[#841a1c]/10 hover:bg-[#841a1c]/20 p-3 rounded-full transition-colors"
                   >
                     <Image
@@ -269,7 +269,7 @@ const ContactPage = () => {
                     />
                   </Link>
                   <Link
-                    href="#"
+                    href="http://linkedin.com/company/gryffindors"
                     className="bg-[#841a1c]/10 hover:bg-[#841a1c]/20 p-3 rounded-full transition-colors"
                   >
                     <Image
@@ -280,7 +280,7 @@ const ContactPage = () => {
                     />
                   </Link>
                   <Link
-                    href="#"
+                    href="https://wa.me/918072105077"
                     className="bg-[#841a1c]/10 hover:bg-[#841a1c]/20 p-3 rounded-full transition-colors"
                   >
                     <svg
