@@ -14,7 +14,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-background font-dmsans py-4 md:py-14 sticky top-0 z-50">
+    <nav className="bg-background font-dmsans py-4 md:py-14  top-0 z-50">
       <div className="container flex justify-between items-center">
         <Link href="/" className="flex items-center gap-2">
           <Image
@@ -67,7 +67,7 @@ const Navbar = () => {
 
       {/* Mobile Navigation */}
       {isMenuOpen && (
-        <div className="md:hidden bg-[#fbf2f1] border-t border-border py-4 px-4 absolute w-full">
+        <div className="md:hidden bg-white border-t border-border py-4 px-4 absolute w-full z-50">
           <div className="flex flex-col space-y-4">
             <Link
               href="/about"

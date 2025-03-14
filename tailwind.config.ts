@@ -12,7 +12,6 @@ const config = {
     extend: {
       fontFamily: {
         dmsans: ["var(--font-dm-sans)"],
-        thunder: ["var(--font-thunder)"],
       },
       colors: {
         background: "hsl(var(--background))",

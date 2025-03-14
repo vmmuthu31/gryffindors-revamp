@@ -21,7 +21,7 @@ const RunningWordsTicker = () => {
           {tickerItems.map((item, index) => (
             <span key={`ticker-1-${index}`} className="ticker-item">
               {item}
-              <span className="mx-2">•</span>
+              <span className="mx-2">✦</span>
             </span>
           ))}
         </div>
@@ -31,7 +31,7 @@ const RunningWordsTicker = () => {
           {tickerItems.map((item, index) => (
             <span key={`ticker-2-${index}`} className="ticker-item">
               {item}
-              <span className="mx-2">•</span>
+              <span className="mx-2">✦</span>
             </span>
           ))}
         </div>

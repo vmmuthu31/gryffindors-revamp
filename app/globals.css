@@ -95,6 +95,10 @@ body {
   font-display: swap;
 }
 
+.font-thunder {
+  font-family: "Thunder", "DM Sans", sans-serif;
+}
+
 h1,
 h2,
 h3,
@@ -168,7 +172,7 @@ h3,
 }
 
 .ticker-item {
-  @apply inline-block px-4 text-primary font-medium;
+  @apply inline-block px-4 text-black text-xl font-medium;
 }
 
 /* Decorative elements */
