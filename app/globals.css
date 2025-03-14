@@ -1,0 +1,168 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 9 65% 97%; /* Light cream background #fbf2f1 */
+    --foreground: 0 80% 13%; /* Dark maroon for text #4d1616 */
+    --card: 9 65% 97%;
+    --card-foreground: 0 80% 13%;
+    --popover: 9 65% 97%;
+    --popover-foreground: 0 80% 13%;
+    --primary: 0 69% 31%; /* Primary maroon #841a1c */
+    --primary-foreground: 9 65% 97%;
+    --secondary: 32 54% 62%; /* Gold/tan #d79c64 */
+    --secondary-foreground: 0 80% 13%;
+    --muted: 30 25% 89%; /* Light muted color #e7e0dc */
+    --muted-foreground: 0 0% 45.1%;
+    --accent: 30 41% 74%; /* Light accent color #d5b9a3 */
+    --accent-foreground: 0 80% 13%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 30 25% 89%;
+    --input: 30 25% 89%;
+    --ring: 0 69% 31%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 0 80% 13%; /* Dark maroon background */
+    --foreground: 9 65% 97%; /* Light cream text */
+    --card: 0 80% 13%;
+    --card-foreground: 9 65% 97%;
+    --popover: 0 80% 13%;
+    --popover-foreground: 9 65% 97%;
+    --primary: 0 69% 31%; /* Primary maroon */
+    --primary-foreground: 9 65% 97%;
+    --secondary: 32 54% 62%; /* Gold/tan */
+    --secondary-foreground: 0 80% 13%;
+    --muted: 0 60% 20%;
+    --muted-foreground: 30 25% 89%;
+    --accent: 30 41% 74%;
+    --accent-foreground: 0 80% 13%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 60% 20%;
+    --input: 0 60% 20%;
+    --ring: 0 69% 31%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@font-face {
+  font-family: "DM Sans";
+  src: url("https://web-assets.same.dev/4018159194/3307048321.woff2")
+    format("woff2");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Thunder";
+  src: url("/fonts/Thunder-BoldLC.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Thunder";
+  src: url("/fonts/Thunder-MediumLC.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+h1,
+h2,
+h3,
+.heading {
+  font-family: "Thunder", "DM Sans", sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+}
+
+.container {
+  @apply mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl;
+}
+
+/* Animations */
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 30s linear infinite;
+}
+
+.animate-marquee-reverse {
+  animation: marquee 30s linear infinite reverse;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.8s ease-out forwards;
+}
+
+.animate-delay-100 {
+  animation-delay: 100ms;
+}
+
+.animate-delay-200 {
+  animation-delay: 200ms;
+}
+
+.animate-delay-300 {
+  animation-delay: 300ms;
+}
+
+.animate-delay-400 {
+  animation-delay: 400ms;
+}
+
+/* Running Words Ticker */
+.ticker-container {
+  @apply overflow-hidden whitespace-nowrap relative py-3 border-y border-muted;
+}
+
+.ticker-wrapper {
+  @apply inline-block whitespace-nowrap;
+}
+
+.ticker-item {
+  @apply inline-block px-4 text-primary font-medium;
+}
+
+/* Decorative elements */
+.circle-decoration {
+  @apply absolute rounded-full opacity-10 bg-secondary;
+}
+
+.line-decoration {
+  @apply absolute w-px h-20 bg-primary/20;
+}
