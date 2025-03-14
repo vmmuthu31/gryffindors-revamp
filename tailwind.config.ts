@@ -1,7 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 import animate from "tailwindcss-animate";
 
-module.exports = {
+const config = {
   darkMode: ["class"],
   content: [
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
@@ -11,7 +11,8 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["var(--font-dm-sans)"],
+        dmsans: ["var(--font-dm-sans)"],
+        thunder: ["var(--font-thunder)"],
       },
       colors: {
         background: "hsl(var(--background))",
@@ -103,3 +104,5 @@ module.exports = {
   },
   plugins: [animate],
 };
+
+export default config;

@@ -14,44 +14,43 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-background py-4 sticky top-0 z-50">
+    <nav className="bg-background font-dmsans py-4 md:py-14 sticky top-0 z-50">
       <div className="container flex justify-between items-center">
         <Link href="/" className="flex items-center gap-2">
           <Image
-            src="/logo.png"
+            src="/assets/logo.png"
             alt="Gryffindors Logo"
-            width={28}
-            height={28}
+            width={55}
+            height={55}
             className="object-contain"
           />
-          <span className="font-bold text-primary text-xl">Gryffindors</span>
+          <span className="font-bold text-primary text-3xl">Gryffindors</span>
         </Link>
 
         {/* Desktop Navigation */}
-        <div className="hidden md:flex items-center gap-8">
+        <div className="hidden md:flex items-center gap-10 text-lg">
           <Link
-            href="/about"
-            className="text-foreground hover:text-primary transition-colors"
+            href="#about"
+            className="hover:text-foreground text-primary transition-colors"
           >
             About
           </Link>
           <Link
-            href="/our-services"
-            className="text-foreground hover:text-primary transition-colors"
+            href="#services"
+            className="hover:text-foreground text-primary transition-colors"
           >
             Our Services
           </Link>
           <Link
-            href="/our-team"
-            className="text-foreground hover:text-primary transition-colors"
+            href="#team"
+            className="hover:text-foreground text-primary transition-colors"
           >
             Our Team
           </Link>
-          <Button
-            variant="default"
-            asChild
-            className="rounded-full text-sm px-6"
-          >
+        </div>
+        <div className="hidden md:flex items-center gap-2">
+          <Image src="/assets/star.svg" alt="Star" width={45} height={45} />
+          <Button asChild size="xl" className="rounded-full text-lg ">
             <Link href="/contact">Contact us</Link>
           </Button>
         </div>
