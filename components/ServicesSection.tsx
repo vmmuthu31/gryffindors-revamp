@@ -60,8 +60,8 @@ const ServicesSection = () => {
   const handleMouseLeave = () => setHoveredIndex(null);
 
   return (
-    <section className="py-16 bg-background">
-      <div className="max-w-7xl mx-auto">
+    <section className="md:py-16 px-0.5 bg-background">
+      <div className="max-w-7xl mx-auto border-x-[3px] px-2 md:px-20 border-[#770002]">
         {services.map((service, index) => (
           <div
             key={service.id}
@@ -69,7 +69,7 @@ const ServicesSection = () => {
             onMouseLeave={handleMouseLeave}
             className="border-b border-muted py-4 transition-all duration-300"
           >
-            <div className="flex border-b border-[#511111]/50 pb-4 justify-between items-center">
+            <div className="flex border-b cursor-pointer border-[#511111]/50 pb-4 justify-between items-center">
               <div className="flex items-center gap-4 lg:gap-40">
                 <span
                   className={` text-sm lg:text-2xl  font-medium ${
@@ -86,7 +86,7 @@ const ServicesSection = () => {
                   )}
                 </span>
               </div>
-              <p className="text-xl lg:text-3xl font-dmsans font-semibold text-foreground">
+              <p className="md:text-xl text-end lg:text-3xl font-dmsans font-semibold text-foreground">
                 {service.title}
               </p>
             </div>
