@@ -60,47 +60,52 @@ const ServicesSection = () => {
   const handleMouseLeave = () => setHoveredIndex(null);
 
   return (
-    <section id="services" className="md:py-16 px-0.5 bg-background">
-      <div className="max-w-7xl mx-auto border-x-[3px] px-2 md:px-20 border-[#770002]">
-        {services.map((service, index) => (
-          <div
-            key={service.id}
-            onMouseEnter={() => handleMouseEnter(index)}
-            onMouseLeave={handleMouseLeave}
-            className="border-b border-muted py-4 transition-all duration-300"
-          >
-            <div className="flex border-b cursor-pointer border-[#511111]/50 pb-4 justify-between items-center">
-              <div className="flex items-center gap-4 lg:gap-40">
-                <span
-                  className={` text-sm lg:text-2xl  font-medium ${
-                    hoveredIndex === index ? "text-black" : "text-[#ada9a8]"
-                  }`}
-                >
-                  /{service.id}/
-                </span>
-                <span className="text-2xl">
-                  {hoveredIndex === index ? (
-                    <span className="text-black">( - )</span>
-                  ) : (
-                    <span className="text-[#ada9a8]">( + )</span>
-                  )}
-                </span>
-              </div>
-              <p className="md:text-xl text-end lg:text-3xl font-dmsans font-semibold text-foreground">
-                {service.title}
-              </p>
-            </div>
-            {hoveredIndex === index && (
-              <div className="lg:pl-10 text-foreground/80 mt-2 border-l-2 border-primary/20 pl-4 py-2">
-                <div className="flex justify-between">
-                  {service.description}
+    <div className="container">
+      <p className="text-center text-2xl lowercase font-medium">
+        Building secure, scalable, and user-friendly Web3 solutions
+      </p>
+      <section id="services" className="md:py-16 px-0.5 bg-background">
+        <div className="max-w-7xl mx-auto border-x-[3px] px-2 md:px-20 border-[#770002]">
+          {services.map((service, index) => (
+            <div
+              key={service.id}
+              onMouseEnter={() => handleMouseEnter(index)}
+              onMouseLeave={handleMouseLeave}
+              className="border-b border-muted py-4 transition-all duration-300"
+            >
+              <div className="flex border-b cursor-pointer border-[#511111]/50 pb-4 justify-between items-center">
+                <div className="flex items-center gap-4 lg:gap-40">
+                  <span
+                    className={` text-sm lg:text-2xl  font-medium ${
+                      hoveredIndex === index ? "text-black" : "text-[#ada9a8]"
+                    }`}
+                  >
+                    /{service.id}/
+                  </span>
+                  <span className="text-2xl">
+                    {hoveredIndex === index ? (
+                      <span className="text-black">( - )</span>
+                    ) : (
+                      <span className="text-[#ada9a8]">( + )</span>
+                    )}
+                  </span>
                 </div>
+                <p className="md:text-xl text-end lg:text-3xl font-dmsans font-semibold text-foreground">
+                  {service.title}
+                </p>
               </div>
-            )}
-          </div>
-        ))}
-      </div>
-    </section>
+              {hoveredIndex === index && (
+                <div className="lg:pl-10 text-foreground/80 mt-2 border-l-2 border-primary/20 pl-4 py-2">
+                  <div className="flex justify-between">
+                    {service.description}
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
   );
 };
 
