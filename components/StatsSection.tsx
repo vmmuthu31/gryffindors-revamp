@@ -98,19 +98,6 @@ const StatsSection = () => {
     },
   };
 
-  const hoverVariants = {
-    initial: { scale: 1, boxShadow: "0px 0px 0px rgba(119, 0, 2, 0)" },
-    hover: {
-      scale: 1.05,
-      boxShadow: "0px 0px 20px rgba(119, 0, 2, 0.3)",
-      transition: {
-        type: "spring",
-        stiffness: 400,
-        damping: 10,
-      },
-    },
-  };
-
   const numberVariants = {
     initial: {
       color: "#770002",
@@ -219,8 +206,6 @@ const StatsSection = () => {
               variants={itemVariants}
               whileHover="hover"
               initial="initial"
-              // eslint-disable-next-line
-              variants={hoverVariants}
             >
               <p className="text-sm lg:text-xl font-dmsans text-foreground font-medium">
                 {stat.title}
