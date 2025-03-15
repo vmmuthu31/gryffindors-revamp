@@ -14,9 +14,8 @@ const teamMembers = [
     role: "Full Stack Developer",
     bio: "A Web3 full-stack developer and open-source contributor with a passion for blockchain innovation. GSoC '22 alum, hackathon winner, and mentor, currently building at Polkassembly.",
     image: "/assets/team/vm.png",
-    twitter: "#",
-    github: "#",
-    linkedin: "#",
+    twitter: "https://x.com/Barfi_31",
+    linkedin: "https://www.linkedin.com/in/vmmuthu31/",
   },
   {
     id: 2,
@@ -25,8 +24,7 @@ const teamMembers = [
     bio: "A product designer shaping Web3 experiences. Contributor at Starknet Foundation and part of The Phoenix Guild Chennai, previously at SecureDApp, bringing intuitive design to blockchain products.",
     image: "/assets/team/prashant.png",
     twitter: "#",
-    github: "#",
-    linkedin: "#",
+    linkedin: "https://www.linkedin.com/in/prashantdp/",
   },
   {
     id: 3,
@@ -34,9 +32,8 @@ const teamMembers = [
     role: "Blockchain Developer",
     bio: "Web3 hackathon champion with 20+ wins, Tech Lead at The Phoenix Guild Chennai, and Starknet contributor. Currently building StarkShoot and developing at Winks.fun, pushing the boundaries of blockchain gaming.",
     image: "/assets/team/thiru.png",
-    twitter: "#",
-    github: "#",
-    linkedin: "#",
+    twitter: "https://x.com/0xThiru",
+    linkedin: "https://www.linkedin.com/in/thirumurugan-sivalingam-935464218/",
   },
   {
     id: 4,
@@ -44,9 +41,8 @@ const teamMembers = [
     role: "Blockchain Developer",
     bio: "Web3 hackathon champion with 20+ wins, Tech Lead at The Phoenix Guild Chennai, and Starknet contributor. Currently building StarkShoot and developing at Winks.fun, pushing the boundaries of blockchain gaming.",
     image: "/assets/team/nagipragalathan.png",
-    twitter: "#",
-    github: "#",
-    linkedin: "#",
+    twitter: "https://x.com/NagiPragalathan",
+    linkedin: "https://www.linkedin.com/in/nagi-pragalathan/",
   },
 ];
 
