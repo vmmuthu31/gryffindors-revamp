@@ -30,19 +30,19 @@ const Navbar = () => {
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center gap-10 text-lg">
           <Link
-            href="#about"
+            href="/#about"
             className="hover:text-foreground text-primary transition-colors"
           >
             About
           </Link>
           <Link
-            href="#services"
+            href="/#services"
             className="hover:text-foreground text-primary transition-colors"
           >
             Our Services
           </Link>
           <Link
-            href="#team"
+            href="/#team"
             className="hover:text-foreground text-primary transition-colors"
           >
             Our Team
@@ -70,21 +70,21 @@ const Navbar = () => {
         <div className="md:hidden bg-[#fff8f9] border-t border-border py-4 px-4 absolute w-full z-50">
           <div className="flex flex-col space-y-4">
             <Link
-              href="#about"
+              href="/#about"
               className="text-foreground hover:text-primary font-medium transition-colors"
               onClick={toggleMenu}
             >
               About
             </Link>
             <Link
-              href="#services"
+              href="/#services"
               className="text-foreground hover:text-primary font-medium transition-colors"
               onClick={toggleMenu}
             >
               Our Services
             </Link>
             <Link
-              href="#team"
+              href="/#team"
               className="text-foreground hover:text-primary font-medium transition-colors"
               onClick={toggleMenu}
             >

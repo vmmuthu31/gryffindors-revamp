@@ -1,6 +1,8 @@
 "use client";
 
 import CustomCursor from "@/components/CustomCursor";
+import Footer from "@/components/Footer";
+import Navbar from "@/components/Navbar";
 import { useEffect } from "react";
 
 export default function ClientBody({
@@ -14,7 +16,11 @@ export default function ClientBody({
 
   return (
     <body className="antialiased" suppressHydrationWarning>
+      <Navbar />
+
       {children}
+      <Footer />
+
       <CustomCursor />
     </body>
   );

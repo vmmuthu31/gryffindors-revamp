@@ -321,8 +321,13 @@ const ContactPage = () => {
                     Ready to bring your Web3 vision to life? We&apos;re here to
                     help you every step of the way.
                   </p>
-                  <Button className="bg-white text-[#841a1c] hover:bg-white/90">
-                    Schedule a Call
+                  <Button
+                    asChild
+                    className="bg-white text-[#841a1c] hover:bg-white/90"
+                  >
+                    <Link href="https://cal.com/vairamuthu-m-sb6rz6/30min">
+                      Schedule a Call
+                    </Link>
                   </Button>
                 </CardContent>
               </Card>

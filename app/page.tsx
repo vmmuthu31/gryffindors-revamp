@@ -10,14 +10,12 @@ import TestimonialsSection from "@/components/TestimonialsSection";
 export default function Home() {
   return (
     <main>
-      <Navbar />
       <HeroSection />
       <VisionMission />
       <StatsSection />
       <ServicesSection />
       <TeamSection />
       <TestimonialsSection />
-      <Footer />
     </main>
   );
 }
