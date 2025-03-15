@@ -207,7 +207,7 @@ const StatsSection = () => {
               whileHover="hover"
               initial="initial"
             >
-              <p className="text-sm lg:text-xl font-dmsans text-foreground font-medium">
+              <p className="text-sm lg:text-xl whitespace-nowrap font-dmsans text-foreground font-medium">
                 {stat.title}
               </p>
 

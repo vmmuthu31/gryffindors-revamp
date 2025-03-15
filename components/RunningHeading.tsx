@@ -30,7 +30,7 @@ const RunningHeading: React.FC<RunningHeadingProps> = ({
       {words.map((word, index) => (
         <span
           key={index}
-          className={`text-8xl font-extrabold uppercase mr-5 ${
+          className={`text-8xl lg:text-[200px] font-thunder font-extrabold uppercase mr-5 ${
             word.isOutline ? "text-transparent" : filledColor
           }`}
           style={
