@@ -35,7 +35,7 @@ const TestimonialsSection = () => {
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % testimonials.length);
-    }, 5000);
+    }, 10000);
     return () => clearInterval(timer);
   }, []);
 
@@ -71,57 +71,98 @@ const TestimonialsSection = () => {
           </div>
 
           <div className="relative w-full max-w-7xl mx-auto min-h-[400px]">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <AnimatePresence mode="popLayout">
-                {getVisibleTestimonials().map((testimonial) => (
-                  <motion.div
-                    key={`${testimonial.id}-${testimonial.order}`}
-                    initial={{ opacity: 0, scale: 0.8, y: 20 }}
-                    animate={{
-                      opacity: 1,
-                      scale: 1,
-                      y: 0,
-                      transition: {
-                        type: "spring",
-                        stiffness: 300,
-                        damping: 25,
-                        delay: testimonial.order * 0.1,
-                      },
-                    }}
-                    exit={{
-                      opacity: 0,
-                      scale: 0.8,
-                      y: -20,
-                      transition: { duration: 0.3 },
-                    }}
-                    className="h-full"
-                  >
-                    <Card className="bg-[#770002] border-none shadow-[0px_0px_35px_0px_#FFFFFFCC_inset] h-full transform hover:scale-105 transition-transform duration-300">
-                      <CardContent className="p-8">
-                        <p className="text-white font-dmsans font-medium text-xl mb-6">
-                          &quot;{testimonial.text}&quot;
+            {/* Mobile view: Single testimonial */}
+            <div className="lg:hidden">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={testimonials[currentIndex].id}
+                  initial={{ opacity: 0, x: 100 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -100 }}
+                  className="w-full"
+                >
+                  <Card className="bg-[#770002] border-none shadow-[0px_0px_35px_0px_#FFFFFFCC_inset]">
+                    <CardContent className="p-8">
+                      <p className="text-white font-dmsans font-medium text-xl mb-6">
+                        &quot;{testimonials[currentIndex].text}&quot;
+                      </p>
+                      <div>
+                        <p className="font-bold font-thunder text-3xl text-white">
+                          - {testimonials[currentIndex].author}
                         </p>
-                        <div>
-                          <p className="font-bold font-thunder text-3xl lg:text-4xl text-white">
-                            - {testimonial.author}
-                          </p>
-                          <p className="text-sm font-dmsans lg:text-xl font-medium text-white">
-                            {testimonial.position}
-                          </p>
-                          <div className="flex">
-                            <div className="bg-white px-2 py-1 mt-2">
-                              <p className="text-xs lg:text-base text-[#770002] uppercase">
-                                {testimonial.category}
-                              </p>
-                            </div>
+                        <p className="text-sm font-dmsans font-medium text-white">
+                          {testimonials[currentIndex].position}
+                        </p>
+                        <div className="flex">
+                          <div className="bg-white px-2 py-1 mt-2">
+                            <p className="text-xs text-[#770002] uppercase">
+                              {testimonials[currentIndex].category}
+                            </p>
                           </div>
                         </div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
               </AnimatePresence>
             </div>
+
+            {/* Desktop view: Grid layout */}
+            <div className="hidden lg:block">
+              <div className="grid grid-cols-3 gap-6">
+                <AnimatePresence mode="popLayout">
+                  {getVisibleTestimonials().map((testimonial) => (
+                    <motion.div
+                      key={`${testimonial.id}-${testimonial.order}`}
+                      initial={{ opacity: 0, scale: 0.8, y: 20 }}
+                      animate={{
+                        opacity: 1,
+                        scale: 1,
+                        y: 0,
+                        transition: {
+                          type: "spring",
+                          stiffness: 300,
+                          damping: 25,
+                          delay: testimonial.order * 0.1,
+                        },
+                      }}
+                      exit={{
+                        opacity: 0,
+                        scale: 0.8,
+                        y: -20,
+                        transition: { duration: 0.3 },
+                      }}
+                      className="h-full"
+                    >
+                      <Card className="bg-[#770002] border-none shadow-[0px_0px_35px_0px_#FFFFFFCC_inset] h-full transform hover:scale-105 transition-transform duration-300">
+                        <CardContent className="p-8">
+                          <p className="text-white font-dmsans font-medium text-xl mb-6">
+                            &quot;{testimonial.text}&quot;
+                          </p>
+                          <div>
+                            <p className="font-bold font-thunder text-4xl text-white">
+                              - {testimonial.author}
+                            </p>
+                            <p className="text-xl font-dmsans font-medium text-white">
+                              {testimonial.position}
+                            </p>
+                            <div className="flex">
+                              <div className="bg-white px-2 py-1 mt-2">
+                                <p className="text-base text-[#770002] uppercase">
+                                  {testimonial.category}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </div>
+            </div>
+
+            {/* Navigation dots */}
             <div className="flex justify-center gap-2 mt-8">
               {testimonials.map((_, index) => (
                 <button

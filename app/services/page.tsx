@@ -244,7 +244,7 @@ const ServicesPage = () => {
           direction="left"
         />
 
-        <div className="max-w-6xl mx-auto mt-20">
+        <div className="max-w-6xl mx-auto">
           {/* Services introduction */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}

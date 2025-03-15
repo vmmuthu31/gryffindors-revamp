@@ -90,34 +90,60 @@ const TeamSection = () => {
   const [positions, setPositions] = useState(teamMembers.map((_, i) => i));
   const [slideIndex, setSlideIndex] = useState(0);
   const [direction, setDirection] = useState<1 | -1>(1);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [hoveredCardId, setHoveredCardId] = useState<number | null>(null);
+  const [isAnimating, setIsAnimating] = useState(true);
 
   // For main team members - shuffling animation
   const shufflePositions = () => {
-    setPositions((prevPositions) => {
-      const newPositions = [...prevPositions];
-      for (let i = newPositions.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [newPositions[i], newPositions[j]] = [newPositions[j], newPositions[i]];
-      }
-      return newPositions;
-    });
+    if (isAnimating) {
+      setPositions((prevPositions) => {
+        const newPositions = [...prevPositions];
+        for (let i = newPositions.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [newPositions[i], newPositions[j]] = [
+            newPositions[j],
+            newPositions[i],
+          ];
+        }
+        return newPositions;
+      });
+    }
   };
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      if (isAnimating) {
+        setCurrentIndex((prev) => (prev + 1) % positions.length);
+      }
+    }, 10000); // Change card every 10 seconds
+
+    return () => clearInterval(timer);
+  }, [positions.length, isAnimating]);
 
   // Auto slide for extended team
   useEffect(() => {
     const interval = setInterval(() => {
-      setDirection(1);
-      setSlideIndex((prev) => (prev + 1) % duplicatedTeam.length);
+      if (isAnimating) {
+        setDirection(1);
+        setSlideIndex((prev) => (prev + 1) % duplicatedTeam.length);
+      }
     }, 3000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [isAnimating]);
 
   // Main team shuffling interval
   useEffect(() => {
     const interval = setInterval(shufflePositions, 3000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isAnimating]);
+
+  // Handle card hover
+  const handleCardHover = (id: number | null) => {
+    setHoveredCardId(id);
+    setIsAnimating(id === null); // Stop animations when a card is hovered
+  };
 
   return (
     <div className="container">
@@ -129,9 +155,9 @@ const TeamSection = () => {
         ]}
         speed={40}
         direction="left"
-        className="pt-10"
+        className="pt-10 lg:pt-0"
       />
-      <section className="md:py-14 bg-muted/30" id="team">
+      <section className="md:py-10 bg-muted/30" id="team">
         <div className="">
           <div className="mb-10 overflow-hidden">
             <p className="text-center text-lg text-foreground/80 max-w-3xl mx-auto mt-4">
@@ -142,51 +168,48 @@ const TeamSection = () => {
           </div>
 
           {/* Main team members */}
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
-            <AnimatePresence>
-              {positions.map((position) => (
+          <div className="max-w-7xl mx-auto">
+            {/* Mobile view: Single card */}
+            <div className="lg:hidden">
+              <AnimatePresence mode="wait">
                 <motion.div
-                  key={teamMembers[position].id}
-                  layout
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{
-                    opacity: 1,
-                    scale: 1,
-                    transition: {
-                      type: "spring",
-                      stiffness: 300,
-                      damping: 25,
-                    },
-                  }}
-                  exit={{ opacity: 0, scale: 0.8 }}
+                  key={teamMembers[positions[currentIndex]].id}
+                  initial={{ opacity: 0, x: 100 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -100 }}
+                  className="w-full"
                   transition={{
                     duration: 0.5,
-                    layout: { duration: 0.6 },
+                    ease: "easeOut",
                   }}
+                  onHoverStart={() =>
+                    handleCardHover(teamMembers[positions[currentIndex]].id)
+                  }
+                  onHoverEnd={() => handleCardHover(null)}
                 >
-                  <Card className="overflow-hidden border-none bg-muted/30 h-full">
+                  <Card className="overflow-hidden border-none bg-muted/30">
                     <CardContent className="p-0">
                       <div className="aspect-square relative overflow-hidden">
                         <Image
-                          src={teamMembers[position].image}
-                          alt={teamMembers[position].name}
+                          src={teamMembers[positions[currentIndex]].image}
+                          alt={teamMembers[positions[currentIndex]].name}
                           fill
                           className="object-cover grayscale hover:grayscale-0 transition-all duration-300"
                         />
                       </div>
                       <div className="p-4">
                         <p className="text-xl font-thunder lg:text-3xl font-bold text-primary">
-                          {teamMembers[position].name}
+                          {teamMembers[positions[currentIndex]].name}
                         </p>
                         <p className="text-sm text-muted-foreground mb-3">
-                          {teamMembers[position].role}
+                          {teamMembers[positions[currentIndex]].role}
                         </p>
                         <p className="text-sm h-32 text-foreground/80 mb-4">
-                          {teamMembers[position].bio}
+                          {teamMembers[positions[currentIndex]].bio}
                         </p>
                         <div className="flex space-x-3">
                           <Link
-                            href={teamMembers[position].twitter}
+                            href={teamMembers[positions[currentIndex]].twitter}
                             className="text-foreground/60 hover:text-primary"
                           >
                             <Image
@@ -197,7 +220,7 @@ const TeamSection = () => {
                             />
                           </Link>
                           <Link
-                            href={teamMembers[position].linkedin}
+                            href={teamMembers[positions[currentIndex]].linkedin}
                             className="text-foreground/60 hover:text-primary"
                           >
                             <Image
@@ -212,8 +235,109 @@ const TeamSection = () => {
                     </CardContent>
                   </Card>
                 </motion.div>
-              ))}
-            </AnimatePresence>
+              </AnimatePresence>
+
+              {/* Navigation dots for mobile */}
+              <div className="flex justify-center gap-2 mt-8">
+                {positions.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentIndex(index)}
+                    className={`w-3 h-3 rounded-full transition-colors ${
+                      index === currentIndex ? "bg-primary" : "bg-primary/30"
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Desktop view: Grid layout */}
+            <div className="hidden lg:block">
+              <div className="grid grid-cols-4 gap-6">
+                <AnimatePresence>
+                  {positions.map((position) => (
+                    <motion.div
+                      key={teamMembers[position].id}
+                      layout={hoveredCardId !== teamMembers[position].id}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{
+                        opacity: 1,
+                        scale: 1,
+                        transition: {
+                          type: "spring",
+                          stiffness: 300,
+                          damping: 25,
+                        },
+                      }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      transition={{
+                        duration: 0.5,
+                        layout: { duration: 0.6 },
+                      }}
+                      onHoverStart={() =>
+                        handleCardHover(teamMembers[position].id)
+                      }
+                      onHoverEnd={() => handleCardHover(null)}
+                    >
+                      <Card
+                        className={`overflow-hidden border-none bg-muted/30 h-full ${
+                          hoveredCardId !== null &&
+                          hoveredCardId !== teamMembers[position].id
+                            ? "opacity-60"
+                            : ""
+                        }`}
+                      >
+                        <CardContent className="p-0">
+                          <div className="aspect-square relative overflow-hidden">
+                            <Image
+                              src={teamMembers[position].image}
+                              alt={teamMembers[position].name}
+                              fill
+                              className="object-cover grayscale hover:grayscale-0 transition-all duration-300"
+                            />
+                          </div>
+                          <div className="p-4">
+                            <p className="text-xl font-thunder lg:text-3xl font-bold text-primary">
+                              {teamMembers[position].name}
+                            </p>
+                            <p className="text-sm text-muted-foreground mb-3">
+                              {teamMembers[position].role}
+                            </p>
+                            <p className="text-sm h-32 text-foreground/80 mb-4">
+                              {teamMembers[position].bio}
+                            </p>
+                            <div className="flex space-x-3">
+                              <Link
+                                href={teamMembers[position].twitter}
+                                className="text-foreground/60 hover:text-primary"
+                              >
+                                <Image
+                                  src="/assets/x.svg"
+                                  alt="Twitter"
+                                  width={20}
+                                  height={20}
+                                />
+                              </Link>
+                              <Link
+                                href={teamMembers[position].linkedin}
+                                className="text-foreground/60 hover:text-primary"
+                              >
+                                <Image
+                                  src="/assets/linkedin.svg"
+                                  alt="LinkedIn"
+                                  width={20}
+                                  height={20}
+                                />
+                              </Link>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </div>
+            </div>
           </div>
 
           {/* Extended team - Single item slide carousel that works on all screens */}
