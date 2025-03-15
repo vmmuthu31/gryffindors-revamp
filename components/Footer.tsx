@@ -52,7 +52,7 @@ const Footer = () => {
               <ul className="space-y-2 text-sm">
                 <li>
                   <Link
-                    href="#"
+                    href="https://x.com/Gryffindor_W3"
                     className=" hover:text-primary transition-colors"
                   >
                     Twitter
@@ -68,7 +68,7 @@ const Footer = () => {
                 </li>
                 <li>
                   <Link
-                    href="#"
+                    href="http://linkedin.com/company/gryffindors"
                     className=" hover:text-primary transition-colors"
                   >
                     LinkedIn
