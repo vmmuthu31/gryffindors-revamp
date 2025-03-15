@@ -75,7 +75,7 @@ const ServicesSection = () => {
       <p className="text-center text-2xl lowercase font-medium">
         Building secure, scalable, and user-friendly Web3 solutions
       </p>
-      <section id="services" className="md:py-16 px-0.5 bg-background">
+      <section id="services" className="md:py-16 pt-10 px-0.5 bg-background">
         <div className="max-w-7xl mx-auto border-x-[3px] px-2 md:px-20 border-[#770002]">
           {services.map((service, index) => (
             <div
@@ -84,10 +84,11 @@ const ServicesSection = () => {
               onMouseLeave={handleMouseLeave}
               className="border-b border-muted py-4 transition-all duration-300"
             >
-              <div className="flex border-b cursor-pointer border-[#511111]/50 pb-4 justify-between items-center">
-                <div className="flex items-center gap-4 lg:gap-40">
+              {/* Mobile view - original layout */}
+              <div className="flex lg:hidden border-b cursor-pointer border-[#511111]/50 pb-4 justify-between items-center">
+                <div className="flex items-center gap-8">
                   <span
-                    className={` text-sm lg:text-2xl  font-medium ${
+                    className={`text-sm font-medium ${
                       hoveredIndex === index ? "text-black" : "text-[#ada9a8]"
                     }`}
                   >
@@ -95,20 +96,64 @@ const ServicesSection = () => {
                   </span>
                   <span className="text-2xl">
                     {hoveredIndex === index ? (
-                      <span className="text-black">( - )</span>
+                      <span className="text-black whitespace-nowrap">
+                        ( - )
+                      </span>
                     ) : (
-                      <span className="text-[#ada9a8]">( + )</span>
+                      <span className="text-[#ada9a8] whitespace-nowrap">
+                        ( + )
+                      </span>
                     )}
                   </span>
                 </div>
-                <p className="md:text-xl text-end lg:text-3xl font-dmsans font-semibold text-foreground">
+                <p className="md:text-xl text-end font-dmsans font-semibold text-foreground">
                   {service.title}
                 </p>
               </div>
+
+              {/* Desktop view - restructured layout */}
+              <div className="hidden lg:flex lg:flex-row lg:items-start border-b cursor-pointer border-[#511111]/50 pb-4">
+                <div className="flex items-center gap-32 lg:w-1/3">
+                  <span
+                    className={`text-2xl font-medium ${
+                      hoveredIndex === index ? "text-black" : "text-[#ada9a8]"
+                    }`}
+                  >
+                    /{service.id}/
+                  </span>
+                  <span className="text-2xl">
+                    {hoveredIndex === index ? (
+                      <span className="text-black whitespace-nowrap">
+                        ( - )
+                      </span>
+                    ) : (
+                      <span className="text-[#ada9a8] whitespace-nowrap">
+                        ( + )
+                      </span>
+                    )}
+                  </span>
+                </div>
+
+                <div className="lg:w-2/3 flex flex-col items-end">
+                  <p className="text-3xl font-dmsans font-semibold text-foreground">
+                    {service.title}
+                  </p>
+
+                  {hoveredIndex === index && (
+                    <div className="mt-4 text-foreground/80">
+                      <p className="text-right text-base max-w-xl">
+                        {service.description}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Mobile description - only shown when hovered */}
               {hoveredIndex === index && (
-                <div className="lg:pl-10 text-foreground/80 mt-2 border-l-2 border-primary/20 pl-4 py-2">
-                  <div className="flex justify-between">
-                    {service.description}
+                <div className="lg:hidden text-foreground/80 mt-2 border-l-2 border-primary/20 pl-4 py-2">
+                  <div className="justify-end">
+                    <p className="text-sm text-right">{service.description}</p>
                   </div>
                 </div>
               )}

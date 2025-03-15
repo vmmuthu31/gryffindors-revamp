@@ -254,10 +254,18 @@ const TeamSection = () => {
 
                       // Hide items that don't fit screen
                       const visibilityClass =
-                        (idx >= 1 && window.innerWidth < 640) || // Hide on xs
-                        (idx >= 2 && window.innerWidth < 768) || // Hide on sm
-                        (idx >= 3 && window.innerWidth < 1024) || // Hide on md
-                        (idx >= 4 && window.innerWidth < 1280) // Hide on lg
+                        (idx >= 1 &&
+                          typeof window !== "undefined" &&
+                          window.innerWidth < 640) || // Hide on xs
+                        (idx >= 2 &&
+                          typeof window !== "undefined" &&
+                          window.innerWidth < 768) || // Hide on sm
+                        (idx >= 3 &&
+                          typeof window !== "undefined" &&
+                          window.innerWidth < 1024) || // Hide on md
+                        (idx >= 4 &&
+                          typeof window !== "undefined" &&
+                          window.innerWidth < 1280) // Hide on lg
                           ? "hidden"
                           : "";
 
