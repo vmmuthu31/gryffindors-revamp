@@ -4,11 +4,15 @@ const Footer = () => {
   return (
     <footer className="bg-[#FCE0E1] font-dmsans text-[#770002] rounded-t-3xl pt-10 ">
       <div className="container mx-auto px-4">
-        <div className="flex flex-row justify-between w-full gap-5 items-start md:items-center mb-8">
+        <div className="flex flex-row justify-between w-full gap-7 items-start md:items-center mb-8">
           <div className="mb-6 md:mb-0 max-w-sm">
-            <p className="text-sm lg:text-lg  mb-4">
+            <p className="text-sm hidden lg:block lg:text-lg  mb-4">
               Fueling innovation. Building the <br /> future of Web3. Join us in{" "}
               <br /> redefining the decentralized <br /> world.
+            </p>
+            <p className="text-sm block lg:hidden mb-4">
+              Fueling innovation. Building the future of Web3. Join us in
+              redefining the decentralized world.
             </p>
           </div>
 
@@ -21,7 +25,7 @@ const Footer = () => {
                 <li>
                   <Link
                     href="/terms-and-conditions"
-                    className=" hover:text-primary transition-colors"
+                    className="whitespace-nowrap hover:text-primary transition-colors"
                   >
                     Terms & Conditions
                   </Link>
