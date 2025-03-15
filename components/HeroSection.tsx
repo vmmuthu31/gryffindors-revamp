@@ -208,7 +208,7 @@ const HeroSection = () => {
               isLoaded ? "animate-fade-in animate-delay-300" : ""
             }`}
           >
-            <RunningText direction="left" />
+            <RunningText direction="right" />
           </div>
         </div>
       </div>

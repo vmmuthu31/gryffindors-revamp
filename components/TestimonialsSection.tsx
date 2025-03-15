@@ -58,7 +58,7 @@ const TestimonialsSection = () => {
         ]}
         speed={40}
         direction="left"
-        className="container"
+        className="mb-10 container"
       />
       <section className="lg:py-16 bg-background" id="testimonials">
         <div className="lg:px-20 px-4">

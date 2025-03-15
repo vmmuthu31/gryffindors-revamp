@@ -50,7 +50,6 @@ const teamMembers = [
   },
 ];
 
-// Adding the additional team members for the bottom row
 const extendedTeamMembers = [
   {
     id: 5,
@@ -84,13 +83,15 @@ const extendedTeamMembers = [
   },
 ];
 
+// Duplicate array for infinite looping
+const duplicatedTeam = [...extendedTeamMembers, ...extendedTeamMembers];
+
 const TeamSection = () => {
   const [positions, setPositions] = useState(teamMembers.map((_, i) => i));
-  const [currentCarouselIndex, setCurrentCarouselIndex] = useState(0);
-  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
-  const [direction, setDirection] = useState(1); // 1 for right, -1 for left
+  const [slideIndex, setSlideIndex] = useState(0);
+  const [direction, setDirection] = useState<1 | -1>(1);
 
-  // For main team members - keep the shuffling animation
+  // For main team members - shuffling animation
   const shufflePositions = () => {
     setPositions((prevPositions) => {
       const newPositions = [...prevPositions];
@@ -102,52 +103,21 @@ const TeamSection = () => {
     });
   };
 
-  // For extended team members - carousel functionality
-  const nextSlide = () => {
-    setDirection(1);
-    setCurrentCarouselIndex((prev) =>
-      prev === extendedTeamMembers.length - 4 ? 0 : prev + 1
-    );
-  };
-
-  const prevSlide = () => {
-    setDirection(-1);
-    setCurrentCarouselIndex((prev) =>
-      prev === 0 ? extendedTeamMembers.length - 4 : prev - 1
-    );
-  };
-
-  // Get visible extended team members for the carousel
-  const getVisibleExtendedMembers = () => {
-    const result = [];
-    for (let i = 0; i < 4; i++) {
-      const index = (currentCarouselIndex + i) % extendedTeamMembers.length;
-      result.push({ ...extendedTeamMembers[index], order: i });
-    }
-    return result;
-  };
-
+  // Auto slide for extended team
   useEffect(() => {
-    // Main team members shuffling
+    const interval = setInterval(() => {
+      setDirection(1);
+      setSlideIndex((prev) => (prev + 1) % duplicatedTeam.length);
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Main team shuffling interval
+  useEffect(() => {
     const interval = setInterval(shufflePositions, 3000);
-
-    // Extended team carousel auto-play
-    let carouselInterval: NodeJS.Timeout | undefined;
-    if (isAutoPlaying) {
-      carouselInterval = setInterval(() => {
-        nextSlide();
-      }, 4000);
-    }
-
-    return () => {
-      clearInterval(interval);
-      if (carouselInterval) clearInterval(carouselInterval);
-    };
-  }, [isAutoPlaying]);
-
-  // Pause auto-play when hovering over carousel
-  const handleMouseEnter = () => setIsAutoPlaying(false);
-  const handleMouseLeave = () => setIsAutoPlaying(true);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="container">
@@ -159,8 +129,9 @@ const TeamSection = () => {
         ]}
         speed={40}
         direction="left"
+        className="pt-10"
       />
-      <section className="md:py-14 py-10 bg-muted/30" id="team">
+      <section className="md:py-14 bg-muted/30" id="team">
         <div className="">
           <div className="mb-10 overflow-hidden">
             <p className="text-center text-lg text-foreground/80 max-w-3xl mx-auto mt-4">
@@ -245,164 +216,114 @@ const TeamSection = () => {
             </AnimatePresence>
           </div>
 
-          <div
-            className="mt-16 relative"
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-          >
-            <div className="absolute top-1/2 -left-12 transform -translate-y-1/2 z-10">
-              <motion.button
-                onClick={prevSlide}
-                className="bg-primary/80 hover:bg-primary text-white p-3 rounded-full shadow-lg"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                initial={{ opacity: 0.6 }}
-                animate={{ opacity: 1 }}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
+          {/* Extended team - Single item slide carousel that works on all screens */}
+          <div className="mt-20 mb-10">
+            <div className="relative overflow-hidden max-w-7xl mx-auto">
+              {/* This is the key to making it work on all screens - a single slide approach */}
+              <AnimatePresence custom={direction} mode="popLayout">
+                <motion.div
+                  key={slideIndex}
+                  custom={direction}
+                  initial={{
+                    x: direction > 0 ? "100%" : "-100%",
+                    opacity: 0,
+                  }}
+                  animate={{
+                    x: 0,
+                    opacity: 1,
+                    transition: {
+                      duration: 0.5,
+                      ease: "easeOut",
+                    },
+                  }}
+                  exit={{
+                    x: direction > 0 ? "-100%" : "100%",
+                    opacity: 0,
+                    transition: {
+                      duration: 0.5,
+                    },
+                  }}
+                  className="w-full"
                 >
-                  <path d="M15 18l-6-6 6-6" />
-                </svg>
-              </motion.button>
-            </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                    {/* Display current item and next few items */}
+                    {Array.from({ length: 5 }).map((_, idx) => {
+                      const memberIdx =
+                        (slideIndex + idx) % duplicatedTeam.length;
+                      const member = duplicatedTeam[memberIdx];
 
-            <div className="absolute top-1/2 -right-12 transform -translate-y-1/2 z-10">
-              <motion.button
-                onClick={nextSlide}
-                className="bg-primary/80 hover:bg-primary text-white p-3 rounded-full shadow-lg"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                initial={{ opacity: 0.6 }}
-                animate={{ opacity: 1 }}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M9 18l6-6-6-6" />
-                </svg>
-              </motion.button>
-            </div>
+                      // Hide items that don't fit screen
+                      const visibilityClass =
+                        (idx >= 1 && window.innerWidth < 640) || // Hide on xs
+                        (idx >= 2 && window.innerWidth < 768) || // Hide on sm
+                        (idx >= 3 && window.innerWidth < 1024) || // Hide on md
+                        (idx >= 4 && window.innerWidth < 1280) // Hide on lg
+                          ? "hidden"
+                          : "";
 
-            {/* Carousel Container */}
-            <div className="overflow-hidden max-w-7xl mx-auto">
-              <div className="relative">
-                <motion.div className="grid grid-cols-4 gap-6" initial={false}>
-                  <AnimatePresence mode="popLayout" initial={false}>
-                    {getVisibleExtendedMembers().map((member) => (
-                      <motion.div
-                        key={`${member.id}-${member.order}`}
-                        initial={{
-                          opacity: 0,
-                          x: direction > 0 ? 100 : -100,
-                          rotateY: direction > 0 ? 45 : -45,
-                          scale: 0.8,
-                        }}
-                        animate={{
-                          opacity: 1,
-                          x: 0,
-                          rotateY: 0,
-                          scale: 1,
-                          transition: {
-                            type: "spring",
-                            stiffness: 300,
-                            damping: 25,
-                            delay: member.order * 0.1,
-                          },
-                        }}
-                        exit={{
-                          opacity: 0,
-                          x: direction > 0 ? -100 : 100,
-                          rotateY: direction > 0 ? -45 : 45,
-                          scale: 0.8,
-                          transition: { duration: 0.3 },
-                        }}
-                        className="h-full transform-gpu"
-                      >
-                        <Card className="overflow-hidden border-none bg-muted/20 h-full hover:shadow-lg transition-all duration-300">
-                          <CardContent className="p-0">
-                            <div className="aspect-square relative overflow-hidden">
-                              <Image
-                                src={member.image}
-                                alt={member.name}
-                                fill
-                                className="object-cover grayscale hover:grayscale-0 transition-all duration-300"
-                              />
-                              <motion.div
-                                className="absolute inset-0 bg-primary/10"
-                                initial={{ opacity: 0 }}
-                                whileHover={{ opacity: 1 }}
-                              />
-                            </div>
-                            <motion.div
-                              className="p-4"
-                              whileHover={{
-                                backgroundColor: "rgba(132, 26, 28, 0.05)",
-                              }}
-                            >
-                              <p className="text-lg font-bold text-primary">
-                                {member.name}
-                              </p>
-                              <p className="text-sm text-muted-foreground">
-                                {member.role}
-                              </p>
-                            </motion.div>
-                          </CardContent>
-                        </Card>
-                      </motion.div>
-                    ))}
-                  </AnimatePresence>
+                      return (
+                        <motion.div
+                          key={`${member.id}-${idx}`}
+                          className={visibilityClass}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{
+                            opacity: 1,
+                            y: 0,
+                            transition: {
+                              delay: idx * 0.1,
+                              duration: 0.3,
+                            },
+                          }}
+                          whileHover={{ y: -8 }}
+                        >
+                          <Card className="overflow-hidden border-none bg-muted/20 shadow-sm hover:shadow-md transition-all duration-300 h-full">
+                            <CardContent className="p-0">
+                              <div className="aspect-square relative overflow-hidden">
+                                <Image
+                                  src={member.image}
+                                  alt={member.name}
+                                  fill
+                                  className="object-cover grayscale hover:grayscale-0 transition-all duration-300"
+                                />
+                                <div className="absolute inset-0 bg-primary/10 opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
+                              </div>
+                              <div className="p-4">
+                                <p className="text-lg font-bold text-primary">
+                                  {member.name}
+                                </p>
+                                <p className="text-sm text-muted-foreground">
+                                  {member.role}
+                                </p>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
                 </motion.div>
-              </div>
+              </AnimatePresence>
             </div>
 
-            {/* Carousel Indicators */}
-            <div className="flex justify-center gap-2 mt-8">
-              {Array.from({
-                length: Math.ceil(extendedTeamMembers.length / 4),
-              }).map((_, index) => {
-                const isActive = Math.floor(currentCarouselIndex / 4) === index;
-                return (
-                  <motion.button
-                    key={index}
-                    onClick={() => {
-                      const newDirection =
-                        index > Math.floor(currentCarouselIndex / 4) ? 1 : -1;
-                      setDirection(newDirection);
-                      setCurrentCarouselIndex(index * 4);
-                    }}
-                    className={`w-3 h-3 rounded-full transition-colors ${
-                      isActive ? "bg-primary" : "bg-primary/30"
-                    }`}
-                    whileHover={{ scale: 1.5 }}
-                    whileTap={{ scale: 0.9 }}
-                    animate={
-                      isActive
-                        ? {
-                            scale: [1, 1.2, 1],
-                            transition: { repeat: Infinity, repeatDelay: 2 },
-                          }
-                        : {}
-                    }
-                  />
-                );
-              })}
+            {/* Simple indicators */}
+            <div className="flex justify-center mt-6 space-x-1.5">
+              {extendedTeamMembers.map((_, idx) => (
+                <button
+                  key={idx}
+                  className={`w-2 h-2 rounded-full transition-colors duration-300 ${
+                    slideIndex % extendedTeamMembers.length === idx
+                      ? "bg-primary"
+                      : "bg-primary/30"
+                  }`}
+                  onClick={() => {
+                    setDirection(
+                      idx > slideIndex % extendedTeamMembers.length ? 1 : -1
+                    );
+                    setSlideIndex(idx);
+                  }}
+                  aria-label={`Show team member ${idx + 1}`}
+                />
+              ))}
             </div>
           </div>
         </div>
