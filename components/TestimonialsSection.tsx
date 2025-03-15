@@ -58,9 +58,9 @@ const TestimonialsSection = () => {
         ]}
         speed={40}
         direction="left"
-        className="mb-10 container"
+        className="lg:mb-10 mb-5 container"
       />
-      <section className="lg:py-16 bg-background" id="testimonials">
+      <section className="bg-background" id="testimonials">
         <div className="lg:px-20 px-4">
           <div className="mb-12 overflow-hidden">
             <p className="text-center text-lg font-medium lowercase text-foreground/80 max-w-3xl mx-auto">
@@ -108,7 +108,7 @@ const TestimonialsSection = () => {
             </div>
 
             {/* Desktop view: Grid layout */}
-            <div className="hidden lg:block">
+            <div className="hidden mb-10 lg:block">
               <div className="grid grid-cols-3 gap-6">
                 <AnimatePresence mode="popLayout">
                   {getVisibleTestimonials().map((testimonial) => (
@@ -163,7 +163,7 @@ const TestimonialsSection = () => {
             </div>
 
             {/* Navigation dots */}
-            <div className="flex justify-center gap-2 mt-8">
+            <div className="flex justify-center gap-2 my-8">
               {testimonials.map((_, index) => (
                 <button
                   key={index}
