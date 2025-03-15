@@ -305,6 +305,7 @@ const TeamSection = () => {
                             <div className="flex space-x-3">
                               <Link
                                 href={teamMembers[position].twitter}
+                                target="_blank"
                                 className="text-foreground/60 hover:text-primary"
                               >
                                 <Image
@@ -316,6 +317,7 @@ const TeamSection = () => {
                               </Link>
                               <Link
                                 href={teamMembers[position].linkedin}
+                                target="_blank"
                                 className="text-foreground/60 hover:text-primary"
                               >
                                 <Image
