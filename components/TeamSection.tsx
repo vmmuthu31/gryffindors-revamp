@@ -37,7 +37,7 @@ const teamMembers = [
   },
   {
     id: 4,
-    name: "Nagipragalathan T",
+    name: "Nagipragalathan N",
     role: "Blockchain Developer",
     bio: "Web3 hackathon champion with 20+ wins, Tech Lead at The Phoenix Guild Chennai, and Starknet contributor. Currently building StarkShoot and developing at Winks.fun, pushing the boundaries of blockchain gaming.",
     image: "/assets/team/nagipragalathan.png",
