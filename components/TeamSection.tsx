@@ -49,7 +49,7 @@ const teamMembers = [
 const extendedTeamMembers = [
   {
     id: 5,
-    name: "Vishal",
+    name: "Vishal Akash",
     role: "Frontend Developer",
     image: "/assets/team/vishal.png",
   },
@@ -61,21 +61,39 @@ const extendedTeamMembers = [
   },
   {
     id: 7,
-    name: "Sunil",
+    name: "Sunil S",
     role: "Full Stack Developer",
     image: "/assets/team/sunil.png",
   },
   {
     id: 8,
-    name: "Rajan",
+    name: "Rajan R",
     role: "Blockchain Developer",
     image: "/assets/team/rajan.png",
   },
   {
     id: 9,
-    name: "Ganesh",
+    name: "Ganesh P",
     role: "Web Developer",
     image: "/assets/team/ganesh.png",
+  },
+  {
+    id: 10,
+    name: "Gokul Priyan",
+    role: "Frontend Developer",
+    image: "/assets/team/gokul.png",
+  },
+  {
+    id: 11,
+    name: "Kiran",
+    role: "Frontend Developer",
+    image: "/assets/team/kiran.png",
+  },
+  {
+    id: 12,
+    name: "Manikandan",
+    role: "Full Stack Developer",
+    image: "/assets/team/manikandan.png",
   },
 ];
 
