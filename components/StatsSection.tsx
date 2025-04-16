@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { motion, useAnimation, useInView } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 
 const AnimatedCounter = ({
   target,
@@ -128,45 +129,77 @@ const StatsSection = () => {
 
   return (
     <section ref={sectionRef} className="lg:pb-16 pb-10 bg-background">
-      <div className="flex container items-center justify-start gap-8">
+      <div className="grid grid-cols-2 md:grid-cols-4 container items-center justify-items-center gap-4 md:gap-6 lg:gap-8 py-4">
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: isInView ? 1 : 0, x: isInView ? 0 : -20 }}
           transition={{ duration: 0.6 }}
+          className="flex items-center justify-center"
         >
-          <Image
-            src="/assets/starknet.svg"
-            alt="Starknet"
-            className="lg:w-60 lg:h-60 w-24 h-24 md:w-40 md:h-40"
-            width={250}
-            height={250}
-          />
+          <Link href="https://starknet.io/" target="_blank">
+            <Image
+              src="/assets/starknet.svg"
+              alt="Starknet"
+              className="lg:w-40 lg:h-40 w-24 h-24 md:w-32 md:h-32"
+              width={250}
+              height={250}
+            />
+          </Link>
         </motion.div>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: isInView ? 1 : 0, y: isInView ? 0 : 20 }}
           transition={{ duration: 0.6, delay: 0.2 }}
+          className="flex items-center justify-center"
         >
-          <Image
-            src="/assets/phoenixguild.svg"
-            alt="Phoenix Guild"
-            className="lg:w-60 lg:h-60 w-24 h-24 md:w-40 md:h-40"
-            width={250}
-            height={250}
-          />
+          <Link href="https://x.com/phoenixguildhq" target="_blank">
+            <Image
+              src="/assets/phoenixguild.svg"
+              alt="Phoenix Guild"
+              className="lg:w-40 lg:h-40 w-24 h-24 md:w-32 md:h-32"
+              width={250}
+              height={250}
+            />
+          </Link>
         </motion.div>
         <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: isInView ? 1 : 0, x: isInView ? 0 : 20 }}
           transition={{ duration: 0.6, delay: 0.4 }}
+          className="flex items-center justify-center"
         >
-          <Image
-            src="/assets/ethglobal.svg"
-            alt="ETH Global"
-            className="lg:w-60 lg:h-60 w-24 h-24 md:w-40 md:h-40"
-            width={250}
-            height={250}
-          />
+          <Link href="https://ethglobal.com/" target="_blank">
+            <Image
+              src="/assets/ethglobal.svg"
+              alt="ETH Global"
+              className="lg:w-40 lg:h-40 w-24 h-24 md:w-32 md:h-32"
+              width={250}
+              height={250}
+            />
+          </Link>
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: isInView ? 1 : 0, x: isInView ? 0 : 20 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+          className="flex flex-col items-center justify-center"
+        >
+          <Link
+            className="flex flex-col items-center justify-center gap-2"
+            href="https://jec.ac.in/"
+            target="_blank"
+          >
+            <Image
+              src="/assets/jec_logo.webp"
+              alt="JEC"
+              className="w-16 h-16 md:w-20 md:h-20"
+              width={250}
+              height={250}
+            />
+            <p className="text-[10px] md:text-xs lg:text-sm text-center block font-dmsans text-foreground font-medium px-2">
+              Incubated at Jaya Incubation Center @ Jaya Engineering College
+            </p>
+          </Link>
         </motion.div>
       </div>
 
