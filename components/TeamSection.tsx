@@ -61,39 +61,45 @@ const extendedTeamMembers = [
   },
   {
     id: 7,
-    name: "Sunil S",
-    role: "Full Stack Developer",
-    image: "/assets/team/sunil.png",
-  },
-  {
-    id: 8,
-    name: "Rajan R",
-    role: "Blockchain Developer",
-    image: "/assets/team/rajan.png",
-  },
-  {
-    id: 9,
-    name: "Ganesh P",
-    role: "Web Developer",
-    image: "/assets/team/ganesh.png",
-  },
-  {
-    id: 10,
     name: "Gokul Priyan",
     role: "Frontend Developer",
     image: "/assets/team/gokul.png",
   },
   {
-    id: 11,
+    id: 8,
     name: "Kiran",
     role: "Frontend Developer",
     image: "/assets/team/kiran.png",
   },
   {
-    id: 12,
+    id: 9,
     name: "Manikandan",
     role: "Full Stack Developer",
     image: "/assets/team/manikandan.png",
+  },
+  {
+    id: 10,
+    name: "Naveen Pandian",
+    role: "Full Stack Developer",
+    image: "/assets/team/naveen.jpeg",
+  },
+  {
+    id: 11,
+    name: "Sunil S",
+    role: "Full Stack Developer",
+    image: "/assets/team/sunil.png",
+  },
+  {
+    id: 12,
+    name: "Rajan R",
+    role: "Blockchain Developer",
+    image: "/assets/team/rajan.png",
+  },
+  {
+    id: 13,
+    name: "Ganesh P",
+    role: "Web Developer",
+    image: "/assets/team/ganesh.png",
   },
 ];
 
