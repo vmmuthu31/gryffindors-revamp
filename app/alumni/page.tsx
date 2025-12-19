@@ -5,29 +5,38 @@ import { Trophy, Linkedin, Globe, Briefcase } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 
+// Force dynamic rendering to avoid database access during build
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 async function getAlumni() {
-  const alumni = await prisma.user.findMany({
-    where: {
-      isAlumni: true,
-    },
-    include: {
-      certificates: {
-        include: {
-          application: {
-            include: {
-              internship: {
-                select: { title: true, track: true },
+  try {
+    const alumni = await prisma.user.findMany({
+      where: {
+        isAlumni: true,
+      },
+      include: {
+        certificates: {
+          include: {
+            application: {
+              include: {
+                internship: {
+                  select: { title: true, track: true },
+                },
               },
             },
           },
         },
       },
-    },
-    orderBy: { createdAt: "desc" },
-    take: 50,
-  });
+      orderBy: { createdAt: "desc" },
+      take: 50,
+    });
 
-  return alumni;
+    return alumni;
+  } catch (error) {
+    console.error("Failed to fetch alumni:", error);
+    return [];
+  }
 }
 
 const trackColors: Record<string, string> = {
