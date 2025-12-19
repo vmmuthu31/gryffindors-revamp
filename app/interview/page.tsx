@@ -25,7 +25,9 @@ const trackInfo: Record<string, { name: string; color: string }> = {
   WEB3: { name: "Web3/Blockchain", color: "bg-orange-500" },
 };
 
-export default function InterviewPage() {
+import { Suspense } from "react";
+
+function InterviewContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const internshipId = searchParams.get("internshipId");
@@ -331,5 +333,19 @@ export default function InterviewPage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function InterviewPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <Loader2 className="w-8 h-8 animate-spin text-[#841a1c]" />
+        </div>
+      }
+    >
+      <InterviewContent />
+    </Suspense>
   );
 }

@@ -77,7 +77,7 @@ Interview Guidelines:
       messages: formattedMessages,
     });
 
-    return result.toTextStreamResponse();
+    return (await result).toTextStreamResponse();
   } catch (error) {
     console.error("Interview API error:", error);
     return NextResponse.json(
