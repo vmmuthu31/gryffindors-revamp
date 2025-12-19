@@ -68,6 +68,9 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+
+  body.custom-cursor-active {
     cursor: none;
   }
 }
