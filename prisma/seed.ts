@@ -1,9 +1,13 @@
 import { PrismaClient, Track, LessonType } from "@prisma/client";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log("🌱 Seeding database...");
+
+  // Generate proper password hash for demo accounts
+  const demoPasswordHash = await bcrypt.hash("demo123", 10);
 
   // Clear existing data
   await prisma.submission.deleteMany();
@@ -22,7 +26,7 @@ async function main() {
       email: "admin@gryffindors.in",
       name: "Admin",
       role: "ADMIN",
-      passwordHash: "$2a$10$demo", // Placeholder
+      passwordHash: demoPasswordHash,
     },
   });
   console.log("✅ Created admin user");
@@ -33,7 +37,7 @@ async function main() {
       email: "mentor@gryffindors.in",
       name: "Mentor",
       role: "MENTOR",
-      passwordHash: "$2a$10$demo",
+      passwordHash: demoPasswordHash,
     },
   });
   console.log("✅ Created mentor user");
@@ -44,7 +48,7 @@ async function main() {
       email: "student@demo.com",
       name: "Demo Student",
       role: "STUDENT",
-      passwordHash: "$2a$10$demo",
+      passwordHash: demoPasswordHash,
     },
   });
   console.log("✅ Created student user");
