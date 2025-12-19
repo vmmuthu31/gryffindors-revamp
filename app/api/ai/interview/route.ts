@@ -64,7 +64,7 @@ export async function POST(request: Request) {
     );
 
     const result = streamText({
-      model: groq("llama-3.3-70b-versatile"),
+      model: groq("llama-3.3-70b-versatile") as any,
       system: `${systemPrompt}
 
 Interview Guidelines:

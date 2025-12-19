@@ -39,17 +39,18 @@ async function getCourse(courseId: string) {
 export default async function CourseDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = await params;
   const session = await auth();
-  const course = await getCourse(params.id);
+  const course = await getCourse(id);
 
   if (!course) {
     notFound();
   }
 
   const totalLessons = course.modules.reduce(
-    (acc, mod) => acc + mod.lessons.length,
+    (acc: number, mod: any) => acc + mod.lessons.length,
     0
   );
   // Mock completed - would come from submissions
@@ -113,7 +114,7 @@ export default async function CourseDetailPage({
             className="w-full"
             defaultValue="module-0"
           >
-            {course.modules.map((module, idx) => (
+            {course.modules.map((module: any, idx: number) => (
               <AccordionItem key={module.id} value={`module-${idx}`}>
                 <AccordionTrigger className="hover:no-underline px-4 py-4 hover:bg-gray-50 rounded-lg">
                   <div className="flex items-center gap-4 text-left">
@@ -130,7 +131,7 @@ export default async function CourseDetailPage({
                 </AccordionTrigger>
                 <AccordionContent className="px-4">
                   <div className="space-y-1 ml-12">
-                    {module.lessons.map((lesson) => {
+                    {module.lessons.map((lesson: any) => {
                       // Mock completed status
                       const isCompleted = false;
 
