@@ -2,6 +2,10 @@ import { prisma } from "@/lib/db";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IndianRupee, Users, BookOpen, Award, TrendingUp } from "lucide-react";
 
+// Force dynamic rendering to avoid database access during build
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 async function getStats() {
   const totalStudents = await prisma.user.count({
     where: { role: "STUDENT" },

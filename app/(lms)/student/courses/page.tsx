@@ -11,6 +11,10 @@ import { Progress } from "@/components/ui/progress";
 import { BookOpen, Play } from "lucide-react";
 import Link from "next/link";
 
+// Force dynamic rendering to avoid database access during build
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 async function getEnrolledCourses(userId: string) {
   const applications = await prisma.application.findMany({
     where: {

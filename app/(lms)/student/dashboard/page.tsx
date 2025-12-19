@@ -13,6 +13,10 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 
+// Force dynamic rendering to avoid database access during build
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 async function getStudentData(userId: string) {
   let user = await prisma.user.findUnique({
     where: { id: userId },

@@ -5,6 +5,10 @@ import { Award, Download, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 
+// Force dynamic rendering to avoid database access during build
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 async function getCertificates(userId: string) {
   const certificates = await prisma.certificate.findMany({
     where: { userId },

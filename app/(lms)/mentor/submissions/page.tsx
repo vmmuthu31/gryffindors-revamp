@@ -5,6 +5,10 @@ import { Badge } from "@/components/ui/badge";
 import { Clock, User, FileText } from "lucide-react";
 import Link from "next/link";
 
+// Force dynamic rendering to avoid database access during build
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 async function getSubmissions(mentorId: string) {
   // Get applications assigned to this mentor
   const assignedApplications = await prisma.application.findMany({
