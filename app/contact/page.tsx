@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
+import { MdEmail } from "react-icons/md";
+import { FaLocationDot } from "react-icons/fa6";
 
 const ContactPage = () => {
   const [formData, setFormData] = useState({
@@ -207,18 +209,7 @@ const ContactPage = () => {
                 <div className="space-y-6">
                   <div className="flex items-start">
                     <div className="bg-[#841a1c]/10 p-3 rounded-full mr-4">
-                      <svg
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M20 4H4C2.9 4 2.01 4.9 2.01 6L2 18C2 19.1 2.9 20 4 20p0C21.1 20 22 19.1 22 18V6C22 4.9 21.1 4 20 4ZM20 8L12 13L4 8V6L12 11L20 6V8Z"
-                          fill="#841a1c"
-                        />
-                      </svg>
+                      <MdEmail className="text-[#841a1c] text-xl" />
                     </div>
                     <div>
                       <p className="font-medium text-[#841a1c]">Email</p>
@@ -230,18 +221,7 @@ const ContactPage = () => {
 
                   <div className="flex items-start">
                     <div className="bg-[#841a1c]/10 p-3 rounded-full mr-4">
-                      <svg
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M12 11.5C11.337 11.5 10.7011 11.2366 10.2322 10.7678C9.76339 10.2989 9.5 9.66304 9.5 9C9.5 8.33696 9.76339 7.70107 10.2322 7.23223C10.7011 6.76339 11.337 6.5 12 6.5C12.663 6.5 13.2989 6.76339 13.7678 7.23223C14.2366 7.70107 14.5 8.33696 14.5 9C14.5 9.3283 14.4353 9.65339 14.3097 9.95671C14.1841 10.26 14.0004 10.5356 13.7678 10.7678C13.5356 11.0004 13.26 11.1841 12.9567 11.3097C12.6534 11.4353 12.3283 11.5 12 11.5ZM12 2C10.1435 2 8.36301 2.7375 7.05025 4.05025C5.7375 5.36301 5 7.14348 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 7.14348 18.2625 5.36301 16.9497 4.05025C15.637 2.7375 13.8565 2 12 2Z"
-                          fill="#841a1c"
-                        />
-                      </svg>
+                      <FaLocationDot className="text-[#841a1c] text-xl" />
                     </div>
                     <div>
                       <p className="font-medium text-[#841a1c]">Location</p>
