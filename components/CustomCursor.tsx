@@ -82,6 +82,9 @@ export default function CustomCursor() {
 
     if (isTouch) return; // Don't run on touch devices
 
+    // Add class to hide native cursor when custom cursor is active
+    document.body.classList.add("custom-cursor-active");
+
     setIsVisible(true);
 
     // Mouse move event
