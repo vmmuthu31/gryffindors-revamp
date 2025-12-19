@@ -9,7 +9,8 @@ async function main() {
   // Generate proper password hash for demo accounts
   const demoPasswordHash = await bcrypt.hash("demo123", 10);
 
-  // Clear existing data
+  // Clear existing data (order matters for foreign keys)
+  await prisma.lessonProgress.deleteMany();
   await prisma.submission.deleteMany();
   await prisma.lesson.deleteMany();
   await prisma.module.deleteMany();
