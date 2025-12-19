@@ -8,6 +8,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
   session: { strategy: "jwt" },
   secret: process.env.AUTH_SECRET,
+  trustHost: true, // Required for production deployment on Vercel
   providers: [
     Credentials({
       name: "credentials",
