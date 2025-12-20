@@ -129,7 +129,7 @@ h3,
   font-family: "Thunder", "DM Sans", sans-serif;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: -0.02em;
+  letter-spacing: 1px;
 }
 
 .container {
