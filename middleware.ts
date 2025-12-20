@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { NextResponse } from "next/server";
+import { User } from "./lib/supabase";
 
 export default auth((req) => {
   const { nextUrl, auth: session } = req;
@@ -42,7 +43,7 @@ export default auth((req) => {
     return NextResponse.redirect(loginUrl);
   }
 
-  const userRole = (session.user as any)?.role;
+  const userRole = (session.user as User)?.role;
 
   if (pathname.startsWith("/admin") && userRole !== "ADMIN") {
     return NextResponse.redirect(new URL("/student/dashboard", nextUrl));

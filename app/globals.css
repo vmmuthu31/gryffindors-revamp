@@ -4,19 +4,19 @@
 
 @layer base {
   :root {
-    --background: #fff8f8; /* Light cream background #fff8f8 */
-    --foreground: 0 0% 3.9%; /* Dark maroon for text #4d1616 */
+    --background: #fff8f8;
+    --foreground: 0 0% 3.9%;
     --card: 0 0% 100%;
     --card-foreground: 0 0% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 3.9%;
-    --primary: 0 82% 31%; /* For #841a1c */
+    --primary: 0 82% 31%;
     --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96.1%; /* Gold/tan #d79c64 */
+    --secondary: 0 0% 96.1%;
     --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%; /* Light muted color #e7e0dc */
+    --muted: 0 0% 96.1%;
     --muted-foreground: 0 0% 45.1%;
-    --accent: 0 0% 96.1%; /* Light accent color #d5b9a3 */
+    --accent: 0 0% 96.1%;
     --accent-foreground: 0 0% 9%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
@@ -32,15 +32,15 @@
   }
 
   .dark {
-    --background: #fff8f8; /* Dark maroon background */
-    --foreground: 0 0% 98%; /* Light cream text */
+    --background: #fff8f8;
+    --foreground: 0 0% 98%;
     --card: 0 0% 3.9%;
     --card-foreground: 0 0% 98%;
     --popover: 0 0% 3.9%;
     --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%; /* Primary maroon */
+    --primary: 0 0% 98%;
     --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%; /* Gold/tan */
+    --secondary: 0 0% 14.9%;
     --secondary-foreground: 0 0% 98%;
     --muted: 0 0% 14.9%;
     --muted-foreground: 0 0% 63.9%;
@@ -136,7 +136,6 @@ h3,
   @apply mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl;
 }
 
-/* Animations */
 @keyframes marquee {
   0% {
     transform: translateX(0);
@@ -185,7 +184,6 @@ h3,
   animation-delay: 400ms;
 }
 
-/* Running Words Ticker */
 .ticker-container {
   @apply overflow-hidden whitespace-nowrap relative py-3 border-y border-muted;
 }
@@ -198,7 +196,6 @@ h3,
   @apply inline-block px-4 text-black text-xl font-medium;
 }
 
-/* Decorative elements */
 .circle-decoration {
   @apply absolute rounded-full opacity-10 bg-secondary;
 }
