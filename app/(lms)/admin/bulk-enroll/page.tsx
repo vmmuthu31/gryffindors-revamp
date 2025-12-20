@@ -132,7 +132,6 @@ export default function BulkEnrollmentPage() {
       </div>
 
       <div className="grid lg:grid-cols-2 gap-8">
-        {/* Upload Section */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -141,7 +140,6 @@ export default function BulkEnrollmentPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            {/* Download Template */}
             <Button
               variant="outline"
               onClick={downloadTemplate}

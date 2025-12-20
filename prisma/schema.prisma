@@ -7,7 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ============ USER & AUTH ============
 model User {
   id            String    @id @default(cuid())
   email         String    @unique
@@ -19,12 +18,10 @@ model User {
   otp           String?
   otpExpiry     DateTime?
   
-  // Analytics
   learningStreak  Int       @default(0)
   lastActiveAt    DateTime?
-  totalTimeSpent  Int       @default(0)  // In minutes
+  totalTimeSpent  Int       @default(0)  
   
-  // Alumni Profile
   linkedIn        String?
   portfolio       String?
   currentJob      String?
@@ -32,9 +29,8 @@ model User {
   bio             String?
   isAlumni        Boolean   @default(false)
   
-  // Referral
   referralCode    String?   @unique
-  referredBy      String?   // userId who referred this user
+  referredBy      String?   
   
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
@@ -74,7 +70,6 @@ enum Role {
   ADMIN
 }
 
-// ============ INTERNSHIP & APPLICATION ============
 model Internship {
   id          String   @id @default(cuid())
   title       String
@@ -110,7 +105,7 @@ model Application {
   
   paymentStatus    PaymentStatus @default(PENDING)
   paymentId        String?
-  discountApplied  Float         @default(0)  // Referral discount
+  discountApplied  Float         @default(0)  
   
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
@@ -137,16 +132,15 @@ enum PaymentStatus {
   FAILED
 }
 
-// ============ AI INTERVIEW ============
 model InterviewResult {
   id             String   @id @default(cuid())
   userId         String
   internshipId   String
-  score          Float    // 0-100
+  score          Float    
   passed         Boolean
-  transcript     Json?    // Array of Q&A
-  feedback       String?  // AI generated feedback
-  duration       Int?     // In seconds
+  transcript     Json?    
+  feedback       String?  
+  duration       Int?     
   createdAt      DateTime @default(now())
   
   user       User       @relation(fields: [userId], references: [id])
@@ -155,15 +149,14 @@ model InterviewResult {
   @@unique([userId, internshipId])
 }
 
-// ============ REFERRAL SYSTEM ============
 model Referral {
   id             String   @id @default(cuid())
   code           String   @unique
   referrerId     String
   referredUserId String?  @unique
-  discount       Float    @default(200)  // Amount in INR
+  discount       Float    @default(200)  
   status         ReferralStatus @default(PENDING)
-  earnedAmount   Float    @default(0)    // Referrer earnings
+  earnedAmount   Float    @default(0)    
   createdAt      DateTime @default(now())
   usedAt         DateTime?
   
@@ -177,7 +170,6 @@ enum ReferralStatus {
   PAID
 }
 
-// ============ LMS: COURSES ============
 model Course {
   id           String     @id @default(cuid())
   internshipId String
@@ -209,8 +201,8 @@ model Lesson {
   description String?
   type        LessonType
   videoUrl    String?
-  content     String?    // For READING type or additional instructions
-  duration    Int?       // In minutes
+  content     String?    
+  duration    Int?       
   order       Int        @default(0)
   
   module         Module           @relation(fields: [moduleId], references: [id], onDelete: Cascade)
@@ -225,7 +217,6 @@ enum LessonType {
   QUIZ
 }
 
-// ============ LMS: SUBMISSIONS ============
 model Submission {
   id             String           @id @default(cuid())
   lessonId       String
@@ -234,7 +225,7 @@ model Submission {
   fileUrl        String?
   status         SubmissionStatus @default(PENDING)
   mentorFeedback String?
-  grade          Int?             // 0-100
+  grade          Int?             
   submittedAt    DateTime         @default(now())
   reviewedAt     DateTime?
   
@@ -250,13 +241,12 @@ enum SubmissionStatus {
   RESUBMIT
 }
 
-// ============ CERTIFICATES ============
 model Certificate {
   id             String   @id @default(cuid())
   applicationId  String   @unique
   userId         String
   uniqueCode     String   @unique
-  grade          String?  // "Distinction", "Merit", "Pass"
+  grade          String?  
   issuedAt       DateTime @default(now())
   certificateUrl String?
   
@@ -264,14 +254,13 @@ model Certificate {
   user        User        @relation(fields: [userId], references: [id])
 }
 
-// ============ LESSON PROGRESS ============
 model LessonProgress {
   id          String   @id @default(cuid())
   userId      String
   lessonId    String
   completed   Boolean  @default(false)
   completedAt DateTime?
-  timeSpent   Int      @default(0) // Minutes on this lesson
+  timeSpent   Int      @default(0) 
   
   user   User   @relation(fields: [userId], references: [id])
   lesson Lesson @relation(fields: [lessonId], references: [id])

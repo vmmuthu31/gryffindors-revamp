@@ -12,7 +12,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Check if admin
     const admin = await prisma.user.findUnique({
       where: { id: session.user.id },
       select: { role: true },
@@ -37,7 +36,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Parse CSV
     const text = await file.text();
     const lines = text.split("\n").filter((line) => line.trim());
 
@@ -48,7 +46,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Parse header
     const header = lines[0]
       .split(",")
       .map((h) => h.trim().toLowerCase().replace(/"/g, ""));
@@ -62,7 +59,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Verify internship exists
     const internship = await prisma.internship.findUnique({
       where: { id: internshipId },
     });
@@ -78,7 +74,6 @@ export async function POST(request: Request) {
     let failed = 0;
     const errors: string[] = [];
 
-    // Process each row (max 100)
     const rows = lines.slice(1, 101);
 
     for (const line of rows) {
@@ -93,7 +88,6 @@ export async function POST(request: Request) {
       }
 
       try {
-        // Check if user exists
         let user = await prisma.user.findUnique({
           where: { email },
         });
@@ -101,7 +95,6 @@ export async function POST(request: Request) {
         const tempPassword = nanoid(8);
 
         if (!user) {
-          // Create new user
           const hashedPassword = await bcrypt.hash(tempPassword, 10);
           user = await prisma.user.create({
             data: {
@@ -113,7 +106,6 @@ export async function POST(request: Request) {
             },
           });
 
-          // Send welcome email with temp password
           try {
             await sendWelcomeEmail(email, name || "Student", "STUDENT");
           } catch (emailError) {
@@ -121,7 +113,6 @@ export async function POST(request: Request) {
           }
         }
 
-        // Check if already enrolled
         const existingApp = await prisma.application.findFirst({
           where: {
             userId: user.id,
@@ -136,7 +127,6 @@ export async function POST(request: Request) {
           continue;
         }
 
-        // Create application (auto-enrolled, payment marked as success for bulk)
         await prisma.application.create({
           data: {
             userId: user.id,
@@ -159,7 +149,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success,
       failed,
-      errors: errors.slice(0, 10), // Return max 10 errors
+      errors: errors.slice(0, 10),
     });
   } catch (error) {
     console.error("Bulk enrollment error:", error);

@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 
-// GET all courses
 export async function GET() {
   try {
     const courses = await prisma.course.findMany({
@@ -29,7 +28,6 @@ export async function GET() {
   }
 }
 
-// POST create new course
 export async function POST(request: Request) {
   try {
     const data = await request.json();
@@ -41,7 +39,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Get the next order number
     const existingCourses = await prisma.course.count({
       where: { internshipId: data.internshipId },
     });

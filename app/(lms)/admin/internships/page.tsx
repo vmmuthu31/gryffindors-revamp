@@ -47,14 +47,12 @@ export default function AdminInternshipsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  // Dialog states
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [editInternship, setEditInternship] = useState<Internship | null>(null);
   const [deleteInternship, setDeleteInternship] = useState<Internship | null>(
     null
   );
 
-  // Form state
   const [form, setForm] = useState({
     title: "",
     description: "",

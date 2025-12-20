@@ -6,10 +6,8 @@ const prisma = new PrismaClient();
 async function main() {
   console.log("🌱 Seeding database...");
 
-  // Generate proper password hash for demo accounts
   const demoPasswordHash = await bcrypt.hash("demo123", 10);
 
-  // Clear existing data (order matters for foreign keys)
   await prisma.lessonProgress.deleteMany();
   await prisma.submission.deleteMany();
   await prisma.lesson.deleteMany();
@@ -21,8 +19,7 @@ async function main() {
   await prisma.account.deleteMany();
   await prisma.user.deleteMany();
 
-  // Create Admin User
-  const admin = await prisma.user.create({
+  await prisma.user.create({
     data: {
       email: "admin@gryffindors.in",
       name: "Admin",
@@ -32,8 +29,7 @@ async function main() {
   });
   console.log("✅ Created admin user");
 
-  // Create Mentor User
-  const mentor = await prisma.user.create({
+  await prisma.user.create({
     data: {
       email: "mentor@gryffindors.in",
       name: "Mentor",
@@ -43,7 +39,6 @@ async function main() {
   });
   console.log("✅ Created mentor user");
 
-  // Create Demo Student
   const student = await prisma.user.create({
     data: {
       email: "student@demo.com",
@@ -54,7 +49,6 @@ async function main() {
   });
   console.log("✅ Created student user");
 
-  // Create Internships
   const fullStackInternship = await prisma.internship.create({
     data: {
       title: "Full Stack Development",
@@ -67,7 +61,7 @@ async function main() {
     },
   });
 
-  const aiInternship = await prisma.internship.create({
+  await prisma.internship.create({
     data: {
       title: "AI / ML Engineering",
       description:
@@ -79,7 +73,7 @@ async function main() {
     },
   });
 
-  const web3Internship = await prisma.internship.create({
+  await prisma.internship.create({
     data: {
       title: "Web3 / Blockchain",
       description:
@@ -92,7 +86,6 @@ async function main() {
   });
   console.log("✅ Created internships");
 
-  // Create Course for Full Stack
   const fullStackCourse = await prisma.course.create({
     data: {
       internshipId: fullStackInternship.id,
@@ -102,7 +95,6 @@ async function main() {
     },
   });
 
-  // Create Modules
   const module1 = await prisma.module.create({
     data: {
       courseId: fullStackCourse.id,
@@ -131,7 +123,6 @@ async function main() {
   });
   console.log("✅ Created modules");
 
-  // Create Lessons for Module 1
   await prisma.lesson.createMany({
     data: [
       {
@@ -161,7 +152,6 @@ async function main() {
     ],
   });
 
-  // Create Lessons for Module 2
   await prisma.lesson.createMany({
     data: [
       {
@@ -191,7 +181,6 @@ async function main() {
     ],
   });
 
-  // Create Lessons for Module 3
   await prisma.lesson.createMany({
     data: [
       {
@@ -214,7 +203,6 @@ async function main() {
   });
   console.log("✅ Created lessons");
 
-  // Create demo application (enrolled student)
   await prisma.application.create({
     data: {
       userId: student.id,

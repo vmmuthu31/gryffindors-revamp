@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 
-// GET all internships
 export async function GET() {
   try {
     const internships = await prisma.internship.findMany({
@@ -25,7 +24,6 @@ export async function GET() {
   }
 }
 
-// POST create new internship
 export async function POST(request: Request) {
   try {
     const data = await request.json();

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -43,11 +43,7 @@ export default function MentorStudentDetailPage() {
   const [progress, setProgress] = useState<LessonProgress[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchStudentDetail();
-  }, [params.id]);
-
-  const fetchStudentDetail = async () => {
+  const fetchStudentDetail = useCallback(async () => {
     try {
       const res = await fetch(`/api/mentor/students/${params.id}`);
       if (res.ok) {
@@ -63,7 +59,11 @@ export default function MentorStudentDetailPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [params.id, router]);
+
+  useEffect(() => {
+    fetchStudentDetail();
+  }, [fetchStudentDetail]);
 
   if (loading) {
     return (

@@ -19,7 +19,6 @@ async function getStudentData(userId: string) {
     },
   });
 
-  // Auto-generate referral code if missing
   if (user && !user.referralCode) {
     const code = `${
       user.name?.split(" ")[0].toUpperCase() || "GRYF"
@@ -59,7 +58,6 @@ async function getStudentData(userId: string) {
       }),
       prisma.certificate.count({ where: { userId } }),
       prisma.lessonProgress.count({ where: { userId, completed: true } }),
-      // Get leaderboard - top 5 students
       prisma.user.findMany({
         where: { role: "STUDENT" },
         orderBy: { learningStreak: "desc" },
@@ -71,7 +69,6 @@ async function getStudentData(userId: string) {
   return { user, application, certificates, lessonProgress, leaderboard };
 }
 
-// Update streak on dashboard visit
 async function updateStreak(userId: string) {
   const user = await prisma.user.findUnique({
     where: { id: userId },
@@ -83,12 +80,10 @@ async function updateStreak(userId: string) {
   const now = new Date();
   const lastActive = user.lastActiveAt ? new Date(user.lastActiveAt) : null;
 
-  // Check if it's a new day
   const isNewDay =
     !lastActive || now.toDateString() !== lastActive.toDateString();
 
   if (isNewDay) {
-    // Check if consecutive day
     const isConsecutive =
       lastActive && now.getTime() - lastActive.getTime() < 48 * 60 * 60 * 1000;
 
@@ -109,13 +104,11 @@ export default async function StudentDashboard() {
     return <div className="p-8">Please log in to access your dashboard.</div>;
   }
 
-  // Update streak
   await updateStreak(session.user.id);
 
   const { user, application, certificates, lessonProgress, leaderboard } =
     await getStudentData(session.user.id);
 
-  // Calculate progress
   const totalLessons =
     application?.internship.courses.reduce(
       (acc, course) =>

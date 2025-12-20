@@ -11,7 +11,6 @@ import { Progress } from "@/components/ui/progress";
 import { BookOpen, Play } from "lucide-react";
 import Link from "next/link";
 
-// Force dynamic rendering to avoid database access during build
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
@@ -28,7 +27,14 @@ async function getEnrolledCourses(userId: string) {
             include: {
               modules: {
                 include: {
-                  lessons: true,
+                  lessons: {
+                    select: {
+                      id: true,
+                      title: true,
+                      type: true,
+                      duration: true,
+                    },
+                  },
                 },
               },
             },
@@ -39,6 +45,20 @@ async function getEnrolledCourses(userId: string) {
   });
 
   return applications;
+}
+
+async function getUserProgress(userId: string, lessonIds: string[]) {
+  const progress = await prisma.lessonProgress.findMany({
+    where: {
+      userId,
+      lessonId: { in: lessonIds },
+      completed: true,
+    },
+    select: {
+      lessonId: true,
+    },
+  });
+  return new Set(progress.map((p) => p.lessonId));
 }
 
 export default async function CoursesPage() {
@@ -57,6 +77,12 @@ export default async function CoursesPage() {
       track: app.internship.track,
     }))
   );
+
+  const allLessonIds = courses.flatMap((course) =>
+    course.modules.flatMap((mod) => mod.lessons.map((lesson) => lesson.id))
+  );
+
+  const completedLessons = await getUserProgress(session.user.id, allLessonIds);
 
   return (
     <div className="space-y-8">
@@ -90,15 +116,23 @@ export default async function CoursesPage() {
               (acc, mod) => acc + mod.lessons.length,
               0
             );
-            // Mock progress for now - would come from submissions
-            const progress = 35;
+            const completedCount = course.modules.reduce(
+              (acc, mod) =>
+                acc +
+                mod.lessons.filter((lesson) => completedLessons.has(lesson.id))
+                  .length,
+              0
+            );
+            const progress =
+              totalLessons > 0
+                ? Math.round((completedCount / totalLessons) * 100)
+                : 0;
 
             return (
               <Card
                 key={course.id}
                 className="hover:shadow-lg transition-shadow overflow-hidden"
               >
-                {/* Course Thumbnail */}
                 <div className="h-32 bg-gradient-to-br from-[#841a1c] to-[#d79c64] flex items-center justify-center">
                   <BookOpen className="w-12 h-12 text-white/80" />
                 </div>
@@ -113,7 +147,9 @@ export default async function CoursesPage() {
                 <CardContent className="pb-4">
                   <div className="flex justify-between text-sm text-gray-500 mb-2">
                     <span>{course.modules.length} modules</span>
-                    <span>{totalLessons} lessons</span>
+                    <span>
+                      {completedCount}/{totalLessons} lessons
+                    </span>
                   </div>
                   <Progress value={progress} className="h-2" />
                   <div className="text-xs text-right text-gray-400 mt-1">
@@ -127,7 +163,7 @@ export default async function CoursesPage() {
                     className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#841a1c] text-white rounded-lg hover:bg-[#681416] transition-colors"
                   >
                     <Play className="w-4 h-4" />
-                    Continue
+                    {progress > 0 ? "Continue" : "Start"}
                   </Link>
                 </CardFooter>
               </Card>

@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 
-// GET students (applications with ENROLLED+ status)
 export async function GET() {
   try {
     const students = await prisma.application.findMany({

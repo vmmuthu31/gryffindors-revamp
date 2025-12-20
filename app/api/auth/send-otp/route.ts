@@ -10,7 +10,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Email is required" }, { status: 400 });
     }
 
-    // Find user
     const user = await prisma.user.findUnique({
       where: { email },
     });
@@ -19,17 +18,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Generate OTP
     const otp = generateOTP();
-    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
 
-    // Save OTP to user
     await prisma.user.update({
       where: { id: user.id },
       data: { otp, otpExpiry },
     });
 
-    // Send email
     const sent = await sendOTPEmail(email, otp);
 
     if (!sent) {

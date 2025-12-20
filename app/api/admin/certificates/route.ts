@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { nanoid } from "nanoid";
 
-// GET all certificates
 export async function GET() {
   try {
     const certificates = await prisma.certificate.findMany({
@@ -30,7 +29,6 @@ export async function GET() {
   }
 }
 
-// POST create new certificate
 export async function POST(request: Request) {
   try {
     const data = await request.json();
@@ -42,7 +40,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Get the application to find userId
     const application = await prisma.application.findUnique({
       where: { id: data.applicationId },
       select: { userId: true },
@@ -55,7 +52,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Check if certificate already exists
     const exists = await prisma.certificate.findFirst({
       where: { applicationId: data.applicationId },
     });
@@ -67,7 +63,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Generate unique code
     const uniqueCode = `GRYF-${nanoid(8).toUpperCase()}`;
 
     const certificate = await prisma.certificate.create({

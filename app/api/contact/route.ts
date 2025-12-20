@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 
-// Create a transporter using nodemailer
 const transporter = nodemailer.createTransport({
   host: "smtpout.secureserver.net",
   port: 465,
@@ -16,7 +15,6 @@ export async function POST(req: NextRequest) {
   try {
     const { name, email, message, project } = await req.json();
 
-    // Validate the input
     if (!name || !email || !message) {
       return NextResponse.json(
         { error: "Missing required fields" },
@@ -24,14 +22,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Get current date and time
     const currentDate = new Date().toLocaleString("en-US", {
       timeZone: "UTC",
       dateStyle: "full",
       timeStyle: "long",
     });
 
-    // Email options with professional HTML template styled for Gryffindors
     const mailOptions = {
       from: {
         name: "Gryffindors Web3 Solutions",
@@ -175,7 +171,6 @@ export async function POST(req: NextRequest) {
       `,
     };
 
-    // Send an auto-response to the person who filled out the form
     const autoResponseMailOptions = {
       from: {
         name: "Gryffindors Web3 Solutions",
@@ -345,7 +340,6 @@ export async function POST(req: NextRequest) {
       `,
     };
 
-    // Send both emails
     await Promise.all([
       transporter.sendMail(mailOptions),
       transporter.sendMail(autoResponseMailOptions),

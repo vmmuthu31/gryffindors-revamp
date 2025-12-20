@@ -7,7 +7,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
-// Define the service data structure
 interface ServiceType {
   id: number;
   title: string;
@@ -21,10 +20,8 @@ interface ServiceType {
 }
 
 const ServicesPage = () => {
-  // State to track which service is currently expanded
   const [expandedService, setExpandedService] = useState<number | null>(null);
 
-  // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -44,12 +41,11 @@ const ServicesPage = () => {
     },
   };
 
-  // Services data
   const services: ServiceType[] = [
     {
       id: 1,
       title: "Smart Contract Development",
-      icon: "/assets/services/smart-contract-icon.svg", // You'll need to create these icons
+      icon: "/assets/services/smart-contract-icon.svg",
       description:
         "We build secure, auditable, and efficient smart contracts that power decentralized applications across multiple blockchain platforms.",
       features: [
@@ -188,7 +184,6 @@ const ServicesPage = () => {
     },
   ];
 
-  // Toggle expanded service
   const toggleService = (id: number) => {
     if (expandedService === id) {
       setExpandedService(null);
@@ -197,11 +192,9 @@ const ServicesPage = () => {
     }
   };
 
-  // Function to render the service icon (placeholder SVG if image not available)
   const renderServiceIcon = () => {
     return (
       <div className="w-16 h-16 rounded-full bg-[#841a1c]/10 flex items-center justify-center mb-4">
-        {/* This is a fallback icon in case you don't have actual icons */}
         <svg
           width="32"
           height="32"

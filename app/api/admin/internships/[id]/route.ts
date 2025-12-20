@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 
-// GET single internship
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -33,7 +32,6 @@ export async function GET(
   }
 }
 
-// PUT update internship
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -64,7 +62,6 @@ export async function PUT(
   }
 }
 
-// DELETE internship
 export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }

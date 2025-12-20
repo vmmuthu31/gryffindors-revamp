@@ -31,11 +31,10 @@ interface Question {
   question: string;
   code?: string;
   options?: string[];
-  correct: number | string[]; // string[] for multiple acceptable answers
+  correct: number | string[];
   points: number;
 }
 
-// Track-specific questions with multiple acceptable answers for debug
 const trackQuestions: Record<string, Question[]> = {
   FULL_STACK: [
     {
@@ -240,7 +239,6 @@ const AIInterview: React.FC<AIInterviewProps> = ({ track, onComplete }) => {
   const webcamRef = useRef<Webcam>(null);
   const questions = trackQuestions[track] || trackQuestions.FULL_STACK;
 
-  // Check camera permission on mount
   useEffect(() => {
     navigator.mediaDevices
       ?.getUserMedia({ video: true, audio: true })
@@ -248,7 +246,6 @@ const AIInterview: React.FC<AIInterviewProps> = ({ track, onComplete }) => {
       .catch(() => setHasPermission(false));
   }, []);
 
-  // Anti-cheat detection
   useEffect(() => {
     if (step !== "test") return;
 
@@ -362,7 +359,6 @@ const AIInterview: React.FC<AIInterviewProps> = ({ track, onComplete }) => {
       ? answers[currentQ] !== -1
       : debugAnswer.trim().length > 0;
 
-  // SETUP SCREEN
   if (step === "setup") {
     return (
       <Card className="max-w-2xl mx-auto">
@@ -442,7 +438,6 @@ const AIInterview: React.FC<AIInterviewProps> = ({ track, onComplete }) => {
     );
   }
 
-  // TEST SCREEN
   if (step === "test") {
     const q = questions[currentQ];
     return (
@@ -570,7 +565,6 @@ const AIInterview: React.FC<AIInterviewProps> = ({ track, onComplete }) => {
     );
   }
 
-  // RESULT SCREEN
   const passed = score >= 60;
   return (
     <Card className="max-w-md mx-auto text-center">

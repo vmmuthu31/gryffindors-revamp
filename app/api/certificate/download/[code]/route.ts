@@ -43,11 +43,9 @@ export async function GET(
     );
     const grade = certificate.grade || "Pass";
 
-    // Use request URL to get the origin for images
     const requestUrl = new URL(request.url);
     const baseUrl = `${requestUrl.protocol}//${requestUrl.host}`;
 
-    // Generate HTML certificate with actual logos
     const html = `
 <!DOCTYPE html>
 <html>

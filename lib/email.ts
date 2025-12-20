@@ -1,6 +1,5 @@
 import nodemailer from "nodemailer";
 
-// Create transporter - GoDaddy SMTP
 const transporter = nodemailer.createTransport({
   host: "smtpout.secureserver.net",
   port: 465,
@@ -13,7 +12,6 @@ const transporter = nodemailer.createTransport({
 
 const fromEmail = `"Gryffindors" <${process.env.EMAIL_USER}>`;
 
-// Base email template with Gryffindors branding
 function baseTemplate(content: string, title: string): string {
   return `
 <!DOCTYPE html>
@@ -68,7 +66,6 @@ export function generateOTP(): string {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
-// ============ OTP Email ============
 export async function sendOTPEmail(
   email: string,
   otp: string
@@ -102,7 +99,6 @@ export async function sendOTPEmail(
   }
 }
 
-// ============ Welcome Email (New Registration) ============
 export async function sendWelcomeEmail(
   email: string,
   name: string,
@@ -176,7 +172,6 @@ export async function sendWelcomeEmail(
   }
 }
 
-// ============ Enrollment Confirmation ============
 export async function sendEnrollmentEmail(
   email: string,
   name: string,
@@ -231,7 +226,6 @@ export async function sendEnrollmentEmail(
   }
 }
 
-// ============ Mentor Assigned ============
 export async function sendMentorAssignedEmail(
   email: string,
   studentName: string,
@@ -269,7 +263,6 @@ export async function sendMentorAssignedEmail(
   }
 }
 
-// ============ Certificate Issued ============
 export async function sendCertificateEmail(
   email: string,
   name: string,
@@ -316,7 +309,6 @@ export async function sendCertificateEmail(
   }
 }
 
-// ============ Task Reviewed (for students) ============
 export async function sendTaskReviewedEmail(
   email: string,
   name: string,
@@ -377,7 +369,6 @@ export async function sendTaskReviewedEmail(
   }
 }
 
-// ============ New Submission (for mentors) ============
 export async function sendNewSubmissionEmail(
   mentorEmail: string,
   mentorName: string,

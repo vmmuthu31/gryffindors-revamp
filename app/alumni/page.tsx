@@ -5,7 +5,6 @@ import { Trophy, Linkedin, Globe, Briefcase } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 
-// Force dynamic rendering to avoid database access during build
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 

@@ -12,7 +12,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Find user
     const user = await prisma.user.findUnique({
       where: { email },
     });
@@ -21,7 +20,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Check OTP
     if (!user.otp || !user.otpExpiry) {
       return NextResponse.json({ error: "No OTP requested" }, { status: 400 });
     }
@@ -34,7 +32,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid OTP" }, { status: 400 });
     }
 
-    // Clear OTP and mark email as verified
     await prisma.user.update({
       where: { id: user.id },
       data: {

@@ -49,7 +49,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Check if user exists
     const exists = await prisma.user.findUnique({
       where: { email: data.email },
     });

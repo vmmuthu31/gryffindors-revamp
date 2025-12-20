@@ -61,7 +61,6 @@ function InterviewContent() {
         },
       ],
       onFinish: (message) => {
-        // Check if interview is complete
         if (message.content.includes("INTERVIEW_COMPLETE")) {
           handleInterviewComplete(message.content);
         }
@@ -69,7 +68,6 @@ function InterviewContent() {
     });
 
   useEffect(() => {
-    // Check for existing interview result
     if (internshipId) {
       fetch(`/api/ai/interview?internshipId=${internshipId}`)
         .then((res) => res.json())
@@ -93,7 +91,6 @@ function InterviewContent() {
       const score = parseInt(scoreMatch[1], 10);
       const passed = scoreMatch[2].toUpperCase() === "PASS";
 
-      // Save result to database
       await fetch("/api/ai/interview", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -111,7 +108,6 @@ function InterviewContent() {
 
   const trackDetails = trackInfo[track] || trackInfo.FULL_STACK;
 
-  // Show existing result if already completed
   if (existingResult && existingResult.score !== undefined) {
     return (
       <div className="min-h-screen bg-gray-50 py-12">
@@ -171,7 +167,6 @@ function InterviewContent() {
     );
   }
 
-  // Show result screen
   if (completed && result) {
     return (
       <div className="min-h-screen bg-gray-50 py-12">

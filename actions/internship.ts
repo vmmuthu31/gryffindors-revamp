@@ -2,13 +2,74 @@
 
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
+import { Prisma } from "@prisma/client";
+
+const TRACK_METADATA = {
+  FULL_STACK: {
+    skills: [
+      "React",
+      "Next.js",
+      "Node.js",
+      "PostgreSQL",
+      "Tailwind CSS",
+      "TypeScript",
+    ],
+    roles: [
+      "Software Engineer",
+      "Frontend Developer",
+      "Backend Developer",
+      "Full Stack Developer",
+    ],
+    tags: ["Best Seller", "High Demand"],
+  },
+  AI_ML: {
+    skills: [
+      "Python",
+      "TensorFlow",
+      "PyTorch",
+      "OpenAI API",
+      "LangChain",
+      "RAG",
+    ],
+    roles: ["AI Engineer", "ML Practitioner", "Data Scientist", "ML Engineer"],
+    tags: ["Trending", "Future Tech"],
+  },
+  WEB3: {
+    skills: [
+      "Solidity",
+      "Hardhat",
+      "Ethers.js",
+      "IPFS",
+      "Ethereum",
+      "Smart Contracts",
+    ],
+    roles: [
+      "Blockchain Developer",
+      "Smart Contract Engineer",
+      "Solidity Developer",
+      "dApp Developer",
+    ],
+    tags: ["High Pay", "Niche"],
+  },
+};
 
 export async function getInternship(id: string) {
   try {
     const internship = await prisma.internship.findUnique({
       where: { id },
     });
-    return internship;
+
+    if (!internship) return null;
+
+    const trackMeta =
+      TRACK_METADATA[internship.track] || TRACK_METADATA.FULL_STACK;
+
+    return {
+      ...internship,
+      skills: trackMeta.skills,
+      roles: trackMeta.roles,
+      tags: trackMeta.tags,
+    };
   } catch (error) {
     console.error("Failed to fetch internship:", error);
     return null;
@@ -17,8 +78,20 @@ export async function getInternship(id: string) {
 
 export async function getInternships() {
   try {
-    return await prisma.internship.findMany({
+    const internships = await prisma.internship.findMany({
+      where: { isActive: true },
       orderBy: { createdAt: "desc" },
+    });
+
+    return internships.map((internship) => {
+      const trackMeta =
+        TRACK_METADATA[internship.track] || TRACK_METADATA.FULL_STACK;
+      return {
+        ...internship,
+        skills: trackMeta.skills,
+        roles: trackMeta.roles,
+        tags: trackMeta.tags,
+      };
     });
   } catch (error) {
     console.error("Failed to fetch internships:", error);
@@ -31,7 +104,8 @@ export async function createInternship(data: {
   track: "FULL_STACK" | "AI_ML" | "WEB3";
   price: number;
   duration: string;
-  curriculum?: any;
+  description?: string;
+  curriculum?: Prisma.InputJsonValue;
 }) {
   try {
     const internship = await prisma.internship.create({
@@ -40,6 +114,7 @@ export async function createInternship(data: {
         track: data.track,
         price: data.price,
         duration: data.duration,
+        description: data.description || "",
         curriculum: data.curriculum || {},
       },
     });
@@ -59,7 +134,8 @@ export async function updateInternship(
     track?: "FULL_STACK" | "AI_ML" | "WEB3";
     price?: number;
     duration?: string;
-    curriculum?: any;
+    description?: string;
+    curriculum?: Prisma.InputJsonValue;
   }
 ) {
   try {

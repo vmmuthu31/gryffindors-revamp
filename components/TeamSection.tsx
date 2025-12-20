@@ -103,7 +103,6 @@ const extendedTeamMembers = [
   },
 ];
 
-// Duplicate array for infinite looping
 const duplicatedTeam = [...extendedTeamMembers, ...extendedTeamMembers];
 
 const TeamSection = () => {
@@ -135,12 +134,11 @@ const TeamSection = () => {
       if (isAnimating) {
         setCurrentIndex((prev) => (prev + 1) % positions.length);
       }
-    }, 10000); // Change card every 10 seconds
+    }, 10000);
 
     return () => clearInterval(timer);
   }, [positions.length, isAnimating]);
 
-  // Auto slide for extended team
   useEffect(() => {
     const interval = setInterval(() => {
       if (isAnimating) {
@@ -157,10 +155,9 @@ const TeamSection = () => {
     return () => clearInterval(interval);
   }, [shufflePositions]);
 
-  // Handle card hover
   const handleCardHover = (id: number | null) => {
     setHoveredCardId(id);
-    setIsAnimating(id === null); // Stop animations when a card is hovered
+    setIsAnimating(id === null);
   };
 
   return (
@@ -390,26 +387,24 @@ const TeamSection = () => {
                   className="w-full"
                 >
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                    {/* Display current item and next few items */}
                     {Array.from({ length: 5 }).map((_, idx) => {
                       const memberIdx =
                         (slideIndex + idx) % duplicatedTeam.length;
                       const member = duplicatedTeam[memberIdx];
 
-                      // Hide items that don't fit screen
                       const visibilityClass =
                         (idx >= 1 &&
                           typeof window !== "undefined" &&
-                          window.innerWidth < 640) || // Hide on xs
+                          window.innerWidth < 640) ||
                         (idx >= 2 &&
                           typeof window !== "undefined" &&
-                          window.innerWidth < 768) || // Hide on sm
+                          window.innerWidth < 768) ||
                         (idx >= 3 &&
                           typeof window !== "undefined" &&
-                          window.innerWidth < 1024) || // Hide on md
+                          window.innerWidth < 1024) ||
                         (idx >= 4 &&
                           typeof window !== "undefined" &&
-                          window.innerWidth < 1280) // Hide on lg
+                          window.innerWidth < 1280)
                           ? "hidden"
                           : "";
 

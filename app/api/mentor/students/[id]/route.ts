@@ -2,11 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { auth } from "@/auth";
 
-// GET single student detail with progress
-export async function GET(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET({ params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
@@ -15,7 +11,6 @@ export async function GET(
 
     const { id } = await params;
 
-    // Get application with verification that mentor is assigned
     const application = await prisma.application.findFirst({
       where: {
         id,
@@ -38,7 +33,6 @@ export async function GET(
       return NextResponse.json({ error: "Student not found" }, { status: 404 });
     }
 
-    // Get course for this internship
     const course = await prisma.course.findFirst({
       where: { internshipId: application.internship.id },
       include: {
@@ -54,20 +48,17 @@ export async function GET(
       },
     });
 
-    // Get lesson progress for this user
     const lessonProgress = await prisma.lessonProgress.findMany({
       where: { userId: application.user.id },
       select: { lessonId: true, completed: true },
     });
 
-    // Get submissions for this user
     const submissions = await prisma.submission.findMany({
       where: { userId: application.user.id },
       select: { lessonId: true, status: true },
       orderBy: { submittedAt: "desc" },
     });
 
-    // Map progress
     const progressMap = new Map(
       lessonProgress.map((p) => [p.lessonId, p.completed])
     );

@@ -43,7 +43,6 @@ export default function LMSSidebar() {
   const pathname = usePathname();
   const { data: session, status } = useSession();
 
-  // Get role from session
   const role =
     (session?.user as { role?: string } | undefined)?.role || "STUDENT";
 
@@ -71,7 +70,6 @@ export default function LMSSidebar() {
 
   return (
     <aside className="w-64 h-screen bg-white border-r border-gray-200 flex flex-col fixed left-0 top-0 z-50">
-      {/* Logo */}
       <div className="p-6 border-b border-gray-100">
         <Link href="/" className="flex items-center gap-3">
           <div className="w-10 h-10 bg-[#841a1c] rounded-lg flex items-center justify-center">
@@ -90,7 +88,6 @@ export default function LMSSidebar() {
         </Link>
       </div>
 
-      {/* User Info */}
       {session?.user && (
         <div className="px-6 py-4 border-b border-gray-100">
           <div className="flex items-center gap-3">
@@ -111,7 +108,6 @@ export default function LMSSidebar() {
         </div>
       )}
 
-      {/* Navigation */}
       <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
         <Link
           href="/"
@@ -147,7 +143,6 @@ export default function LMSSidebar() {
         })}
       </nav>
 
-      {/* Bottom Section */}
       <div className="p-4 border-t border-gray-100 space-y-1">
         <button
           onClick={() => signOut({ callbackUrl: "/auth/login" })}

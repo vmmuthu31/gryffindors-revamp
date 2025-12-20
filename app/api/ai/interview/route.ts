@@ -107,7 +107,6 @@ async function handleInterviewComplete(
       }
     }
 
-    // Save interview result
     await prisma.interviewResult.upsert({
       where: {
         userId_internshipId: { userId, internshipId },
@@ -128,7 +127,6 @@ async function handleInterviewComplete(
       },
     });
 
-    // Update application status if passed
     if (passed) {
       await prisma.application.updateMany({
         where: {

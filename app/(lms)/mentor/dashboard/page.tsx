@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ClipboardList, CheckCircle, Clock, AlertCircle } from "lucide-react";
 import Link from "next/link";
 
-// Force dynamic rendering to avoid database access during build
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 

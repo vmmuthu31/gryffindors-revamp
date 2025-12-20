@@ -27,7 +27,6 @@ const Navbar = () => {
           <span className="font-bold text-primary text-3xl">Gryffindors</span>
         </Link>
 
-        {/* Desktop Navigation */}
         <div className="hidden md:flex items-center gap-10 text-lg">
           <Link
             href="/#about"

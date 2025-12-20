@@ -4,11 +4,24 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/db";
 import bcrypt from "bcryptjs";
 
+interface User {
+  id: string;
+  name: string | null;
+  email: string;
+  role: "STUDENT" | "MENTOR" | "ADMIN";
+  createdAt: string;
+  applications: Array<{
+    id: string;
+    status: string;
+    internship: { title: string };
+  }>;
+}
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
   session: { strategy: "jwt" },
   secret: process.env.AUTH_SECRET,
-  trustHost: true, // Required for production deployment on Vercel
+  trustHost: true,
   providers: [
     Credentials({
       name: "credentials",
@@ -51,14 +64,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.role = (user as any).role;
+        token.role = (user as User).role;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string;
-        (session.user as any).role = token.role;
+        (session.user as unknown as { role: string }).role =
+          token.role as string;
       }
       return session;
     },

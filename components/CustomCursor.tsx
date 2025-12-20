@@ -29,27 +29,22 @@ export default function CustomCursor() {
   const [isHovering, setIsHovering] = useState(false);
   const [dotScale, setDotScale] = useState(1);
 
-  // For smooth cursor movement
   const cursorX = useMotionValue(-100);
   const cursorY = useMotionValue(-100);
 
-  // Add spring physics for smoother movement
   const springConfig = { damping: 22, stiffness: 350 };
   const strongSpringConfig = { damping: 28, stiffness: 550 };
   const cursorXSpring = useSpring(cursorX, springConfig);
   const cursorYSpring = useSpring(cursorY, springConfig);
 
-  // More responsive dot position
   const dotX = useSpring(cursorX, strongSpringConfig);
   const dotY = useSpring(cursorY, strongSpringConfig);
 
-  // Rotate hexagon pattern over time - slower for elegance
   useEffect(() => {
     const interval = setInterval(() => {
       setHexRotation((prev) => (prev + 0.5) % 360);
     }, 50);
 
-    // Random dot pulse every few seconds
     const pulseDot = setInterval(() => {
       if (Math.random() > 0.5) {
         setDotScale(1.4);
@@ -63,7 +58,6 @@ export default function CustomCursor() {
     };
   }, []);
 
-  // Detect cursor modes for blockchain elements
   const blockchainElements = useRef({
     ethereum: ["eth", "ethereum", "web3"],
     "smart-contract": ["contract", "deploy", "solidity"],
@@ -76,30 +70,25 @@ export default function CustomCursor() {
   });
 
   useEffect(() => {
-    // Check if it's a touch device
     const isTouch = window.matchMedia("(pointer: coarse)").matches;
     setIsTouchDevice(isTouch);
 
-    if (isTouch) return; // Don't run on touch devices
+    if (isTouch) return;
 
-    // Add class to hide native cursor when custom cursor is active
     document.body.classList.add("custom-cursor-active");
 
     setIsVisible(true);
 
-    // Mouse move event
     const handleMouseMove = (e: MouseEvent) => {
       cursorX.set(e.clientX);
       cursorY.set(e.clientY);
       setIsVisible(true);
 
-      // Check what element we're hovering over
       const elementsUnderCursor = document.elementsFromPoint(
         e.clientX,
         e.clientY
       );
 
-      // Detect clickable elements
       const clickable = elementsUnderCursor.some((el) => {
         const tag = el.tagName.toLowerCase();
         return (
@@ -118,7 +107,6 @@ export default function CustomCursor() {
         setIsHovering(false);
       }
 
-      // Detect blockchain-related elements by text content or attributes
       let newCursorMode = "default";
 
       for (const el of elementsUnderCursor) {
@@ -132,7 +120,6 @@ export default function CustomCursor() {
           el.getAttribute("data-section")?.toLowerCase() || "",
         ];
 
-        // Check each blockchain category
         for (const [mode, keywords] of Object.entries(
           blockchainElements.current
         )) {
@@ -154,12 +141,9 @@ export default function CustomCursor() {
       setCursorMode(newCursorMode);
     };
 
-    // Mouse down event
     const handleMouseDown = () => {
       setCursorVariant("clicking");
       setDotScale(0.7);
-
-      // Return to normal scale after click
       setTimeout(() => {
         setDotScale(1.2);
         setTimeout(() => {
@@ -168,19 +152,15 @@ export default function CustomCursor() {
       }, 100);
     };
 
-    // Mouse up event
     const handleMouseUp = () => {
       setCursorVariant((prev) =>
         prev === "clicking" ? (isHovering ? "clickable" : "default") : prev
       );
     };
 
-    // Mouse leave event
     const handleMouseLeave = () => {
       setIsVisible(false);
     };
-
-    // Mouse enter event
     const handleMouseEnter = () => {
       setIsVisible(true);
     };
@@ -200,11 +180,10 @@ export default function CustomCursor() {
     };
   }, [cursorX, cursorY, isHovering]);
 
-  // Different cursor variants
   const variants = {
     default: {
-      width: 60, // Increased size
-      height: 60, // Increased size
+      width: 60,
+      height: 60,
       backgroundColor: "rgba(119, 0, 2, 0.03)",
       border: "2px solid rgba(119, 0, 2, 0.7)",
       x: "-50%",
@@ -213,15 +192,15 @@ export default function CustomCursor() {
       transition: {
         rotate: {
           repeat: Infinity,
-          duration: 30, // Much slower for elegance
+          duration: 30,
           ease: "linear",
         },
         default: { type: "spring", mass: 0.6 },
       },
     },
     clickable: {
-      width: 80, // Increased size
-      height: 80, // Increased size
+      width: 80,
+      height: 80,
       backgroundColor: "rgba(255, 197, 0, 0.08)",
       border: "2px solid rgba(255, 197, 0, 0.8)",
       x: "-50%",
@@ -230,15 +209,15 @@ export default function CustomCursor() {
       transition: {
         rotate: {
           repeat: Infinity,
-          duration: 15, // Faster rotation on clickable, but still elegant
+          duration: 15,
           ease: "linear",
         },
         default: { type: "spring", mass: 0.6 },
       },
     },
     clicking: {
-      width: 70, // Increased size
-      height: 70, // Increased size
+      width: 70,
+      height: 70,
       backgroundColor: "rgba(255, 197, 0, 0.15)",
       border: "2px solid rgba(255, 197, 0, 0.9)",
       scale: 0.92,
@@ -248,15 +227,14 @@ export default function CustomCursor() {
     },
   };
 
-  // Bail early if on touch device
   if (isTouchDevice || !isVisible) return null;
 
   const getBlockchainIcon = () => {
     switch (cursorMode) {
       case "ethereum":
-        return <FaEthereum className="text-[#770002] text-3xl" />; // Larger icon
+        return <FaEthereum className="text-[#770002] text-3xl" />;
       case "smart-contract":
-        return <FileCode className="text-[#770002]" size={24} />; // Increased size
+        return <FileCode className="text-[#770002]" size={24} />;
       case "wallet":
         return <Wallet className="text-[#770002]" size={24} />;
       case "nft":
@@ -280,7 +258,6 @@ export default function CustomCursor() {
 
   return (
     <>
-      {/* Blockchain hex pattern cursor */}
       <motion.div
         style={{
           left: cursorXSpring,
@@ -290,7 +267,6 @@ export default function CustomCursor() {
         variants={variants}
         className="fixed top-0 left-0 rounded-full pointer-events-none z-[9999] flex items-center justify-center overflow-hidden backdrop-blur-[2px]"
       >
-        {/* Hexagon pattern background */}
         <svg
           width="100%"
           height="100%"
@@ -457,8 +433,8 @@ export default function CustomCursor() {
         }}
         className="fixed top-0 left-0 rounded-full pointer-events-none z-[9999] flex items-center justify-center"
         animate={{
-          width: cursorVariant === "clickable" ? 12 : 10, // Larger dot
-          height: cursorVariant === "clickable" ? 12 : 10, // Larger dot
+          width: cursorVariant === "clickable" ? 12 : 10,
+          height: cursorVariant === "clickable" ? 12 : 10,
           backgroundColor:
             cursorVariant === "clickable" ? "#ffc500" : "#770002",
           boxShadow:
@@ -493,7 +469,7 @@ export default function CustomCursor() {
           stiffness: 400,
           damping: 25,
         }}
-        className="w-[320px] h-[320px] absolute" // Larger size for more impact
+        className="w-[320px] h-[320px] absolute"
       >
         <svg width="100%" height="100%" viewBox="0 0 100 100">
           <defs>

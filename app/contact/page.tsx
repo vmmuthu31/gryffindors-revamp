@@ -57,7 +57,6 @@ const ContactPage = () => {
           project: "",
         });
 
-        // Reset success message after 5 seconds
         setTimeout(() => {
           setSubmitted(false);
         }, 5000);

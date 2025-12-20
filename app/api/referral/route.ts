@@ -3,7 +3,6 @@ import { prisma } from "@/lib/db";
 import { auth } from "@/auth";
 import { nanoid } from "nanoid";
 
-// GET - Get user's referral info
 export async function GET() {
   try {
     const session = await auth();
@@ -11,7 +10,6 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Get or create referral code
     let user = await prisma.user.findUnique({
       where: { id: session.user.id },
       select: { referralCode: true },
@@ -26,7 +24,6 @@ export async function GET() {
       });
     }
 
-    // Get referral stats
     const referrals = await prisma.referral.findMany({
       where: { referrerId: session.user.id },
       include: {
@@ -64,7 +61,6 @@ export async function GET() {
   }
 }
 
-// POST - Validate and apply referral code
 export async function POST(request: Request) {
   try {
     const { code, userId } = await request.json();
@@ -76,7 +72,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Find referrer by code
     const referrer = await prisma.user.findFirst({
       where: { referralCode: code },
     });
@@ -88,7 +83,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Can't refer yourself
     if (referrer.id === userId) {
       return NextResponse.json(
         { error: "Cannot use your own code" },
@@ -96,7 +90,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Check if user already used a referral
     const existingReferral = await prisma.referral.findFirst({
       where: { referredUserId: userId },
     });
@@ -108,7 +101,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Create referral record
     const referral = await prisma.referral.create({
       data: {
         code: `${code}-${nanoid(4)}`,
@@ -120,7 +112,6 @@ export async function POST(request: Request) {
       },
     });
 
-    // Update referred user
     await prisma.user.update({
       where: { id: userId },
       data: { referredBy: referrer.id },

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -98,11 +98,7 @@ export default function LessonPage() {
   const [fileUrl, setFileUrl] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    fetchLesson();
-  }, [lessonId]);
-
-  const fetchLesson = async () => {
+  const fetchLesson = useCallback(async () => {
     try {
       const res = await fetch(`/api/lessons/${lessonId}`);
       if (res.ok) {
@@ -114,7 +110,11 @@ export default function LessonPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [lessonId]);
+
+  useEffect(() => {
+    fetchLesson();
+  }, [fetchLesson]);
 
   const handleMarkComplete = async () => {
     setCompleting(true);
@@ -160,7 +160,7 @@ export default function LessonPage() {
 
       if (res.ok) {
         toast.success("Task submitted successfully!");
-        await fetchLesson(); // Refresh to get submission status
+        await fetchLesson();
         setSubmissionText("");
         setFileUrl("");
       } else {

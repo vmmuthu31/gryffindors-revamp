@@ -1,5 +1,3 @@
-// AI Service utility for making interview API calls
-
 export interface Message {
   role: "user" | "assistant";
   content: string;
@@ -24,7 +22,6 @@ export async function sendInterviewMessage(
     throw new Error("Failed to get AI response");
   }
 
-  // Handle streaming response
   const reader = response.body?.getReader();
   const decoder = new TextDecoder();
   let result = "";
@@ -40,7 +37,6 @@ export async function sendInterviewMessage(
   return result;
 }
 
-// Non-streaming version for simpler use cases
 export async function getAIResponse(
   prompt: string,
   systemPrompt?: string

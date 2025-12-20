@@ -67,7 +67,7 @@ const EligibilityTest: React.FC<EligibilityTestProps> = ({
     setSubmitted(true);
   };
 
-  const isPassed = score >= 60; // 60% Passing criteria
+  const isPassed = score >= 60;
 
   if (submitted) {
     return (

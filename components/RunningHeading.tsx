@@ -24,7 +24,6 @@ const RunningHeading: React.FC<RunningHeadingProps> = ({
   outlineWidth = "2px",
   outlineColor = "#841a1c",
 }) => {
-  // Create a single heading group
   const HeadingGroup = () => (
     <div className="flex items-center whitespace-nowrap px-12">
       {words.map((word, index) => (

@@ -1,6 +1,3 @@
-// Security utilities for input sanitization and XSS prevention
-
-// HTML entities to escape for XSS prevention
 const htmlEntities: Record<string, string> = {
   "&": "&amp;",
   "<": "&lt;",
@@ -12,39 +9,23 @@ const htmlEntities: Record<string, string> = {
   "=": "&#x3D;",
 };
 
-/**
- * Escape HTML special characters to prevent XSS
- */
 export function escapeHtml(str: string): string {
   if (!str) return "";
   return str.replace(/[&<>"'`=/]/g, (char) => htmlEntities[char] || char);
 }
 
-/**
- * Sanitize user input - removes potentially dangerous patterns
- */
 export function sanitizeInput(input: string): string {
   if (!input) return "";
 
-  return (
-    input
-      // Remove script tags
-      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
-      // Remove on* event handlers
-      .replace(/\s*on\w+\s*=\s*["'][^"']*["']/gi, "")
-      // Remove javascript: and data: URLs
-      .replace(/javascript:/gi, "")
-      .replace(/data:/gi, "")
-      // Remove dangerous tags
-      .replace(/<(iframe|embed|object|form|input|button)[^>]*>/gi, "")
-      // Trim whitespace
-      .trim()
-  );
+  return input
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+    .replace(/\s*on\w+\s*=\s*["'][^"']*["']/gi, "")
+    .replace(/javascript:/gi, "")
+    .replace(/data:/gi, "")
+    .replace(/<(iframe|embed|object|form|input|button)[^>]*>/gi, "")
+    .trim();
 }
 
-/**
- * Validate and sanitize email
- */
 export function sanitizeEmail(email: string): string | null {
   if (!email) return null;
 
@@ -57,9 +38,6 @@ export function sanitizeEmail(email: string): string | null {
   return trimmed;
 }
 
-/**
- * Validate and sanitize URL
- */
 export function sanitizeUrl(url: string): string | null {
   if (!url) return null;
 
@@ -67,7 +45,6 @@ export function sanitizeUrl(url: string): string | null {
 
   try {
     const parsed = new URL(trimmed);
-    // Only allow http and https
     if (!["http:", "https:"].includes(parsed.protocol)) {
       return null;
     }
@@ -77,9 +54,6 @@ export function sanitizeUrl(url: string): string | null {
   }
 }
 
-/**
- * Check for SQL injection patterns (even though Prisma handles this)
- */
 export function hasSqlInjection(input: string): boolean {
   const sqlPatterns = [
     /(\b(SELECT|INSERT|UPDATE|DELETE|DROP|UNION|ALTER|EXEC|EXECUTE)\b)/i,
@@ -91,9 +65,6 @@ export function hasSqlInjection(input: string): boolean {
   return sqlPatterns.some((pattern) => pattern.test(input));
 }
 
-/**
- * Generate secure random token
- */
 export function generateSecureToken(length: number = 32): string {
   const chars =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -108,16 +79,10 @@ export function generateSecureToken(length: number = 32): string {
   return result;
 }
 
-/**
- * Rate limit key generator
- */
 export function getRateLimitKey(ip: string, endpoint: string): string {
   return `rate_limit:${endpoint}:${ip}`;
 }
 
-/**
- * Validate file upload (check extension and size)
- */
 export function validateFileUpload(
   filename: string,
   size: number,
@@ -134,18 +99,15 @@ export function validateFileUpload(
 ): { valid: boolean; error?: string } {
   const ext = filename.toLowerCase().slice(filename.lastIndexOf("."));
 
-  // Check extension
   if (!allowedExtensions.includes(ext)) {
     return { valid: false, error: `File type ${ext} not allowed` };
   }
 
-  // Check size
   const maxBytes = maxSizeMB * 1024 * 1024;
   if (size > maxBytes) {
     return { valid: false, error: `File too large. Max ${maxSizeMB}MB` };
   }
 
-  // Block SVG files (potential XSS vector)
   if (ext === ".svg") {
     return {
       valid: false,

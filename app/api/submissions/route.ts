@@ -13,7 +13,6 @@ export async function POST(request: Request) {
 
     const { lessonId, content, fileUrl } = await request.json();
 
-    // Check if user already has a pending/approved submission for this lesson
     const existingSubmission = await prisma.submission.findFirst({
       where: {
         lessonId,
@@ -35,7 +34,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Check if there's a rejected/resubmit submission - delete it first
     await prisma.submission.deleteMany({
       where: {
         lessonId,
@@ -73,7 +71,6 @@ export async function POST(request: Request) {
       },
     });
 
-    // Find mentor and notify
     const internshipId = submission.lesson.module.course.internship?.id;
     if (internshipId) {
       const application = await prisma.application.findFirst({

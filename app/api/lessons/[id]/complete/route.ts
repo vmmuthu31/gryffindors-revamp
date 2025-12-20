@@ -2,11 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { auth } from "@/auth";
 
-// POST - Mark lesson as complete
-export async function POST(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function POST({ params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
@@ -15,7 +11,6 @@ export async function POST(
 
     const { id: lessonId } = await params;
 
-    // Upsert the progress
     const progress = await prisma.lessonProgress.upsert({
       where: {
         userId_lessonId: {
@@ -45,11 +40,7 @@ export async function POST(
   }
 }
 
-// GET - Check if lesson is complete
-export async function GET(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET({ params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await auth();
     if (!session?.user?.id) {

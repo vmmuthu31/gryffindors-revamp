@@ -1,4 +1,3 @@
-// Track-specific MCQ questions for eligibility test
 export const MOCK_MCQ_QUESTIONS = {
   FULL_STACK: [
     {

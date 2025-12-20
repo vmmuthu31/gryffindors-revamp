@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import EligibilityTest from "@/components/internship/EligibilityTest";
 import { Button } from "@/components/ui/button";
@@ -55,11 +55,7 @@ const ApplyPage = () => {
   );
   const [eligibilityScore, setEligibilityScore] = useState(0);
 
-  useEffect(() => {
-    fetchInternship();
-  }, [internshipId]);
-
-  const fetchInternship = async () => {
+  const fetchInternship = useCallback(async () => {
     try {
       const res = await fetch(`/api/internships/${internshipId}`);
       if (res.ok) {
@@ -71,7 +67,11 @@ const ApplyPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [internshipId]);
+
+  useEffect(() => {
+    fetchInternship();
+  }, [fetchInternship]);
 
   if (loading) {
     return (
@@ -95,7 +95,7 @@ const ApplyPage = () => {
   const handleEligibilityComplete = (passed: boolean, score: number) => {
     setEligibilityScore(score);
     if (passed) {
-      setStep("payment"); // Go directly to payment
+      setStep("payment");
     }
   };
 
@@ -123,7 +123,6 @@ const ApplyPage = () => {
       return;
     }
 
-    // Create Order
     const orderRes = await fetch("/api/payments/create-order", {
       method: "POST",
       body: JSON.stringify({ amount: internship.price }),

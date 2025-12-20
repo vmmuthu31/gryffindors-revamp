@@ -4,7 +4,6 @@ import { auth } from "@/auth";
 import { sendTaskReviewedEmail, sendCertificateEmail } from "@/lib/email";
 import { nanoid } from "nanoid";
 
-// GET single submission
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -52,7 +51,6 @@ export async function GET(
   }
 }
 
-// PATCH - Update submission (mentor review)
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -66,7 +64,6 @@ export async function PATCH(
     const { id } = await params;
     const { status, mentorFeedback, grade } = await request.json();
 
-    // Verify mentor is assigned to this student
     const submission = await prisma.submission.findUnique({
       where: { id },
       include: {
@@ -96,7 +93,6 @@ export async function PATCH(
       );
     }
 
-    // Update submission
     const updated = await prisma.submission.update({
       where: { id },
       data: {
@@ -107,7 +103,6 @@ export async function PATCH(
       },
     });
 
-    // Mark lesson as complete if approved
     if (status === "APPROVED") {
       await prisma.lessonProgress.upsert({
         where: {
@@ -128,14 +123,12 @@ export async function PATCH(
         },
       });
 
-      // Check if all lessons in the course are completed
       await checkAndIssueCertificate(
         submission.userId,
         submission.lesson.module.course.id
       );
     }
 
-    // Send email notification to student
     if (submission.user.email) {
       await sendTaskReviewedEmail(
         submission.user.email,
@@ -156,10 +149,8 @@ export async function PATCH(
   }
 }
 
-// Helper function to check if all lessons are completed and issue certificate
 async function checkAndIssueCertificate(userId: string, courseId: string) {
   try {
-    // Get the course with all its lessons
     const course = await prisma.course.findUnique({
       where: { id: courseId },
       include: {
@@ -167,7 +158,7 @@ async function checkAndIssueCertificate(userId: string, courseId: string) {
         modules: {
           include: {
             lessons: {
-              where: { type: "TASK" }, // Only task lessons require completion
+              where: { type: "TASK" },
               select: { id: true },
             },
           },
@@ -177,14 +168,12 @@ async function checkAndIssueCertificate(userId: string, courseId: string) {
 
     if (!course) return;
 
-    // Get all task lesson IDs in this course
     const allTaskLessonIds = course.modules.flatMap((m) =>
       m.lessons.map((l) => l.id)
     );
 
     if (allTaskLessonIds.length === 0) return;
 
-    // Check how many are completed by this user
     const completedCount = await prisma.lessonProgress.count({
       where: {
         userId,
@@ -193,9 +182,7 @@ async function checkAndIssueCertificate(userId: string, courseId: string) {
       },
     });
 
-    // If all tasks are completed, issue certificate
     if (completedCount >= allTaskLessonIds.length) {
-      // Find the user's application for this internship
       const application = await prisma.application.findFirst({
         where: {
           userId,
@@ -211,14 +198,12 @@ async function checkAndIssueCertificate(userId: string, courseId: string) {
 
       if (!application) return;
 
-      // Check if certificate already exists
       const existingCert = await prisma.certificate.findFirst({
         where: { applicationId: application.id },
       });
 
       if (existingCert) return;
 
-      // Create certificate
       const uniqueCode = `GRYF-${nanoid(8).toUpperCase()}`;
       await prisma.certificate.create({
         data: {
@@ -230,13 +215,11 @@ async function checkAndIssueCertificate(userId: string, courseId: string) {
       });
       console.log(`Certificate created with code: ${uniqueCode}`);
 
-      // Update application status to completed
       await prisma.application.update({
         where: { id: application.id },
         data: { status: "COMPLETED" },
       });
 
-      // Send certificate email
       if (application.user.email) {
         await sendCertificateEmail(
           application.user.email,

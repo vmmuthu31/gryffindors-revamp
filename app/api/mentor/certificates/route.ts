@@ -3,7 +3,6 @@ import { prisma } from "@/lib/db";
 import { auth } from "@/auth";
 import { nanoid } from "nanoid";
 
-// POST - issue certificate
 export async function POST(request: Request) {
   try {
     const session = await auth();
@@ -20,7 +19,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Verify this is mentor's student
     const application = await prisma.application.findFirst({
       where: {
         id: applicationId,
@@ -35,7 +33,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Check if certificate already exists
     const existing = await prisma.certificate.findFirst({
       where: { applicationId },
     });
@@ -47,7 +44,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Create certificate
     const uniqueCode = `GRYF-${nanoid(8).toUpperCase()}`;
     const certificate = await prisma.certificate.create({
       data: {
@@ -58,7 +54,6 @@ export async function POST(request: Request) {
       },
     });
 
-    // Update application status
     await prisma.application.update({
       where: { id: applicationId },
       data: { status: "COMPLETED" },

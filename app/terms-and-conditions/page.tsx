@@ -7,7 +7,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
 
 const TermsPage = () => {
-  // Animation variants for content sections
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {

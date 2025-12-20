@@ -48,7 +48,6 @@ const AnimatedCounter = ({
     };
   }, [counterInView, target, duration]);
 
-  // Format the output to match the target format (e.g., "200+" or "$25k+")
   const formatOutput = () => {
     if (target.includes("$"))
       return `$${count}k${target.includes("+") ? "+" : ""}`;

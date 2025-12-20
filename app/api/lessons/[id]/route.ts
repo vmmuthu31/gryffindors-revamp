@@ -2,11 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { auth } from "@/auth";
 
-// GET lesson with navigation info and submission status
-export async function GET(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET({ params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const session = await auth();
@@ -38,7 +34,6 @@ export async function GET(
       return NextResponse.json({ error: "Lesson not found" }, { status: 404 });
     }
 
-    // Get user's submission for this lesson (if task type)
     let submission = null;
     if (session?.user?.id && lesson.type === "TASK") {
       submission = await prisma.submission.findFirst({
@@ -57,7 +52,6 @@ export async function GET(
       });
     }
 
-    // Find previous and next lessons
     const allLessons = lesson.module.lessons;
     const currentIndex = allLessons.findIndex((l) => l.id === id);
     const prevLesson = currentIndex > 0 ? allLessons[currentIndex - 1] : null;

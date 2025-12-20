@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { auth } from "@/auth";
 
-// GET mentor's assigned students
 export async function GET() {
   try {
     const session = await auth();
@@ -10,7 +9,6 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Get applications where this user is the mentor
     const students = await prisma.application.findMany({
       where: {
         mentorId: session.user.id,

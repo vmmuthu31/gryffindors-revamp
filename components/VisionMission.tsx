@@ -18,11 +18,9 @@ const VisionMission = () => {
       id="about"
       className="lg:py-16 py-6 bg-muted/30 relative overflow-hidden"
     >
-      {/* Decorative Elements */}
       <div className="circle-decoration w-72 h-72 -top-36 right-36 opacity-10"></div>
 
       <div className="container grid grid-cols-1 md:grid-cols-2 gap-12">
-        {/* Vision Section */}
         <div
           ref={visionRef}
           className={`flex flex-col space-y-6 transition-all duration-700 transform ${
@@ -42,7 +40,6 @@ const VisionMission = () => {
           </p>
         </div>
 
-        {/* Mission Section */}
         <div
           ref={missionRef}
           className={`flex flex-col space-y-6 transition-all duration-700 delay-300 transform ${

@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 
-// POST - assign mentor to application
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -17,7 +16,6 @@ export async function POST(
       );
     }
 
-    // Verify mentor exists and is a MENTOR
     const mentor = await prisma.user.findFirst({
       where: { id: mentorId, role: "MENTOR" },
     });
@@ -26,7 +24,6 @@ export async function POST(
       return NextResponse.json({ error: "Invalid mentor" }, { status: 400 });
     }
 
-    // Update application
     const updated = await prisma.application.update({
       where: { id },
       data: { mentorId },

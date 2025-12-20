@@ -7,10 +7,10 @@ import RunningHeading from "@/components/RunningHeading";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 
-// Define project types
 type ProjectCategory =
   | "all"
   | "defi"
@@ -42,7 +42,6 @@ interface ProjectType {
 }
 
 const PortfolioPage = () => {
-  // State for filtering projects
   const [activeCategory, setActiveCategory] = useState<ProjectCategory>("all");
 
   const containerVariants: Record<string, Variant> = {
@@ -230,9 +229,10 @@ const PortfolioPage = () => {
             <motion.div key={project.id} variants={itemVariants}>
               <Card className="bg-white/80 border-none shadow-sm hover:shadow-md transition-all duration-300 h-full overflow-hidden">
                 <div className="relative h-48 w-full overflow-hidden">
-                  <img
+                  <Image
                     src={project.image}
                     alt={project.title}
+                    fill
                     className="object-cover transition-transform duration-500 hover:scale-105"
                   />
                   <div className="absolute top-3 right-3">
