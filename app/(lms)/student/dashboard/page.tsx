@@ -29,7 +29,7 @@ async function getStudentData(userId: string) {
     id: string;
     name: string | null;
     learningStreak: number;
-    total_timeSpent: number;
+    totalTimeSpent: number;
     referralCode: string | null;
   }
   interface AppRow {
@@ -56,7 +56,7 @@ async function getStudentData(userId: string) {
 
   const { data: userData } = await supabaseAdmin
     .from("User")
-    .select("id, name, learningStreak, total_timeSpent, referralCode")
+    .select("id, name, learningStreak, totalTimeSpent, referralCode")
     .eq("id", userId)
     .single();
 
@@ -66,12 +66,14 @@ async function getStudentData(userId: string) {
     const code = `${
       user.name?.split(" ")[0].toUpperCase() || "GRYF"
     }${Math.floor(1000 + Math.random() * 9000)}`;
+
     const { data: updated } = await supabaseAdmin
       .from("User")
       .update({ referralCode: code })
       .eq("id", userId)
-      .select("id, name, learningStreak, total_timeSpent, referralCode")
+      .select("id, name, learningStreak, totalTimeSpent, referralCode")
       .single();
+
     user = updated as UserRow | null;
   }
 

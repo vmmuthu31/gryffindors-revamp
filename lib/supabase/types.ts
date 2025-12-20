@@ -27,10 +27,10 @@ export interface User {
   role: Role;
   emailVerified: boolean;
   otp: string | null;
-  otp_expiry: string | null;
+  otpExpiry: string | null;
   learningStreak: number;
   lastActiveAt: string | null;
-  total_timeSpent: number;
+  totalTimeSpent: number;
   linkedIn: string | null;
   portfolio: string | null;
   currentJob: string | null;
@@ -101,7 +101,7 @@ export interface Referral {
   id: string;
   code: string;
   referrerId: string;
-  referred_userId: string | null;
+  referredUserId: string | null;
   discount: number;
   status: ReferralStatus;
   earnedAmount: number;
@@ -182,10 +182,7 @@ export interface Database {
       Account: {
         Row: Account;
         Insert: Partial<Account> &
-          Pick<
-            Account,
-            "userId" | "type" | "provider" | "providerAccountId"
-          >;
+          Pick<Account, "userId" | "type" | "provider" | "providerAccountId">;
         Update: Partial<Account>;
       };
       Internship: {
@@ -203,10 +200,7 @@ export interface Database {
       InterviewResult: {
         Row: InterviewResult;
         Insert: Partial<InterviewResult> &
-          Pick<
-            InterviewResult,
-            "userId" | "internshipId" | "score" | "passed"
-          >;
+          Pick<InterviewResult, "userId" | "internshipId" | "score" | "passed">;
         Update: Partial<InterviewResult>;
       };
       Referral: {

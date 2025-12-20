@@ -2,6 +2,7 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 import { auth } from "@/auth";
 import { NextResponse } from "next/server";
 import { sendNewSubmissionEmail } from "@/lib/email";
+import { sanitizeInput, sanitizeUrl } from "@/lib/security";
 
 export async function POST(request: Request) {
   try {
@@ -11,7 +12,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { lessonId, content, fileUrl } = await request.json();
+    const {
+      lessonId,
+      content: rawContent,
+      fileUrl: rawFileUrl,
+    } = await request.json();
+    const content = sanitizeInput(rawContent);
+    const fileUrl = sanitizeUrl(rawFileUrl);
 
     const { data: existingSubmission } = await supabaseAdmin
       .from("Submission")

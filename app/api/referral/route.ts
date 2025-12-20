@@ -36,11 +36,11 @@ export async function GET() {
     const referralsWithUsers = await Promise.all(
       (referrals || []).map(async (r) => {
         let referredUser = null;
-        if (r.referred_userId) {
+        if (r.referredUserId) {
           const { data } = await supabaseAdmin
             .from("User")
             .select("name, email")
-            .eq("id", r.referred_userId)
+            .eq("id", r.referredUserId)
             .single();
           referredUser = data;
         }
@@ -122,7 +122,7 @@ export async function POST(request: Request) {
     const { data: existingReferral } = await supabaseAdmin
       .from("Referral")
       .select("id")
-      .eq("referred_userId", userId)
+      .eq("referredUserId", userId)
       .single();
 
     if (existingReferral) {
@@ -135,9 +135,10 @@ export async function POST(request: Request) {
     const { data: referral, error } = await supabaseAdmin
       .from("Referral")
       .insert({
+        id: nanoid(),
         code: `${code}-${nanoid(4)}`,
         referrerId: referrer.id,
-        referred_userId: userId,
+        referredUserId: userId,
         discount: 200,
         status: "USED",
         usedAt: new Date().toISOString(),

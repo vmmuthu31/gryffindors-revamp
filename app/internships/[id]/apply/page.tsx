@@ -151,7 +151,7 @@ const ApplyPage = () => {
     const res = await loadRazorpay();
 
     if (!res) {
-      alert("Razorpay SDK failed to load. Are you online?");
+      toast.error("Razorpay SDK failed to load. Are you online?");
       return;
     }
 
@@ -163,7 +163,7 @@ const ApplyPage = () => {
     });
 
     if (!orderRes.ok) {
-      alert("Server error. Are API keys set?");
+      toast.error("Server error. Are API keys set?");
       return;
     }
 
@@ -178,8 +178,6 @@ const ApplyPage = () => {
       image: "/assets/logo.png",
       order_id: orderData.id,
       handler: function (response: RazorpayResponse) {
-        // Here we could verify payment on server and record the referral usage
-        // For now trusting client side success flow as per existing code
         alert(`Payment Successful! Payment ID: ${response.razorpay_paymentId}`);
         setStep("completed");
       },
@@ -292,7 +290,6 @@ const ApplyPage = () => {
               </div>
             </div>
 
-            {/* Referral Code Input */}
             <div className="mb-6 text-left">
               <label className="text-sm font-medium text-gray-700 block mb-1">
                 Have a referral code?

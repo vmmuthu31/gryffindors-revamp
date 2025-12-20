@@ -57,7 +57,6 @@ export default function RegisterPage() {
         if (!res.ok) {
           setError(data.error || "Registration failed");
         } else {
-          // Send OTP
           const otpRes = await fetch("/api/auth/send-otp", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -72,7 +71,6 @@ export default function RegisterPage() {
           }
         }
       } else {
-        // Verify OTP
         const res = await fetch("/api/auth/verify-otp", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
