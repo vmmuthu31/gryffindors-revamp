@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
@@ -114,8 +114,7 @@ const TeamSection = () => {
   const [hoveredCardId, setHoveredCardId] = useState<number | null>(null);
   const [isAnimating, setIsAnimating] = useState(true);
 
-  // For main team members - shuffling animation
-  const shufflePositions = () => {
+  const shufflePositions = useCallback(() => {
     if (isAnimating) {
       setPositions((prevPositions) => {
         const newPositions = [...prevPositions];
@@ -129,7 +128,7 @@ const TeamSection = () => {
         return newPositions;
       });
     }
-  };
+  }, [isAnimating]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -153,11 +152,10 @@ const TeamSection = () => {
     return () => clearInterval(interval);
   }, [isAnimating]);
 
-  // Main team shuffling interval
   useEffect(() => {
     const interval = setInterval(shufflePositions, 3000);
     return () => clearInterval(interval);
-  }, [isAnimating]);
+  }, [shufflePositions]);
 
   // Handle card hover
   const handleCardHover = (id: number | null) => {

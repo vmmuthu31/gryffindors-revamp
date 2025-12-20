@@ -17,6 +17,31 @@ interface Internship {
   duration: string;
 }
 
+interface RazorpayResponse {
+  razorpay_payment_id: string;
+  razorpay_order_id: string;
+  razorpay_signature: string;
+}
+
+interface RazorpayOptions {
+  key: string | undefined;
+  amount: number;
+  currency: string;
+  name: string;
+  description: string;
+  image: string;
+  order_id: string;
+  handler: (response: RazorpayResponse) => void;
+  prefill: { name: string; email: string };
+  theme: { color: string };
+}
+
+declare global {
+  interface Window {
+    Razorpay: new (options: RazorpayOptions) => { open: () => void };
+  }
+}
+
 const ApplyPage = () => {
   const params = useParams();
   const router = useRouter();
@@ -111,7 +136,7 @@ const ApplyPage = () => {
 
     const orderData = await orderRes.json();
 
-    const options = {
+    const options: RazorpayOptions = {
       key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
       amount: orderData.amount,
       currency: orderData.currency,
@@ -119,8 +144,7 @@ const ApplyPage = () => {
       description: `Internship Enrollment: ${internship.title}`,
       image: "/assets/logo.png",
       order_id: orderData.id,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      handler: function (response: any) {
+      handler: function (response: RazorpayResponse) {
         alert(
           `Payment Successful! Payment ID: ${response.razorpay_payment_id}`
         );
@@ -135,8 +159,7 @@ const ApplyPage = () => {
       },
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const paymentObject = new (window as any).Razorpay(options);
+    const paymentObject = new window.Razorpay(options);
     paymentObject.open();
   };
 

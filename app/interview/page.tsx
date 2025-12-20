@@ -319,8 +319,7 @@ function InterviewContent() {
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
                     e.preventDefault();
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    handleSubmit(e as any);
+                    handleSubmit(e);
                   }
                 }}
               />

@@ -3,7 +3,6 @@ import { prisma } from "@/lib/db";
 import { Role } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
-// GET all users (with optional role filter)
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -39,7 +38,6 @@ export async function GET(request: Request) {
   }
 }
 
-// POST create new user
 export async function POST(request: Request) {
   try {
     const data = await request.json();

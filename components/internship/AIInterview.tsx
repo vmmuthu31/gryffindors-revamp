@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import Webcam from "react-webcam";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -273,7 +273,34 @@ const AIInterview: React.FC<AIInterviewProps> = ({ track, onComplete }) => {
     };
   }, [step]);
 
-  // Timer
+  const calculateScore = useCallback(() => {
+    let total = 0;
+    const max = questions.reduce((a, q) => a + q.points, 0);
+
+    answers.forEach((ans, i) => {
+      const q = questions[i];
+      if (q.type === "mcq" && ans === q.correct) {
+        total += q.points;
+      } else if (
+        q.type === "debug" &&
+        typeof ans === "string" &&
+        Array.isArray(q.correct)
+      ) {
+        const userAnswer = ans.toLowerCase();
+        const matches = q.correct.some((keyword) =>
+          userAnswer.includes(keyword.toLowerCase())
+        );
+        if (matches) {
+          total += q.points;
+        }
+      }
+    });
+
+    total = Math.max(0, total - violations * 10);
+    setScore(Math.round((total / max) * 100));
+    setStep("result");
+  }, [answers, questions, violations]);
+
   useEffect(() => {
     if (step !== "test" || timeLeft <= 0) return;
     const timer = setInterval(() => {
@@ -287,7 +314,7 @@ const AIInterview: React.FC<AIInterviewProps> = ({ track, onComplete }) => {
       });
     }, 1000);
     return () => clearInterval(timer);
-  }, [step, timeLeft]);
+  }, [step, timeLeft, calculateScore]);
 
   const handleWebcamReady = () => {
     setCameraReady(true);
@@ -326,35 +353,6 @@ const AIInterview: React.FC<AIInterviewProps> = ({ track, onComplete }) => {
     } else {
       calculateScore();
     }
-  };
-
-  const calculateScore = () => {
-    let total = 0;
-    const max = questions.reduce((a, q) => a + q.points, 0);
-
-    answers.forEach((ans, i) => {
-      const q = questions[i];
-      if (q.type === "mcq" && ans === q.correct) {
-        total += q.points;
-      } else if (
-        q.type === "debug" &&
-        typeof ans === "string" &&
-        Array.isArray(q.correct)
-      ) {
-        // Check if any keyword matches
-        const userAnswer = ans.toLowerCase();
-        const matches = q.correct.some((keyword) =>
-          userAnswer.includes(keyword.toLowerCase())
-        );
-        if (matches) {
-          total += q.points;
-        }
-      }
-    });
-
-    total = Math.max(0, total - violations * 10);
-    setScore(Math.round((total / max) * 100));
-    setStep("result");
   };
 
   const formatTime = (s: number) =>

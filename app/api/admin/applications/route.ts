@@ -1,15 +1,14 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { AppStatus } from "@prisma/client";
 
-// GET applications with optional status filter
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get("status");
 
     const applications = await prisma.application.findMany({
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      where: status ? { status: status as any } : undefined,
+      where: status ? { status: status as AppStatus } : undefined,
       orderBy: { createdAt: "desc" },
       include: {
         user: {

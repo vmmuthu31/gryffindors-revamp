@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, Variant } from "framer-motion";
 import { Tab } from "@headlessui/react";
 import RunningHeading from "@/components/RunningHeading";
 import { Card, CardContent } from "@/components/ui/card";
@@ -45,9 +45,7 @@ const PortfolioPage = () => {
   // State for filtering projects
   const [activeCategory, setActiveCategory] = useState<ProjectCategory>("all");
 
-  // Animation variants
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const containerVariants: Record<string, any> = {
+  const containerVariants: Record<string, Variant> = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
@@ -57,8 +55,7 @@ const PortfolioPage = () => {
     },
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const itemVariants: Record<string, any> = {
+  const itemVariants: Record<string, Variant> = {
     hidden: { opacity: 0, y: 20 },
     visible: {
       opacity: 1,
