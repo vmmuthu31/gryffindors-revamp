@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { NextResponse } from "next/server";
 import { sendNewSubmissionEmail } from "@/lib/email";
 import { sanitizeInput, sanitizeUrl } from "@/lib/security";
+import { nanoid } from "nanoid";
 
 export async function POST(request: Request) {
   try {
@@ -52,6 +53,7 @@ export async function POST(request: Request) {
     const { data: submission, error } = await supabaseAdmin
       .from("Submission")
       .insert({
+        id: nanoid(),
         lessonId: lessonId,
         userId: session.user.id,
         content,

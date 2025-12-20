@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import type { Role } from "@/lib/supabase/types";
 import bcrypt from "bcryptjs";
+import { nanoid } from "nanoid";
 
 export async function GET(request: Request) {
   try {
@@ -91,6 +92,7 @@ export async function POST(request: Request) {
     const { data: user, error } = await supabaseAdmin
       .from("User")
       .insert({
+        id: nanoid(),
         name: data.name || null,
         email: data.email,
         passwordHash: passwordHash,

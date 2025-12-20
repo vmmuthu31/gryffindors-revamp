@@ -150,6 +150,7 @@ export async function PATCH(
           .eq("id", existing.id);
       } else {
         await supabaseAdmin.from("LessonProgress").insert({
+          id: nanoid(),
           userId: submission.userId,
           lessonId: submission.lessonId,
           completed: true,
@@ -255,6 +256,7 @@ async function checkAndIssueCertificate(userId: string, courseId: string) {
 
       const uniqueCode = `GRYF-${nanoid(8).toUpperCase()}`;
       await supabaseAdmin.from("Certificate").insert({
+        id: nanoid(),
         applicationId: application.id,
         userId: userId,
         uniqueCode: uniqueCode,

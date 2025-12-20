@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { auth } from "@/auth";
+import { nanoid } from "nanoid";
 
 export async function POST(
   _request: Request,
@@ -39,6 +40,7 @@ export async function POST(
       const { data, error } = await supabaseAdmin
         .from("LessonProgress")
         .insert({
+          id: nanoid(),
           userId: session.user.id,
           lessonId: lessonId,
           completed: true,

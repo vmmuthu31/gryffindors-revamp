@@ -3,6 +3,7 @@ import { LanguageModel, streamText } from "ai";
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { auth } from "@/auth";
+import { nanoid } from "nanoid";
 
 const groq = createGroq({
   apiKey: process.env.GROQ_API_KEY,
@@ -126,6 +127,7 @@ async function handleInterviewComplete(
         .eq("id", existing.id);
     } else {
       await supabaseAdmin.from("InterviewResult").insert({
+        id: nanoid(),
         userId: userId,
         internshipId: internshipId,
         score,

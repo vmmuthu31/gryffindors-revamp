@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { nanoid } from "nanoid";
 
 export async function GET() {
   try {
@@ -73,6 +74,7 @@ export async function POST(request: Request) {
     const { data: course, error } = await supabaseAdmin
       .from("Course")
       .insert({
+        id: nanoid(),
         internshipId: data.internshipId,
         title: data.title,
         description: data.description || "",

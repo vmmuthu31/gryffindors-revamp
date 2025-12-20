@@ -50,6 +50,7 @@ export async function POST(request: Request) {
     const { data: certificate, error } = await supabaseAdmin
       .from("Certificate")
       .insert({
+        id: nanoid(),
         applicationId: applicationId,
         userId: application.userId,
         uniqueCode: uniqueCode,

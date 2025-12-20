@@ -81,7 +81,8 @@ async function getStudentData(userId: string) {
     .from("Application")
     .select("id, internshipId")
     .eq("userId", userId)
-    .in("status", ["ENROLLED", "IN_PROGRESS"])
+    .in("status", ["ENROLLED", "IN_PROGRESS", "COMPLETED"])
+    .order("createdAt", { ascending: false })
     .limit(1)
     .single();
 

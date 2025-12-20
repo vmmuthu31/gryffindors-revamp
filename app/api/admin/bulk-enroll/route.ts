@@ -117,6 +117,7 @@ export async function POST(request: Request) {
           const { data: newUser, error: createError } = await supabaseAdmin
             .from("User")
             .insert({
+              id: nanoid(),
               email,
               name,
               passwordHash: hashedPassword,
@@ -151,6 +152,7 @@ export async function POST(request: Request) {
         }
 
         await supabaseAdmin.from("Application").insert({
+          id: nanoid(),
           userId: user.id,
           internshipId: internshipId,
           mentorId: mentorId || null,
