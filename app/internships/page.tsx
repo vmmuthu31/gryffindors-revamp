@@ -4,11 +4,12 @@ import {
   Code,
   Cpu,
   Database,
-  GraduationCap,
   Clock,
   Users,
   Trophy,
 } from "lucide-react";
+
+export const dynamic = "force-dynamic";
 import { Button } from "@/components/ui/button";
 import {
   Card,
