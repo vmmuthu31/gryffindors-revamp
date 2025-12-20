@@ -22,6 +22,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { toast } from "sonner";
+import type { LucideIcon } from "lucide-react";
 
 interface SubmissionData {
   id: string;
@@ -55,7 +56,7 @@ interface LessonData {
 
 const statusConfig: Record<
   string,
-  { color: string; icon: any; label: string }
+  { color: string; icon: LucideIcon; label: string }
 > = {
   PENDING: {
     color: "bg-yellow-100 text-yellow-700",

@@ -8,6 +8,7 @@ export async function GET(request: Request) {
     const status = searchParams.get("status");
 
     const applications = await prisma.application.findMany({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       where: status ? { status: status as any } : undefined,
       orderBy: { createdAt: "desc" },
       include: {

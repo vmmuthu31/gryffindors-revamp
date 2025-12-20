@@ -15,6 +15,12 @@ import { Progress } from "@/components/ui/progress";
 import { MOCK_MCQ_QUESTIONS } from "@/lib/mock-data/eligibility";
 import { CheckCircle2, AlertCircle } from "lucide-react";
 
+interface Question {
+  question: string;
+  options: string[];
+  correct: number;
+}
+
 interface EligibilityTestProps {
   track: string;
   onComplete: (passed: boolean, score: number) => void;
@@ -24,10 +30,11 @@ const EligibilityTest: React.FC<EligibilityTestProps> = ({
   track,
   onComplete,
 }) => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const questions =
-    (MOCK_MCQ_QUESTIONS as any)[track] ||
-    (MOCK_MCQ_QUESTIONS as any)["Full Stack Development"];
+  const questions: Question[] =
+    (MOCK_MCQ_QUESTIONS as Record<string, Question[]>)[track] ||
+    (MOCK_MCQ_QUESTIONS as Record<string, Question[]>)[
+      "Full Stack Development"
+    ];
 
   const [currentQIndex, setCurrentQIndex] = useState(0);
   const [answers, setAnswers] = useState<number[]>(

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { Role } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
 // GET all users (with optional role filter)
@@ -9,7 +10,7 @@ export async function GET(request: Request) {
     const role = searchParams.get("role");
 
     const users = await prisma.user.findMany({
-      where: role ? { role: role as any } : undefined,
+      where: role ? { role: role as Role } : undefined,
       orderBy: { createdAt: "desc" },
       select: {
         id: true,

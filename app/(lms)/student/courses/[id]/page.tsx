@@ -1,5 +1,4 @@
 import { prisma } from "@/lib/db";
-import { auth } from "@/auth";
 import {
   Accordion,
   AccordionContent,
@@ -17,6 +16,20 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+
+interface Lesson {
+  id: string;
+  title: string;
+  type: string;
+  duration: number | null;
+}
+
+interface Module {
+  id: string;
+  title: string;
+  order: number;
+  lessons: Lesson[];
+}
 
 async function getCourse(courseId: string) {
   const course = await prisma.course.findUnique({
@@ -42,7 +55,6 @@ export default async function CourseDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const session = await auth();
   const course = await getCourse(id);
 
   if (!course) {
@@ -50,7 +62,7 @@ export default async function CourseDetailPage({
   }
 
   const totalLessons = course.modules.reduce(
-    (acc: number, mod: any) => acc + mod.lessons.length,
+    (acc: number, mod: Module) => acc + mod.lessons.length,
     0
   );
   // Mock completed - would come from submissions
@@ -114,7 +126,7 @@ export default async function CourseDetailPage({
             className="w-full"
             defaultValue="module-0"
           >
-            {course.modules.map((module: any, idx: number) => (
+            {course.modules.map((module: Module, idx: number) => (
               <AccordionItem key={module.id} value={`module-${idx}`}>
                 <AccordionTrigger className="hover:no-underline px-4 py-4 hover:bg-gray-50 rounded-lg">
                   <div className="flex items-center gap-4 text-left">
@@ -131,7 +143,7 @@ export default async function CourseDetailPage({
                 </AccordionTrigger>
                 <AccordionContent className="px-4">
                   <div className="space-y-1 ml-12">
-                    {module.lessons.map((lesson: any) => {
+                    {module.lessons.map((lesson: Lesson) => {
                       // Mock completed status
                       const isCompleted = false;
 

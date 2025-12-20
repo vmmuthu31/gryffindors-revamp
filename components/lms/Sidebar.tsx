@@ -11,7 +11,6 @@ import {
   ClipboardList,
   Users,
   LogOut,
-  GraduationCap,
   FolderOpen,
   Home,
   Loader2,
@@ -45,7 +44,8 @@ export default function LMSSidebar() {
   const { data: session, status } = useSession();
 
   // Get role from session
-  const role = (session?.user as any)?.role || "STUDENT";
+  const role =
+    (session?.user as { role?: string } | undefined)?.role || "STUDENT";
 
   const links =
     role === "ADMIN"

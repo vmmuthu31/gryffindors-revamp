@@ -220,7 +220,7 @@ async function checkAndIssueCertificate(userId: string, courseId: string) {
 
       // Create certificate
       const uniqueCode = `GRYF-${nanoid(8).toUpperCase()}`;
-      const certificate = await prisma.certificate.create({
+      await prisma.certificate.create({
         data: {
           applicationId: application.id,
           userId,
@@ -228,6 +228,7 @@ async function checkAndIssueCertificate(userId: string, courseId: string) {
           grade: "Pass",
         },
       });
+      console.log(`Certificate created with code: ${uniqueCode}`);
 
       // Update application status to completed
       await prisma.application.update({

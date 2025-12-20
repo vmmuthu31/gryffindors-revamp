@@ -68,7 +68,7 @@ export async function GET(
     });
 
     return NextResponse.json({ completed: progress?.completed || false });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ completed: false });
   }
 }

@@ -6,7 +6,6 @@ import {
   XCircle,
   User,
   Calendar,
-  GraduationCap,
   Download,
 } from "lucide-react";
 import Link from "next/link";

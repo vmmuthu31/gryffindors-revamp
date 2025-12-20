@@ -10,7 +10,6 @@ import {
   MessageSquare,
   Send,
   Loader2,
-  CheckCircle,
   XCircle,
   Bot,
   User,
@@ -27,6 +26,11 @@ const trackInfo: Record<string, { name: string; color: string }> = {
 
 import { Suspense } from "react";
 
+interface ExistingResult {
+  score: number;
+  passed: boolean;
+}
+
 function InterviewContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -38,7 +42,9 @@ function InterviewContent() {
     score: number;
     passed: boolean;
   } | null>(null);
-  const [existingResult, setExistingResult] = useState<any>(null);
+  const [existingResult, setExistingResult] = useState<ExistingResult | null>(
+    null
+  );
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const { messages, input, handleInputChange, handleSubmit, isLoading } =
@@ -313,6 +319,7 @@ function InterviewContent() {
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
                     e.preventDefault();
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     handleSubmit(e as any);
                   }
                 }}
