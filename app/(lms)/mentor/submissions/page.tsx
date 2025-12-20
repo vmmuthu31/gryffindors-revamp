@@ -45,7 +45,7 @@ async function getSubmissions(mentorId: string): Promise<Submission[]> {
   const { data: assignedApps } = await supabaseAdmin
     .from("Application")
     .select("userId")
-    .eq("mentor_id", mentorId);
+    .eq("mentorId", mentorId);
 
   const assignedApplications = (assignedApps || []) as AppRow[];
   const assignedUserIds = assignedApplications.map((a) => a.userId);

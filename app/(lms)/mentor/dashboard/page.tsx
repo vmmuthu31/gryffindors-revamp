@@ -1,4 +1,5 @@
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { auth } from "@/auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ClipboardList, CheckCircle, Clock, AlertCircle } from "lucide-react";
 import Link from "next/link";
@@ -6,26 +7,48 @@ import Link from "next/link";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-async function getStats() {
+async function getStats(mentorId: string) {
+  const { data: assignedApps } = await supabaseAdmin
+    .from("Application")
+    .select("userId")
+    .eq("mentorId", mentorId);
+
+  const assignedUserIds = (assignedApps || []).map(
+    (a) => (a as { userId: string }).userId
+  );
+
+  if (assignedUserIds.length === 0) {
+    return {
+      pending: 0,
+      underReview: 0,
+      approved: 0,
+      rejected: 0,
+    };
+  }
+
   const { count: pending } = await supabaseAdmin
     .from("Submission")
     .select("*", { count: "exact", head: true })
-    .eq("status", "PENDING");
+    .eq("status", "PENDING")
+    .in("userId", assignedUserIds);
 
   const { count: underReview } = await supabaseAdmin
     .from("Submission")
     .select("*", { count: "exact", head: true })
-    .eq("status", "UNDER_REVIEW");
+    .eq("status", "UNDER_REVIEW")
+    .in("userId", assignedUserIds);
 
   const { count: approved } = await supabaseAdmin
     .from("Submission")
     .select("*", { count: "exact", head: true })
-    .eq("status", "APPROVED");
+    .eq("status", "APPROVED")
+    .in("userId", assignedUserIds);
 
   const { count: rejected } = await supabaseAdmin
     .from("Submission")
     .select("*", { count: "exact", head: true })
-    .eq("status", "REJECTED");
+    .eq("status", "REJECTED")
+    .in("userId", assignedUserIds);
 
   return {
     pending: pending || 0,
@@ -36,7 +59,13 @@ async function getStats() {
 }
 
 export default async function MentorDashboard() {
-  const stats = await getStats();
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    return <div className="p-8">Please log in.</div>;
+  }
+
+  const stats = await getStats(session.user.id);
 
   return (
     <div className="space-y-8">
