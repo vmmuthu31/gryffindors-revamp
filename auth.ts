@@ -28,9 +28,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        console.log("[Auth] Authorizing:", credentials?.email);
         if (!credentials?.email || !credentials?.password) {
-          console.log("[Auth] Missing credentials");
           return null;
         }
 
@@ -39,10 +37,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           .select("*")
           .eq("email", credentials.email as string)
           .single();
-
-        if (user) {
-          console.log("[Auth] User found. Keys:", Object.keys(user));
-        }
 
         if (error) {
           console.error("[Auth] Supabase error:", error);

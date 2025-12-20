@@ -275,8 +275,6 @@ async function checkAndIssueCertificate(userId: string, courseId: string) {
           "Pass"
         );
       }
-
-      console.log(`Certificate issued: ${uniqueCode} for user ${userId}`);
     }
   } catch (error) {
     console.error("Failed to check/issue certificate:", error);

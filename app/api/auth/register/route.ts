@@ -1,6 +1,7 @@
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
+import { nanoid } from "nanoid";
 
 export async function POST(request: Request) {
   try {
@@ -31,10 +32,12 @@ export async function POST(request: Request) {
     const { data: user, error } = await supabaseAdmin
       .from("User")
       .insert({
+        id: nanoid(),
         name,
         email,
         passwordHash: passwordHash,
         role: "STUDENT",
+        updatedAt: new Date().toISOString(),
       })
       .select("id, email, name")
       .single();
