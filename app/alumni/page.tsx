@@ -37,26 +37,26 @@ async function getAlumni(): Promise<Alumni[]> {
       name: string | null;
       email: string;
       bio: string | null;
-      current_job: string | null;
+      currentJob: string | null;
       company: string | null;
-      linked_in: string | null;
+      linkedIn: string | null;
       portfolio: string | null;
     }
     interface CertRow {
       id: string;
-      application_id: string;
+      applicationId: string;
     }
     interface AppRow {
-      internship_id: string;
+      internshipId: string;
     }
 
     const { data, error } = await supabaseAdmin
       .from("User")
       .select(
-        "id, name, email, bio, current_job, company, linked_in, portfolio"
+        "id, name, email, bio, currentJob, company, linkedIn, portfolio"
       )
-      .eq("is_alumni", true)
-      .order("created_at", { ascending: false })
+      .eq("isAlumni", true)
+      .order("createdAt", { ascending: false })
       .limit(50);
 
     if (error) throw error;
@@ -67,8 +67,8 @@ async function getAlumni(): Promise<Alumni[]> {
       users.map(async (user) => {
         const { data: certData } = await supabaseAdmin
           .from("Certificate")
-          .select("id, application_id")
-          .eq("user_id", user.id);
+          .select("id, applicationId")
+          .eq("userId", user.id);
 
         const certificates = (certData || []) as CertRow[];
 
@@ -76,8 +76,8 @@ async function getAlumni(): Promise<Alumni[]> {
           certificates.map(async (cert) => {
             const { data: appData } = await supabaseAdmin
               .from("Application")
-              .select("internship_id")
-              .eq("id", cert.application_id)
+              .select("internshipId")
+              .eq("id", cert.applicationId)
               .single();
 
             const application = appData as AppRow | null;
@@ -87,7 +87,7 @@ async function getAlumni(): Promise<Alumni[]> {
               const { data: i } = await supabaseAdmin
                 .from("Internship")
                 .select("title, track")
-                .eq("id", application.internship_id)
+                .eq("id", application.internshipId)
                 .single();
               internship = (i as { title: string; track: string } | null) || {
                 title: "",
@@ -107,9 +107,9 @@ async function getAlumni(): Promise<Alumni[]> {
           name: user.name,
           email: user.email,
           bio: user.bio,
-          currentJob: user.current_job,
+          currentJob: user.currentJob,
           company: user.company,
-          linkedIn: user.linked_in,
+          linkedIn: user.linkedIn,
           portfolio: user.portfolio,
           certificates: certsWithRelations,
         };

@@ -21,7 +21,7 @@ export async function POST(request: Request) {
 
     const { data: application, error: appError } = await supabaseAdmin
       .from("Application")
-      .select("id, user_id")
+      .select("id, userId")
       .eq("id", applicationId)
       .eq("mentor_id", session.user.id)
       .single();
@@ -36,7 +36,7 @@ export async function POST(request: Request) {
     const { data: existing } = await supabaseAdmin
       .from("Certificate")
       .select("id")
-      .eq("application_id", applicationId)
+      .eq("applicationId", applicationId)
       .single();
 
     if (existing) {
@@ -50,9 +50,9 @@ export async function POST(request: Request) {
     const { data: certificate, error } = await supabaseAdmin
       .from("Certificate")
       .insert({
-        application_id: applicationId,
-        user_id: application.user_id,
-        unique_code: uniqueCode,
+        applicationId: applicationId,
+        userId: application.userId,
+        uniqueCode: uniqueCode,
         grade: grade || "Pass",
       })
       .select()

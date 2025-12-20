@@ -12,17 +12,17 @@ export async function GET() {
 
     let { data: user } = await supabaseAdmin
       .from("User")
-      .select("referral_code")
+      .select("referralCode")
       .eq("id", session.user.id)
       .single();
 
-    if (!user?.referral_code) {
+    if (!user?.referralCode) {
       const code = `GRYF${nanoid(6).toUpperCase()}`;
       const { data: updated } = await supabaseAdmin
         .from("User")
-        .update({ referral_code: code })
+        .update({ referralCode: code })
         .eq("id", session.user.id)
-        .select("referral_code")
+        .select("referralCode")
         .single();
       user = updated;
     }
@@ -30,16 +30,16 @@ export async function GET() {
     const { data: referrals } = await supabaseAdmin
       .from("Referral")
       .select("*")
-      .eq("referrer_id", session.user.id);
+      .eq("referrerId", session.user.id);
 
     const referralsWithUsers = await Promise.all(
       (referrals || []).map(async (r) => {
         let referredUser = null;
-        if (r.referred_user_id) {
+        if (r.referred_userId) {
           const { data } = await supabaseAdmin
             .from("User")
             .select("name, email")
-            .eq("id", r.referred_user_id)
+            .eq("id", r.referred_userId)
             .single();
           referredUser = data;
         }
@@ -49,23 +49,23 @@ export async function GET() {
 
     const totalEarnings = referralsWithUsers
       .filter((r) => r.status === "PAID")
-      .reduce((acc, r) => acc + (r.earned_amount || 0), 0);
+      .reduce((acc, r) => acc + (r.earnedAmount || 0), 0);
 
     const usedCount = referralsWithUsers.filter(
       (r) => r.status !== "PENDING"
     ).length;
 
     return NextResponse.json({
-      code: user?.referral_code,
+      code: user?.referralCode,
       totalReferrals: referralsWithUsers.length,
       usedReferrals: usedCount,
       totalEarnings,
       referrals: referralsWithUsers.map((r) => ({
         id: r.id,
         status: r.status,
-        usedAt: r.used_at,
+        usedAt: r.usedAt,
         referredUser: r.referredUser,
-        earnedAmount: r.earned_amount,
+        earnedAmount: r.earnedAmount,
       })),
     });
   } catch (error) {
@@ -91,7 +91,7 @@ export async function POST(request: Request) {
     const { data: referrer } = await supabaseAdmin
       .from("User")
       .select("id")
-      .eq("referral_code", code)
+      .eq("referralCode", code)
       .single();
 
     if (!referrer) {
@@ -111,7 +111,7 @@ export async function POST(request: Request) {
     const { data: existingReferral } = await supabaseAdmin
       .from("Referral")
       .select("id")
-      .eq("referred_user_id", userId)
+      .eq("referred_userId", userId)
       .single();
 
     if (existingReferral) {
@@ -125,11 +125,11 @@ export async function POST(request: Request) {
       .from("Referral")
       .insert({
         code: `${code}-${nanoid(4)}`,
-        referrer_id: referrer.id,
-        referred_user_id: userId,
+        referrerId: referrer.id,
+        referred_userId: userId,
         discount: 200,
         status: "USED",
-        used_at: new Date().toISOString(),
+        usedAt: new Date().toISOString(),
       })
       .select()
       .single();
@@ -138,7 +138,7 @@ export async function POST(request: Request) {
 
     await supabaseAdmin
       .from("User")
-      .update({ referred_by: referrer.id })
+      .update({ referredBy: referrer.id })
       .eq("id", userId);
 
     return NextResponse.json({

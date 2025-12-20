@@ -21,13 +21,13 @@ export async function GET(
     const { data: internship } = await supabaseAdmin
       .from("Internship")
       .select("*")
-      .eq("id", course.internship_id)
+      .eq("id", course.internshipId)
       .single();
 
     const { data: modules } = await supabaseAdmin
       .from("Module")
       .select("*")
-      .eq("course_id", id)
+      .eq("courseId", id)
       .order("order");
 
     const modulesWithLessons = await Promise.all(
@@ -35,7 +35,7 @@ export async function GET(
         const { data: lessons } = await supabaseAdmin
           .from("Lesson")
           .select("*")
-          .eq("module_id", module.id)
+          .eq("moduleId", module.id)
           .order("order");
 
         return { ...module, lessons: lessons || [] };

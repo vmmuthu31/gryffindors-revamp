@@ -11,7 +11,7 @@ export async function GET(
     const { data: certificate, error } = await supabaseAdmin
       .from("Certificate")
       .select("*")
-      .eq("unique_code", code)
+      .eq("uniqueCode", code)
       .single();
 
     if (error || !certificate) {
@@ -24,13 +24,13 @@ export async function GET(
     const { data: user } = await supabaseAdmin
       .from("User")
       .select("name, email")
-      .eq("id", certificate.user_id)
+      .eq("id", certificate.userId)
       .single();
 
     const { data: application } = await supabaseAdmin
       .from("Application")
-      .select("internship_id")
-      .eq("id", certificate.application_id)
+      .select("internshipId")
+      .eq("id", certificate.applicationId)
       .single();
 
     let internship = null;
@@ -38,14 +38,14 @@ export async function GET(
       const { data } = await supabaseAdmin
         .from("Internship")
         .select("title, track")
-        .eq("id", application.internship_id)
+        .eq("id", application.internshipId)
         .single();
       internship = data;
     }
 
     const studentName = user?.name || "Student";
     const programTitle = internship?.title || "Internship Program";
-    const issuedDate = new Date(certificate.issued_at).toLocaleDateString(
+    const issuedDate = new Date(certificate.issuedAt).toLocaleDateString(
       "en-IN",
       {
         year: "numeric",
@@ -54,7 +54,7 @@ export async function GET(
       }
     );
     const grade = certificate.grade || "Pass";
-    const uniqueCode = certificate.unique_code;
+    const uniqueCode = certificate.uniqueCode;
 
     const requestUrl = new URL(request.url);
     const baseUrl = `${requestUrl.protocol}//${requestUrl.host}`;

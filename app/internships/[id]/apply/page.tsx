@@ -18,7 +18,7 @@ interface Internship {
 }
 
 interface RazorpayResponse {
-  razorpay_payment_id: string;
+  razorpay_paymentId: string;
   razorpay_order_id: string;
   razorpay_signature: string;
 }
@@ -145,7 +145,7 @@ const ApplyPage = () => {
       order_id: orderData.id,
       handler: function (response: RazorpayResponse) {
         alert(
-          `Payment Successful! Payment ID: ${response.razorpay_payment_id}`
+          `Payment Successful! Payment ID: ${response.razorpay_paymentId}`
         );
         setStep("completed");
       },

@@ -33,7 +33,7 @@ interface Course {
 async function getEnrolledCourses(userId: string) {
   interface AppRow {
     id: string;
-    internship_id: string;
+    internshipId: string;
   }
   interface InternRow {
     id: string;
@@ -56,8 +56,8 @@ async function getEnrolledCourses(userId: string) {
 
   const { data: apps } = await supabaseAdmin
     .from("Application")
-    .select("id, internship_id")
-    .eq("user_id", userId)
+    .select("id, internshipId")
+    .eq("userId", userId)
     .in("status", ["ENROLLED", "IN_PROGRESS", "COMPLETED"]);
 
   const applications = (apps || []) as AppRow[];
@@ -67,7 +67,7 @@ async function getEnrolledCourses(userId: string) {
     const { data: intData } = await supabaseAdmin
       .from("Internship")
       .select("id, title, track")
-      .eq("id", app.internship_id)
+      .eq("id", app.internshipId)
       .single();
 
     const internship = intData as InternRow | null;
@@ -75,7 +75,7 @@ async function getEnrolledCourses(userId: string) {
     const { data: cList } = await supabaseAdmin
       .from("Course")
       .select("id, title")
-      .eq("internship_id", app.internship_id)
+      .eq("internshipId", app.internshipId)
       .order("order");
 
     const coursesList = (cList || []) as CourseRow[];
@@ -84,7 +84,7 @@ async function getEnrolledCourses(userId: string) {
       const { data: mods } = await supabaseAdmin
         .from("Module")
         .select("id")
-        .eq("course_id", course.id)
+        .eq("courseId", course.id)
         .order("order");
 
       const modules = (mods || []) as ModRow[];
@@ -94,7 +94,7 @@ async function getEnrolledCourses(userId: string) {
           const { data: lessonData } = await supabaseAdmin
             .from("Lesson")
             .select("id, title, type, duration")
-            .eq("module_id", mod.id)
+            .eq("moduleId", mod.id)
             .order("order");
 
           const lessons = (lessonData || []) as LessonRow[];
@@ -119,19 +119,19 @@ async function getUserProgress(userId: string, lessonIds: string[]) {
   if (lessonIds.length === 0) return new Set<string>();
 
   interface ProgressRow {
-    lesson_id: string;
+    lessonId: string;
   }
 
   const { data } = await supabaseAdmin
     .from("LessonProgress")
-    .select("lesson_id")
-    .eq("user_id", userId)
-    .in("lesson_id", lessonIds)
+    .select("lessonId")
+    .eq("userId", userId)
+    .in("lessonId", lessonIds)
     .eq("completed", true);
 
   const progress = (data || []) as ProgressRow[];
 
-  return new Set(progress.map((p) => p.lesson_id));
+  return new Set(progress.map((p) => p.lessonId));
 }
 
 export default async function CoursesPage() {

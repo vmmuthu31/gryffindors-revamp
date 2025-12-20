@@ -24,40 +24,40 @@ interface Submission {
 
 async function getSubmissions(mentorId: string): Promise<Submission[]> {
   interface AppRow {
-    user_id: string;
+    userId: string;
   }
   interface SubRow {
     id: string;
     status: string;
-    submitted_at: string;
-    user_id: string;
-    lesson_id: string;
+    submittedAt: string;
+    userId: string;
+    lessonId: string;
   }
   interface LessonRow {
     title: string;
-    module_id: string;
+    moduleId: string;
   }
   interface ModRow {
     title: string;
-    course_id: string;
+    courseId: string;
   }
 
   const { data: assignedApps } = await supabaseAdmin
     .from("Application")
-    .select("user_id")
+    .select("userId")
     .eq("mentor_id", mentorId);
 
   const assignedApplications = (assignedApps || []) as AppRow[];
-  const assignedUserIds = assignedApplications.map((a) => a.user_id);
+  const assignedUserIds = assignedApplications.map((a) => a.userId);
 
   if (assignedUserIds.length === 0) return [];
 
   const { data: subs } = await supabaseAdmin
     .from("Submission")
-    .select("id, status, submitted_at, user_id, lesson_id")
+    .select("id, status, submittedAt, userId, lessonId")
     .in("status", ["PENDING", "UNDER_REVIEW"])
-    .in("user_id", assignedUserIds)
-    .order("submitted_at", { ascending: true });
+    .in("userId", assignedUserIds)
+    .order("submittedAt", { ascending: true });
 
   const submissions = (subs || []) as SubRow[];
 
@@ -66,13 +66,13 @@ async function getSubmissions(mentorId: string): Promise<Submission[]> {
       const { data: user } = await supabaseAdmin
         .from("User")
         .select("name, email")
-        .eq("id", sub.user_id)
+        .eq("id", sub.userId)
         .single();
 
       const { data: lessonData } = await supabaseAdmin
         .from("Lesson")
-        .select("title, module_id")
-        .eq("id", sub.lesson_id)
+        .select("title, moduleId")
+        .eq("id", sub.lessonId)
         .single();
 
       const lesson = lessonData as LessonRow | null;
@@ -81,8 +81,8 @@ async function getSubmissions(mentorId: string): Promise<Submission[]> {
       if (lesson) {
         const { data: modData } = await supabaseAdmin
           .from("Module")
-          .select("title, course_id")
-          .eq("id", lesson.module_id)
+          .select("title, courseId")
+          .eq("id", lesson.moduleId)
           .single();
 
         const mod = modData as ModRow | null;
@@ -91,7 +91,7 @@ async function getSubmissions(mentorId: string): Promise<Submission[]> {
           const { data: course } = await supabaseAdmin
             .from("Course")
             .select("title")
-            .eq("id", mod.course_id)
+            .eq("id", mod.courseId)
             .single();
 
           moduleData = {
@@ -106,7 +106,7 @@ async function getSubmissions(mentorId: string): Promise<Submission[]> {
       return {
         id: sub.id,
         status: sub.status,
-        submittedAt: sub.submitted_at,
+        submittedAt: sub.submittedAt,
         user: {
           name:
             (user as { name: string | null; email: string } | null)?.name ||

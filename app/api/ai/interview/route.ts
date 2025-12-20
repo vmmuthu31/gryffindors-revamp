@@ -110,8 +110,8 @@ async function handleInterviewComplete(
     const { data: existing } = await supabaseAdmin
       .from("InterviewResult")
       .select("id")
-      .eq("user_id", userId)
-      .eq("internship_id", internshipId)
+      .eq("userId", userId)
+      .eq("internshipId", internshipId)
       .single();
 
     if (existing) {
@@ -126,8 +126,8 @@ async function handleInterviewComplete(
         .eq("id", existing.id);
     } else {
       await supabaseAdmin.from("InterviewResult").insert({
-        user_id: userId,
-        internship_id: internshipId,
+        userId: userId,
+        internshipId: internshipId,
         score,
         passed,
         transcript: messages,
@@ -140,11 +140,11 @@ async function handleInterviewComplete(
         .from("Application")
         .update({
           status: "INTERVIEW_PASSED",
-          interview_score: score,
-          interview_log: messages,
+          interviewScore: score,
+          interviewLog: messages,
         })
-        .eq("user_id", userId)
-        .eq("internship_id", internshipId)
+        .eq("userId", userId)
+        .eq("internshipId", internshipId)
         .eq("status", "ELIGIBILITY_PASSED");
     }
 
@@ -178,8 +178,8 @@ export async function GET(request: Request) {
     const { data: result } = await supabaseAdmin
       .from("InterviewResult")
       .select("*")
-      .eq("user_id", session.user.id)
-      .eq("internship_id", internshipId)
+      .eq("userId", session.user.id)
+      .eq("internshipId", internshipId)
       .single();
 
     return NextResponse.json(result || { completed: false });

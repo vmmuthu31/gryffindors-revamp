@@ -6,7 +6,7 @@ export async function GET() {
     const { data: internships, error } = await supabaseAdmin
       .from("Internship")
       .select("*")
-      .order("created_at", { ascending: false });
+      .order("createdAt", { ascending: false });
 
     if (error) throw error;
 
@@ -15,17 +15,17 @@ export async function GET() {
         const { data: applications } = await supabaseAdmin
           .from("Application")
           .select("id, status")
-          .eq("internship_id", internship.id);
+          .eq("internshipId", internship.id);
 
         const { data: courses } = await supabaseAdmin
           .from("Course")
           .select("id, title")
-          .eq("internship_id", internship.id);
+          .eq("internshipId", internship.id);
 
         return {
           ...internship,
-          createdAt: internship.created_at,
-          isActive: internship.is_active,
+          createdAt: internship.createdAt,
+          isActive: internship.isActive,
           applications: applications || [],
           courses: courses || [],
         };
@@ -61,7 +61,7 @@ export async function POST(request: Request) {
         track: data.track,
         price: parseFloat(data.price),
         duration: data.duration,
-        is_active: true,
+        isActive: true,
       })
       .select()
       .single();

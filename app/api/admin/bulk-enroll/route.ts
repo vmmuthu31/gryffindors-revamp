@@ -119,9 +119,9 @@ export async function POST(request: Request) {
             .insert({
               email,
               name,
-              password_hash: hashedPassword,
+              passwordHash: hashedPassword,
               role: "STUDENT",
-              referral_code: `GRYF${nanoid(6).toUpperCase()}`,
+              referralCode: `GRYF${nanoid(6).toUpperCase()}`,
             })
             .select()
             .single();
@@ -139,8 +139,8 @@ export async function POST(request: Request) {
         const { data: existingApp } = await supabaseAdmin
           .from("Application")
           .select("id")
-          .eq("user_id", user.id)
-          .eq("internship_id", internshipId)
+          .eq("userId", user.id)
+          .eq("internshipId", internshipId)
           .in("status", ["ENROLLED", "IN_PROGRESS", "COMPLETED"])
           .single();
 
@@ -151,12 +151,12 @@ export async function POST(request: Request) {
         }
 
         await supabaseAdmin.from("Application").insert({
-          user_id: user.id,
-          internship_id: internshipId,
+          userId: user.id,
+          internshipId: internshipId,
           mentor_id: mentorId || null,
           status: "ENROLLED",
-          payment_status: "SUCCESS",
-          payment_id: `BULK_${nanoid(8)}`,
+          paymentStatus: "SUCCESS",
+          paymentId: `BULK_${nanoid(8)}`,
         });
 
         success++;

@@ -28,7 +28,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
+        console.log("[Auth] Authorizing:", credentials?.email);
         if (!credentials?.email || !credentials?.password) {
+          console.log("[Auth] Missing credentials");
           return null;
         }
 
@@ -38,13 +40,27 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           .eq("email", credentials.email as string)
           .single();
 
-        if (error || !user || !user.password_hash) {
+        if (user) {
+          console.log("[Auth] User found. Keys:", Object.keys(user));
+        }
+
+        if (error) {
+          console.error("[Auth] Supabase error:", error);
+        }
+
+        // Handle potential camelCase from Prisma migration
+        const passwordHash = user?.password_hash || user?.passwordHash;
+
+        if (error || !user || !passwordHash) {
+          console.error(
+            "[Auth] Authentication failed: invalid user or missing password hash"
+          );
           return null;
         }
 
         const isPasswordCorrect = await bcrypt.compare(
           credentials.password as string,
-          user.password_hash
+          passwordHash
         );
 
         if (!isPasswordCorrect) {

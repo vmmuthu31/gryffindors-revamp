@@ -33,7 +33,7 @@ export async function POST(request: Request) {
       .insert({
         name,
         email,
-        password_hash: passwordHash,
+        passwordHash: passwordHash,
         role: "STUDENT",
       })
       .select("id, email, name")

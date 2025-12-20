@@ -69,8 +69,8 @@ export async function getInternship(id: string) {
 
     return {
       ...internship,
-      isActive: internship.is_active,
-      createdAt: internship.created_at,
+      isActive: internship.isActive,
+      createdAt: internship.createdAt,
       skills: trackMeta.skills,
       roles: trackMeta.roles,
       tags: trackMeta.tags,
@@ -86,8 +86,8 @@ export async function getInternships() {
     const { data, error } = await supabaseAdmin
       .from("Internship")
       .select("*")
-      .eq("is_active", true)
-      .order("created_at", { ascending: false });
+      .eq("isActive", true)
+      .order("createdAt", { ascending: false });
 
     if (error) throw error;
 
@@ -97,8 +97,8 @@ export async function getInternships() {
         TRACK_METADATA[internship.track as Track] || TRACK_METADATA.FULL_STACK;
       return {
         ...internship,
-        isActive: internship.is_active,
-        createdAt: internship.created_at,
+        isActive: internship.isActive,
+        createdAt: internship.createdAt,
         skills: trackMeta.skills,
         roles: trackMeta.roles,
         tags: trackMeta.tags,
@@ -196,8 +196,8 @@ export async function createApplication(internshipId: string, userId: string) {
     const { data: application, error } = await supabaseAdmin
       .from("Application")
       .insert({
-        internship_id: internshipId,
-        user_id: userId,
+        internshipId: internshipId,
+        userId: userId,
         status: "PENDING",
       })
       .select()
@@ -222,9 +222,9 @@ export async function updateApplicationStatus(
   try {
     const updateData: Record<string, unknown> = {};
     if (data.eligibilityScore !== undefined)
-      updateData.eligibility_score = data.eligibilityScore;
+      updateData.eligibilityScore = data.eligibilityScore;
     if (data.interviewScore !== undefined)
-      updateData.interview_score = data.interviewScore;
+      updateData.interviewScore = data.interviewScore;
     if (data.status !== undefined) updateData.status = data.status;
 
     const { error } = await supabaseAdmin
@@ -247,17 +247,17 @@ export async function getUsers() {
     const { data, error } = await supabaseAdmin
       .from("User")
       .select("*")
-      .order("created_at", { ascending: false });
+      .order("createdAt", { ascending: false });
 
     if (error) throw error;
 
     interface UserRow {
       id: string;
-      created_at: string;
+      createdAt: string;
       [key: string]: unknown;
     }
     interface AppRow {
-      internship_id: string;
+      internshipId: string;
       [key: string]: unknown;
     }
 
@@ -267,7 +267,7 @@ export async function getUsers() {
         const { data: applications } = await supabaseAdmin
           .from("Application")
           .select("*")
-          .eq("user_id", user.id);
+          .eq("userId", user.id);
 
         const apps = (applications || []) as AppRow[];
         const appsWithInternships = await Promise.all(
@@ -275,7 +275,7 @@ export async function getUsers() {
             const { data: internship } = await supabaseAdmin
               .from("Internship")
               .select("*")
-              .eq("id", app.internship_id)
+              .eq("id", app.internshipId)
               .single();
 
             return { ...app, internship };
@@ -284,7 +284,7 @@ export async function getUsers() {
 
         return {
           ...user,
-          createdAt: user.created_at,
+          createdAt: user.createdAt,
           applications: appsWithInternships,
         };
       })

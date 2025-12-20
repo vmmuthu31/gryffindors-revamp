@@ -6,7 +6,7 @@ export async function GET() {
     const { data: courses, error } = await supabaseAdmin
       .from("Course")
       .select("*")
-      .order("internship_id")
+      .order("internshipId")
       .order("order");
 
     if (error) throw error;
@@ -16,20 +16,20 @@ export async function GET() {
         const { data: internship } = await supabaseAdmin
           .from("Internship")
           .select("id, title, track")
-          .eq("id", course.internship_id)
+          .eq("id", course.internshipId)
           .single();
 
         const { data: modules } = await supabaseAdmin
           .from("Module")
           .select("id")
-          .eq("course_id", course.id);
+          .eq("courseId", course.id);
 
         const modulesWithLessons = await Promise.all(
           (modules || []).map(async (module) => {
             const { data: lessons } = await supabaseAdmin
               .from("Lesson")
               .select("id")
-              .eq("module_id", module.id);
+              .eq("moduleId", module.id);
 
             return { ...module, lessons: lessons || [] };
           })
@@ -37,7 +37,7 @@ export async function GET() {
 
         return {
           ...course,
-          internshipId: course.internship_id,
+          internshipId: course.internshipId,
           internship,
           modules: modulesWithLessons,
         };
@@ -68,12 +68,12 @@ export async function POST(request: Request) {
     const { count } = await supabaseAdmin
       .from("Course")
       .select("*", { count: "exact", head: true })
-      .eq("internship_id", data.internshipId);
+      .eq("internshipId", data.internshipId);
 
     const { data: course, error } = await supabaseAdmin
       .from("Course")
       .insert({
-        internship_id: data.internshipId,
+        internshipId: data.internshipId,
         title: data.title,
         description: data.description || "",
         order: data.order || (count || 0) + 1,

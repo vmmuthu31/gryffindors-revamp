@@ -16,8 +16,8 @@ export async function POST(request: Request) {
     const { data: existingSubmission } = await supabaseAdmin
       .from("Submission")
       .select("id, status")
-      .eq("lesson_id", lessonId)
-      .eq("user_id", session.user.id)
+      .eq("lessonId", lessonId)
+      .eq("userId", session.user.id)
       .in("status", ["PENDING", "UNDER_REVIEW", "APPROVED"])
       .limit(1)
       .single();
@@ -38,17 +38,17 @@ export async function POST(request: Request) {
     await supabaseAdmin
       .from("Submission")
       .delete()
-      .eq("lesson_id", lessonId)
-      .eq("user_id", session.user.id)
+      .eq("lessonId", lessonId)
+      .eq("userId", session.user.id)
       .in("status", ["REJECTED", "RESUBMIT"]);
 
     const { data: submission, error } = await supabaseAdmin
       .from("Submission")
       .insert({
-        lesson_id: lessonId,
-        user_id: session.user.id,
+        lessonId: lessonId,
+        userId: session.user.id,
         content,
-        file_url: fileUrl,
+        fileUrl: fileUrl,
         status: "PENDING",
       })
       .select()
@@ -64,30 +64,30 @@ export async function POST(request: Request) {
 
     const { data: lesson } = await supabaseAdmin
       .from("Lesson")
-      .select("title, module_id")
+      .select("title, moduleId")
       .eq("id", lessonId)
       .single();
 
     if (lesson) {
       const { data: module } = await supabaseAdmin
         .from("Module")
-        .select("course_id")
-        .eq("id", lesson.module_id)
+        .select("courseId")
+        .eq("id", lesson.moduleId)
         .single();
 
       if (module) {
         const { data: course } = await supabaseAdmin
           .from("Course")
-          .select("internship_id")
-          .eq("id", module.course_id)
+          .select("internshipId")
+          .eq("id", module.courseId)
           .single();
 
-        if (course?.internship_id) {
+        if (course?.internshipId) {
           const { data: application } = await supabaseAdmin
             .from("Application")
             .select("mentor_id")
-            .eq("user_id", session.user.id)
-            .eq("internship_id", course.internship_id)
+            .eq("userId", session.user.id)
+            .eq("internshipId", course.internshipId)
             .not("mentor_id", "is", null)
             .single();
 
@@ -132,8 +132,8 @@ export async function GET() {
     const { data: submissions, error } = await supabaseAdmin
       .from("Submission")
       .select("*")
-      .eq("user_id", session.user.id)
-      .order("submitted_at", { ascending: false });
+      .eq("userId", session.user.id)
+      .order("submittedAt", { ascending: false });
 
     if (error) throw error;
 
@@ -141,8 +141,8 @@ export async function GET() {
       (submissions || []).map(async (sub) => {
         const { data: lesson } = await supabaseAdmin
           .from("Lesson")
-          .select("title, module_id")
-          .eq("id", sub.lesson_id)
+          .select("title, moduleId")
+          .eq("id", sub.lessonId)
           .single();
 
         let moduleTitle = "";
@@ -150,16 +150,16 @@ export async function GET() {
           const { data: module } = await supabaseAdmin
             .from("Module")
             .select("title")
-            .eq("id", lesson.module_id)
+            .eq("id", lesson.moduleId)
             .single();
           moduleTitle = module?.title || "";
         }
 
         return {
           ...sub,
-          submittedAt: sub.submitted_at,
-          lessonId: sub.lesson_id,
-          userId: sub.user_id,
+          submittedAt: sub.submittedAt,
+          lessonId: sub.lessonId,
+          userId: sub.userId,
           lesson: {
             title: lesson?.title || "",
             module: { title: moduleTitle },

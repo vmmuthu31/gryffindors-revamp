@@ -6,7 +6,7 @@ export async function GET() {
     const { data: internships, error } = await supabaseAdmin
       .from("Internship")
       .select("*")
-      .order("created_at", { ascending: false });
+      .order("createdAt", { ascending: false });
 
     if (error) throw error;
 

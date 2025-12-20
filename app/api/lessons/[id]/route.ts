@@ -23,19 +23,19 @@ export async function GET(
     const { data: module } = await supabaseAdmin
       .from("Module")
       .select("*")
-      .eq("id", lesson.module_id)
+      .eq("id", lesson.moduleId)
       .single();
 
     const { data: course } = await supabaseAdmin
       .from("Course")
       .select("id, title")
-      .eq("id", module?.course_id)
+      .eq("id", module?.courseId)
       .single();
 
     const { data: allLessons } = await supabaseAdmin
       .from("Lesson")
       .select("id, title, order")
-      .eq("module_id", lesson.module_id)
+      .eq("moduleId", lesson.moduleId)
       .order("order");
 
     let lessonProgress = null;
@@ -43,8 +43,8 @@ export async function GET(
       const { data: progress } = await supabaseAdmin
         .from("LessonProgress")
         .select("completed")
-        .eq("user_id", session.user.id)
-        .eq("lesson_id", id)
+        .eq("userId", session.user.id)
+        .eq("lessonId", id)
         .single();
       lessonProgress = progress;
     }
@@ -53,10 +53,10 @@ export async function GET(
     if (session?.user?.id && lesson.type === "TASK") {
       const { data: sub } = await supabaseAdmin
         .from("Submission")
-        .select("id, status, mentor_feedback, grade, submitted_at")
-        .eq("lesson_id", id)
-        .eq("user_id", session.user.id)
-        .order("submitted_at", { ascending: false })
+        .select("id, status, mentorFeedback, grade, submittedAt")
+        .eq("lessonId", id)
+        .eq("userId", session.user.id)
+        .order("submittedAt", { ascending: false })
         .limit(1)
         .single();
 
@@ -64,9 +64,9 @@ export async function GET(
         submission = {
           id: sub.id,
           status: sub.status,
-          mentorFeedback: sub.mentor_feedback,
+          mentorFeedback: sub.mentorFeedback,
           grade: sub.grade,
-          submittedAt: sub.submitted_at,
+          submittedAt: sub.submittedAt,
         };
       }
     }
@@ -81,7 +81,7 @@ export async function GET(
 
     return NextResponse.json({
       ...lesson,
-      videoUrl: lesson.video_url,
+      videoUrl: lesson.videoUrl,
       module: {
         ...module,
         course,

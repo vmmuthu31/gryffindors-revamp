@@ -25,20 +25,20 @@ async function getCertificates(
 ): Promise<CertificateWithApplication[]> {
   interface CertRow {
     id: string;
-    unique_code: string;
-    issued_at: string;
+    uniqueCode: string;
+    issuedAt: string;
     grade: string | null;
-    application_id: string;
+    applicationId: string;
   }
   interface AppRow {
-    internship_id: string;
+    internshipId: string;
   }
 
   const { data, error } = await supabaseAdmin
     .from("Certificate")
-    .select("id, unique_code, issued_at, grade, application_id")
-    .eq("user_id", userId)
-    .order("issued_at", { ascending: false });
+    .select("id, uniqueCode, issuedAt, grade, applicationId")
+    .eq("userId", userId)
+    .order("issuedAt", { ascending: false });
 
   if (error) return [];
 
@@ -48,8 +48,8 @@ async function getCertificates(
     certificates.map(async (cert) => {
       const { data: appData } = await supabaseAdmin
         .from("Application")
-        .select("internship_id")
-        .eq("id", cert.application_id)
+        .select("internshipId")
+        .eq("id", cert.applicationId)
         .single();
 
       const application = appData as AppRow | null;
@@ -59,15 +59,15 @@ async function getCertificates(
         const { data: i } = await supabaseAdmin
           .from("Internship")
           .select("title")
-          .eq("id", application.internship_id)
+          .eq("id", application.internshipId)
           .single();
         internship = (i as { title: string } | null) || { title: "" };
       }
 
       return {
         id: cert.id,
-        uniqueCode: cert.unique_code,
-        issuedAt: cert.issued_at,
+        uniqueCode: cert.uniqueCode,
+        issuedAt: cert.issuedAt,
         grade: cert.grade,
         application: { internship },
       };

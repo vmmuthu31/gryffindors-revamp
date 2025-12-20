@@ -43,8 +43,8 @@ async function getStats() {
       const { count } = await supabaseAdmin
         .from("Application")
         .select("*", { count: "exact", head: true })
-        .eq("internship_id", int.id)
-        .eq("payment_status", "SUCCESS");
+        .eq("internshipId", int.id)
+        .eq("paymentStatus", "SUCCESS");
 
       const students = count || 0;
       return {

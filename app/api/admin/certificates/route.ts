@@ -7,7 +7,7 @@ export async function GET() {
     const { data: certificates, error } = await supabaseAdmin
       .from("Certificate")
       .select("*")
-      .order("issued_at", { ascending: false });
+      .order("issuedAt", { ascending: false });
 
     if (error) throw error;
 
@@ -16,7 +16,7 @@ export async function GET() {
         const { data: application } = await supabaseAdmin
           .from("Application")
           .select("*")
-          .eq("id", cert.application_id)
+          .eq("id", cert.applicationId)
           .single();
 
         let user = null;
@@ -26,23 +26,23 @@ export async function GET() {
           const { data: userData } = await supabaseAdmin
             .from("User")
             .select("id, name, email")
-            .eq("id", application.user_id)
+            .eq("id", application.userId)
             .single();
           user = userData;
 
           const { data: internshipData } = await supabaseAdmin
             .from("Internship")
             .select("id, title, track")
-            .eq("id", application.internship_id)
+            .eq("id", application.internshipId)
             .single();
           internship = internshipData;
         }
 
         return {
           ...cert,
-          issuedAt: cert.issued_at,
-          uniqueCode: cert.unique_code,
-          applicationId: cert.application_id,
+          issuedAt: cert.issuedAt,
+          uniqueCode: cert.uniqueCode,
+          applicationId: cert.applicationId,
           application: application
             ? { ...application, user, internship }
             : null,
@@ -73,7 +73,7 @@ export async function POST(request: Request) {
 
     const { data: application, error: appError } = await supabaseAdmin
       .from("Application")
-      .select("user_id")
+      .select("userId")
       .eq("id", data.applicationId)
       .single();
 
@@ -87,7 +87,7 @@ export async function POST(request: Request) {
     const { data: exists } = await supabaseAdmin
       .from("Certificate")
       .select("id")
-      .eq("application_id", data.applicationId)
+      .eq("applicationId", data.applicationId)
       .single();
 
     if (exists) {
@@ -102,9 +102,9 @@ export async function POST(request: Request) {
     const { data: certificate, error } = await supabaseAdmin
       .from("Certificate")
       .insert({
-        application_id: data.applicationId,
-        user_id: application.user_id,
-        unique_code: uniqueCode,
+        applicationId: data.applicationId,
+        userId: application.userId,
+        uniqueCode: uniqueCode,
         grade: data.grade || "Pass",
       })
       .select()

@@ -28,13 +28,13 @@ async function getStudentData(userId: string) {
   interface UserRow {
     id: string;
     name: string | null;
-    learning_streak: number;
-    total_time_spent: number;
-    referral_code: string | null;
+    learningStreak: number;
+    total_timeSpent: number;
+    referralCode: string | null;
   }
   interface AppRow {
     id: string;
-    internship_id: string;
+    internshipId: string;
   }
   interface CourseRow {
     id: string;
@@ -51,34 +51,34 @@ async function getStudentData(userId: string) {
   interface LeaderRow {
     id: string;
     name: string | null;
-    learning_streak: number;
+    learningStreak: number;
   }
 
   const { data: userData } = await supabaseAdmin
     .from("User")
-    .select("id, name, learning_streak, total_time_spent, referral_code")
+    .select("id, name, learningStreak, total_timeSpent, referralCode")
     .eq("id", userId)
     .single();
 
   let user = userData as UserRow | null;
 
-  if (user && !user.referral_code) {
+  if (user && !user.referralCode) {
     const code = `${
       user.name?.split(" ")[0].toUpperCase() || "GRYF"
     }${Math.floor(1000 + Math.random() * 9000)}`;
     const { data: updated } = await supabaseAdmin
       .from("User")
-      .update({ referral_code: code })
+      .update({ referralCode: code })
       .eq("id", userId)
-      .select("id, name, learning_streak, total_time_spent, referral_code")
+      .select("id, name, learningStreak, total_timeSpent, referralCode")
       .single();
     user = updated as UserRow | null;
   }
 
   const { data: appData } = await supabaseAdmin
     .from("Application")
-    .select("id, internship_id")
-    .eq("user_id", userId)
+    .select("id, internshipId")
+    .eq("userId", userId)
     .in("status", ["ENROLLED", "IN_PROGRESS"])
     .limit(1)
     .single();
@@ -90,7 +90,7 @@ async function getStudentData(userId: string) {
     const { data: intData } = await supabaseAdmin
       .from("Internship")
       .select("id, title")
-      .eq("id", applicationData.internship_id)
+      .eq("id", applicationData.internshipId)
       .single();
 
     const internship = intData as { id: string; title: string } | null;
@@ -98,7 +98,7 @@ async function getStudentData(userId: string) {
     const { data: cData } = await supabaseAdmin
       .from("Course")
       .select("id, title")
-      .eq("internship_id", applicationData.internship_id)
+      .eq("internshipId", applicationData.internshipId)
       .order("order");
 
     const courses = (cData || []) as CourseRow[];
@@ -108,7 +108,7 @@ async function getStudentData(userId: string) {
         const { data: mData } = await supabaseAdmin
           .from("Module")
           .select("id, title")
-          .eq("course_id", course.id)
+          .eq("courseId", course.id)
           .order("order");
 
         const modules = (mData || []) as ModRow[];
@@ -118,7 +118,7 @@ async function getStudentData(userId: string) {
             const { data: lData } = await supabaseAdmin
               .from("Lesson")
               .select("id, title")
-              .eq("module_id", mod.id)
+              .eq("moduleId", mod.id)
               .order("order");
 
             const lessons = (lData || []) as LessonRow[];
@@ -142,19 +142,19 @@ async function getStudentData(userId: string) {
   const { count: certificates } = await supabaseAdmin
     .from("Certificate")
     .select("*", { count: "exact", head: true })
-    .eq("user_id", userId);
+    .eq("userId", userId);
 
   const { count: lessonProgress } = await supabaseAdmin
     .from("LessonProgress")
     .select("*", { count: "exact", head: true })
-    .eq("user_id", userId)
+    .eq("userId", userId)
     .eq("completed", true);
 
   const { data: lbData } = await supabaseAdmin
     .from("User")
-    .select("id, name, learning_streak")
+    .select("id, name, learningStreak")
     .eq("role", "STUDENT")
-    .order("learning_streak", { ascending: false })
+    .order("learningStreak", { ascending: false })
     .limit(5);
 
   const leaderboard = (lbData || []) as LeaderRow[];
@@ -163,8 +163,8 @@ async function getStudentData(userId: string) {
     user: user
       ? {
           ...user,
-          learningStreak: user.learning_streak,
-          referralCode: user.referral_code,
+          learningStreak: user.learningStreak,
+          referralCode: user.referralCode,
         }
       : null,
     application,
@@ -172,20 +172,20 @@ async function getStudentData(userId: string) {
     lessonProgress: lessonProgress || 0,
     leaderboard: leaderboard.map((s) => ({
       ...s,
-      learningStreak: s.learning_streak,
+      learningStreak: s.learningStreak,
     })),
   };
 }
 
 async function updateStreak(userId: string) {
   interface StreakRow {
-    last_active_at: string | null;
-    learning_streak: number;
+    lastActiveAt: string | null;
+    learningStreak: number;
   }
 
   const { data } = await supabaseAdmin
     .from("User")
-    .select("last_active_at, learning_streak")
+    .select("lastActiveAt, learningStreak")
     .eq("id", userId)
     .single();
 
@@ -194,7 +194,7 @@ async function updateStreak(userId: string) {
   if (!user) return;
 
   const now = new Date();
-  const lastActive = user.last_active_at ? new Date(user.last_active_at) : null;
+  const lastActive = user.lastActiveAt ? new Date(user.lastActiveAt) : null;
 
   const isNewDay =
     !lastActive || now.toDateString() !== lastActive.toDateString();
@@ -206,8 +206,8 @@ async function updateStreak(userId: string) {
     await supabaseAdmin
       .from("User")
       .update({
-        last_active_at: now.toISOString(),
-        learning_streak: isConsecutive ? (user.learning_streak || 0) + 1 : 1,
+        lastActiveAt: now.toISOString(),
+        learningStreak: isConsecutive ? (user.learningStreak || 0) + 1 : 1,
       })
       .eq("id", userId);
   }

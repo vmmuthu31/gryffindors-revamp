@@ -10,8 +10,8 @@ export async function GET(request: Request) {
 
     let query = supabaseAdmin
       .from("User")
-      .select("id, name, email, role, created_at")
-      .order("created_at", { ascending: false });
+      .select("id, name, email, role, createdAt")
+      .order("createdAt", { ascending: false });
 
     if (role) {
       query = query.eq("role", role);
@@ -25,15 +25,15 @@ export async function GET(request: Request) {
       (users || []).map(async (user) => {
         const { data: applications } = await supabaseAdmin
           .from("Application")
-          .select("id, status, internship_id")
-          .eq("user_id", user.id);
+          .select("id, status, internshipId")
+          .eq("userId", user.id);
 
         const appsWithInternships = await Promise.all(
           (applications || []).map(async (app) => {
             const { data: internship } = await supabaseAdmin
               .from("Internship")
               .select("title")
-              .eq("id", app.internship_id)
+              .eq("id", app.internshipId)
               .single();
 
             return {
@@ -46,7 +46,7 @@ export async function GET(request: Request) {
 
         return {
           ...user,
-          createdAt: user.created_at,
+          createdAt: user.createdAt,
           applications: appsWithInternships,
         };
       })
@@ -93,7 +93,7 @@ export async function POST(request: Request) {
       .insert({
         name: data.name || null,
         email: data.email,
-        password_hash: passwordHash,
+        passwordHash: passwordHash,
         role: data.role || "STUDENT",
       })
       .select("id, email, role")

@@ -17,8 +17,8 @@ export async function POST(
     const { data: existing } = await supabaseAdmin
       .from("LessonProgress")
       .select("id")
-      .eq("user_id", session.user.id)
-      .eq("lesson_id", lessonId)
+      .eq("userId", session.user.id)
+      .eq("lessonId", lessonId)
       .single();
 
     let progress;
@@ -27,7 +27,7 @@ export async function POST(
         .from("LessonProgress")
         .update({
           completed: true,
-          completed_at: new Date().toISOString(),
+          completedAt: new Date().toISOString(),
         })
         .eq("id", existing.id)
         .select()
@@ -39,10 +39,10 @@ export async function POST(
       const { data, error } = await supabaseAdmin
         .from("LessonProgress")
         .insert({
-          user_id: session.user.id,
-          lesson_id: lessonId,
+          userId: session.user.id,
+          lessonId: lessonId,
           completed: true,
-          completed_at: new Date().toISOString(),
+          completedAt: new Date().toISOString(),
         })
         .select()
         .single();
@@ -76,8 +76,8 @@ export async function GET(
     const { data: progress } = await supabaseAdmin
       .from("LessonProgress")
       .select("completed")
-      .eq("user_id", session.user.id)
-      .eq("lesson_id", lessonId)
+      .eq("userId", session.user.id)
+      .eq("lessonId", lessonId)
       .single();
 
     return NextResponse.json({ completed: progress?.completed || false });

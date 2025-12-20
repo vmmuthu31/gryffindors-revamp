@@ -39,7 +39,7 @@ export async function POST(request: Request) {
       .update({
         otp: null,
         otp_expiry: null,
-        email_verified: true,
+        emailVerified: true,
       })
       .eq("id", user.id);
 

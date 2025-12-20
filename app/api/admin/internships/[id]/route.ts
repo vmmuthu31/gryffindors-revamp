@@ -24,12 +24,12 @@ export async function GET(
     const { data: courses } = await supabaseAdmin
       .from("Course")
       .select("*")
-      .eq("internship_id", id);
+      .eq("internshipId", id);
 
     const { data: applications } = await supabaseAdmin
       .from("Application")
       .select("*")
-      .eq("internship_id", id);
+      .eq("internshipId", id);
 
     return NextResponse.json({
       ...internship,
@@ -61,7 +61,7 @@ export async function PUT(
         track: data.track,
         price: parseFloat(data.price),
         duration: data.duration,
-        is_active: data.isActive,
+        isActive: data.isActive,
       })
       .eq("id", id)
       .select()

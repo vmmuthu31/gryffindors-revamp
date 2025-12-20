@@ -22,39 +22,39 @@ export interface User {
   id: string;
   email: string;
   name: string | null;
-  password_hash: string | null;
+  passwordHash: string | null;
   image: string | null;
   role: Role;
-  email_verified: boolean;
+  emailVerified: boolean;
   otp: string | null;
   otp_expiry: string | null;
-  learning_streak: number;
-  last_active_at: string | null;
-  total_time_spent: number;
-  linked_in: string | null;
+  learningStreak: number;
+  lastActiveAt: string | null;
+  total_timeSpent: number;
+  linkedIn: string | null;
   portfolio: string | null;
-  current_job: string | null;
+  currentJob: string | null;
   company: string | null;
   bio: string | null;
-  is_alumni: boolean;
-  referral_code: string | null;
-  referred_by: string | null;
-  created_at: string;
-  updated_at: string;
+  isAlumni: boolean;
+  referralCode: string | null;
+  referredBy: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Account {
   id: string;
-  user_id: string;
+  userId: string;
   type: string;
   provider: string;
-  provider_account_id: string;
-  refresh_token: string | null;
-  access_token: string | null;
-  expires_at: number | null;
-  token_type: string | null;
+  providerAccountId: string;
+  refreshToken: string | null;
+  accessToken: string | null;
+  expiresAt: number | null;
+  tokenType: string | null;
   scope: string | null;
-  id_token: string | null;
+  idToken: string | null;
 }
 
 export interface Internship {
@@ -64,64 +64,64 @@ export interface Internship {
   track: Track;
   price: number;
   duration: string;
-  is_active: boolean;
+  isActive: boolean;
   curriculum: Record<string, unknown> | null;
-  created_at: string;
+  createdAt: string;
 }
 
 export interface Application {
   id: string;
-  user_id: string;
-  internship_id: string;
+  userId: string;
+  internshipId: string;
   mentor_id: string | null;
   status: AppStatus;
-  eligibility_score: number | null;
-  interview_score: number | null;
-  interview_log: Record<string, unknown> | null;
-  payment_status: PaymentStatus;
-  payment_id: string | null;
-  discount_applied: number;
-  created_at: string;
-  updated_at: string;
+  eligibilityScore: number | null;
+  interviewScore: number | null;
+  interviewLog: Record<string, unknown> | null;
+  paymentStatus: PaymentStatus;
+  paymentId: string | null;
+  discountApplied: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface InterviewResult {
   id: string;
-  user_id: string;
-  internship_id: string;
+  userId: string;
+  internshipId: string;
   score: number;
   passed: boolean;
   transcript: Record<string, unknown> | null;
   feedback: string | null;
   duration: number | null;
-  created_at: string;
+  createdAt: string;
 }
 
 export interface Referral {
   id: string;
   code: string;
-  referrer_id: string;
-  referred_user_id: string | null;
+  referrerId: string;
+  referred_userId: string | null;
   discount: number;
   status: ReferralStatus;
-  earned_amount: number;
-  created_at: string;
-  used_at: string | null;
+  earnedAmount: number;
+  createdAt: string;
+  usedAt: string | null;
 }
 
 export interface Course {
   id: string;
-  internship_id: string;
+  internshipId: string;
   title: string;
   description: string | null;
   thumbnail: string | null;
   order: number;
-  created_at: string;
+  createdAt: string;
 }
 
 export interface Module {
   id: string;
-  course_id: string;
+  courseId: string;
   title: string;
   description: string | null;
   order: number;
@@ -129,11 +129,11 @@ export interface Module {
 
 export interface Lesson {
   id: string;
-  module_id: string;
+  moduleId: string;
   title: string;
   description: string | null;
   type: LessonType;
-  video_url: string | null;
+  videoUrl: string | null;
   content: string | null;
   duration: number | null;
   order: number;
@@ -141,34 +141,34 @@ export interface Lesson {
 
 export interface Submission {
   id: string;
-  lesson_id: string;
-  user_id: string;
+  lessonId: string;
+  userId: string;
   content: string | null;
-  file_url: string | null;
+  fileUrl: string | null;
   status: SubmissionStatus;
-  mentor_feedback: string | null;
+  mentorFeedback: string | null;
   grade: number | null;
-  submitted_at: string;
-  reviewed_at: string | null;
+  submittedAt: string;
+  reviewedAt: string | null;
 }
 
 export interface Certificate {
   id: string;
-  application_id: string;
-  user_id: string;
-  unique_code: string;
+  applicationId: string;
+  userId: string;
+  uniqueCode: string;
   grade: string | null;
-  issued_at: string;
-  certificate_url: string | null;
+  issuedAt: string;
+  certificateUrl: string | null;
 }
 
 export interface LessonProgress {
   id: string;
-  user_id: string;
-  lesson_id: string;
+  userId: string;
+  lessonId: string;
   completed: boolean;
-  completed_at: string | null;
-  time_spent: number;
+  completedAt: string | null;
+  timeSpent: number;
 }
 
 export interface Database {
@@ -184,7 +184,7 @@ export interface Database {
         Insert: Partial<Account> &
           Pick<
             Account,
-            "user_id" | "type" | "provider" | "provider_account_id"
+            "userId" | "type" | "provider" | "providerAccountId"
           >;
         Update: Partial<Account>;
       };
@@ -197,7 +197,7 @@ export interface Database {
       Application: {
         Row: Application;
         Insert: Partial<Application> &
-          Pick<Application, "user_id" | "internship_id">;
+          Pick<Application, "userId" | "internshipId">;
         Update: Partial<Application>;
       };
       InterviewResult: {
@@ -205,45 +205,45 @@ export interface Database {
         Insert: Partial<InterviewResult> &
           Pick<
             InterviewResult,
-            "user_id" | "internship_id" | "score" | "passed"
+            "userId" | "internshipId" | "score" | "passed"
           >;
         Update: Partial<InterviewResult>;
       };
       Referral: {
         Row: Referral;
-        Insert: Partial<Referral> & Pick<Referral, "code" | "referrer_id">;
+        Insert: Partial<Referral> & Pick<Referral, "code" | "referrerId">;
         Update: Partial<Referral>;
       };
       Course: {
         Row: Course;
-        Insert: Partial<Course> & Pick<Course, "internship_id" | "title">;
+        Insert: Partial<Course> & Pick<Course, "internshipId" | "title">;
         Update: Partial<Course>;
       };
       Module: {
         Row: Module;
-        Insert: Partial<Module> & Pick<Module, "course_id" | "title">;
+        Insert: Partial<Module> & Pick<Module, "courseId" | "title">;
         Update: Partial<Module>;
       };
       Lesson: {
         Row: Lesson;
-        Insert: Partial<Lesson> & Pick<Lesson, "module_id" | "title" | "type">;
+        Insert: Partial<Lesson> & Pick<Lesson, "moduleId" | "title" | "type">;
         Update: Partial<Lesson>;
       };
       Submission: {
         Row: Submission;
-        Insert: Partial<Submission> & Pick<Submission, "lesson_id" | "user_id">;
+        Insert: Partial<Submission> & Pick<Submission, "lessonId" | "userId">;
         Update: Partial<Submission>;
       };
       Certificate: {
         Row: Certificate;
         Insert: Partial<Certificate> &
-          Pick<Certificate, "application_id" | "user_id" | "unique_code">;
+          Pick<Certificate, "applicationId" | "userId" | "uniqueCode">;
         Update: Partial<Certificate>;
       };
       LessonProgress: {
         Row: LessonProgress;
         Insert: Partial<LessonProgress> &
-          Pick<LessonProgress, "user_id" | "lesson_id">;
+          Pick<LessonProgress, "userId" | "lessonId">;
         Update: Partial<LessonProgress>;
       };
     };
@@ -253,7 +253,7 @@ export interface Database {
       role: Role;
       track: Track;
       app_status: AppStatus;
-      payment_status: PaymentStatus;
+      paymentStatus: PaymentStatus;
       referral_status: ReferralStatus;
       lesson_type: LessonType;
       submission_status: SubmissionStatus;

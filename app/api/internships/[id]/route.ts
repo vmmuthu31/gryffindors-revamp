@@ -24,7 +24,7 @@ export async function GET(
     const { data: courses } = await supabaseAdmin
       .from("Course")
       .select("*")
-      .eq("internship_id", id)
+      .eq("internshipId", id)
       .order("order");
 
     const coursesWithModules = await Promise.all(
@@ -32,7 +32,7 @@ export async function GET(
         const { data: modules } = await supabaseAdmin
           .from("Module")
           .select("*")
-          .eq("course_id", course.id)
+          .eq("courseId", course.id)
           .order("order");
 
         const modulesWithLessons = await Promise.all(
@@ -40,7 +40,7 @@ export async function GET(
             const { data: lessons } = await supabaseAdmin
               .from("Lesson")
               .select("*")
-              .eq("module_id", module.id)
+              .eq("moduleId", module.id)
               .order("order");
 
             return { ...module, lessons: lessons || [] };

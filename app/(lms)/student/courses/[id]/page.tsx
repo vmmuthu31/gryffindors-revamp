@@ -45,7 +45,7 @@ async function getCourse(courseId: string): Promise<Course | null> {
     id: string;
     title: string;
     description: string | null;
-    internship_id: string;
+    internshipId: string;
   }
   interface ModRow {
     id: string;
@@ -62,7 +62,7 @@ async function getCourse(courseId: string): Promise<Course | null> {
 
   const { data, error } = await supabaseAdmin
     .from("Course")
-    .select("id, title, description, internship_id")
+    .select("id, title, description, internshipId")
     .eq("id", courseId)
     .single();
 
@@ -73,13 +73,13 @@ async function getCourse(courseId: string): Promise<Course | null> {
   const { data: internship } = await supabaseAdmin
     .from("Internship")
     .select("title")
-    .eq("id", course.internship_id)
+    .eq("id", course.internshipId)
     .single();
 
   const { data: mods } = await supabaseAdmin
     .from("Module")
     .select("id, title, order")
-    .eq("course_id", courseId)
+    .eq("courseId", courseId)
     .order("order");
 
   const modules = (mods || []) as ModRow[];
@@ -89,7 +89,7 @@ async function getCourse(courseId: string): Promise<Course | null> {
       const { data: lessonData } = await supabaseAdmin
         .from("Lesson")
         .select("id, title, type, duration, order")
-        .eq("module_id", mod.id)
+        .eq("moduleId", mod.id)
         .order("order");
 
       const lessons = (lessonData || []) as LessonRow[];
@@ -113,19 +113,19 @@ async function getUserLessonProgress(userId: string, lessonIds: string[]) {
   if (lessonIds.length === 0) return new Set<string>();
 
   interface ProgressRow {
-    lesson_id: string;
+    lessonId: string;
   }
 
   const { data } = await supabaseAdmin
     .from("LessonProgress")
-    .select("lesson_id")
-    .eq("user_id", userId)
-    .in("lesson_id", lessonIds)
+    .select("lessonId")
+    .eq("userId", userId)
+    .in("lessonId", lessonIds)
     .eq("completed", true);
 
   const progress = (data || []) as ProgressRow[];
 
-  return new Set(progress.map((p) => p.lesson_id));
+  return new Set(progress.map((p) => p.lessonId));
 }
 
 export default async function CourseDetailPage({

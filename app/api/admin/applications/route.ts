@@ -4,9 +4,9 @@ import type { AppStatus } from "@/lib/supabase/types";
 
 interface AppRow {
   id: string;
-  user_id: string;
-  internship_id: string;
-  created_at: string;
+  userId: string;
+  internshipId: string;
+  createdAt: string;
   [key: string]: unknown;
 }
 
@@ -18,7 +18,7 @@ export async function GET(request: Request) {
     let query = supabaseAdmin
       .from("Application")
       .select("*")
-      .order("created_at", { ascending: false });
+      .order("createdAt", { ascending: false });
 
     if (status) {
       query = query.eq("status", status);
@@ -35,18 +35,18 @@ export async function GET(request: Request) {
         const { data: user } = await supabaseAdmin
           .from("User")
           .select("id, name, email")
-          .eq("id", app.user_id)
+          .eq("id", app.userId)
           .single();
 
         const { data: internship } = await supabaseAdmin
           .from("Internship")
           .select("id, title, track")
-          .eq("id", app.internship_id)
+          .eq("id", app.internshipId)
           .single();
 
         return {
           ...app,
-          createdAt: app.created_at,
+          createdAt: app.createdAt,
           user,
           internship,
         };

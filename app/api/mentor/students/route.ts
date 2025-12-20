@@ -14,7 +14,7 @@ export async function GET() {
       .select("*")
       .eq("mentor_id", session.user.id)
       .in("status", ["ENROLLED", "IN_PROGRESS", "COMPLETED"])
-      .order("created_at", { ascending: false });
+      .order("createdAt", { ascending: false });
 
     if (error) throw error;
 
@@ -23,28 +23,28 @@ export async function GET() {
         const { data: user } = await supabaseAdmin
           .from("User")
           .select("id, name, email")
-          .eq("id", student.user_id)
+          .eq("id", student.userId)
           .single();
 
         const { data: internship } = await supabaseAdmin
           .from("Internship")
           .select("id, title, track")
-          .eq("id", student.internship_id)
+          .eq("id", student.internshipId)
           .single();
 
         const { data: certificate } = await supabaseAdmin
           .from("Certificate")
-          .select("id, unique_code")
-          .eq("application_id", student.id)
+          .select("id, uniqueCode")
+          .eq("applicationId", student.id)
           .single();
 
         return {
           ...student,
-          createdAt: student.created_at,
+          createdAt: student.createdAt,
           user,
           internship,
           certificate: certificate
-            ? { id: certificate.id, uniqueCode: certificate.unique_code }
+            ? { id: certificate.id, uniqueCode: certificate.uniqueCode }
             : null,
         };
       })

@@ -28,25 +28,25 @@ export async function GET(
     const { data: user } = await supabaseAdmin
       .from("User")
       .select("id, name, email")
-      .eq("id", application.user_id)
+      .eq("id", application.userId)
       .single();
 
     const { data: internship } = await supabaseAdmin
       .from("Internship")
       .select("id, title, track")
-      .eq("id", application.internship_id)
+      .eq("id", application.internshipId)
       .single();
 
     const { data: certificate } = await supabaseAdmin
       .from("Certificate")
-      .select("id, unique_code, grade")
-      .eq("application_id", application.id)
+      .select("id, uniqueCode, grade")
+      .eq("applicationId", application.id)
       .single();
 
     const { data: course } = await supabaseAdmin
       .from("Course")
       .select("id")
-      .eq("internship_id", application.internship_id)
+      .eq("internshipId", application.internshipId)
       .single();
 
     const progress: Array<{
@@ -62,32 +62,32 @@ export async function GET(
       const { data: modules } = await supabaseAdmin
         .from("Module")
         .select("id, title, order")
-        .eq("course_id", course.id)
+        .eq("courseId", course.id)
         .order("order");
 
       const { data: lessonProgress } = await supabaseAdmin
         .from("LessonProgress")
-        .select("lesson_id, completed")
-        .eq("user_id", application.user_id);
+        .select("lessonId, completed")
+        .eq("userId", application.userId);
 
       const { data: submissions } = await supabaseAdmin
         .from("Submission")
-        .select("lesson_id, status")
-        .eq("user_id", application.user_id)
-        .order("submitted_at", { ascending: false });
+        .select("lessonId, status")
+        .eq("userId", application.userId)
+        .order("submittedAt", { ascending: false });
 
       const progressMap = new Map(
-        (lessonProgress || []).map((p) => [p.lesson_id, p.completed])
+        (lessonProgress || []).map((p) => [p.lessonId, p.completed])
       );
       const submissionMap = new Map(
-        (submissions || []).map((s) => [s.lesson_id, s.status])
+        (submissions || []).map((s) => [s.lessonId, s.status])
       );
 
       for (const mod of modules || []) {
         const { data: lessons } = await supabaseAdmin
           .from("Lesson")
           .select("id, title, type, order")
-          .eq("module_id", mod.id)
+          .eq("moduleId", mod.id)
           .order("order");
 
         for (const lesson of lessons || []) {
@@ -111,7 +111,7 @@ export async function GET(
         certificate: certificate
           ? {
               id: certificate.id,
-              uniqueCode: certificate.unique_code,
+              uniqueCode: certificate.uniqueCode,
               grade: certificate.grade,
             }
           : null,

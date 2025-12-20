@@ -21,14 +21,14 @@ export async function GET(
     const { data: applications } = await supabaseAdmin
       .from("Application")
       .select("*")
-      .eq("user_id", id);
+      .eq("userId", id);
 
     const appsWithInternships = await Promise.all(
       (applications || []).map(async (app) => {
         const { data: internship } = await supabaseAdmin
           .from("Internship")
           .select("*")
-          .eq("id", app.internship_id)
+          .eq("id", app.internshipId)
           .single();
 
         return { ...app, internship };

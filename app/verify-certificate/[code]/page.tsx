@@ -30,8 +30,8 @@ async function getCertificate(
 ): Promise<CertificateWithRelations | null> {
   const { data: certificate, error } = await supabaseAdmin
     .from("Certificate")
-    .select("id, unique_code, grade, issued_at, user_id, application_id")
-    .eq("unique_code", code)
+    .select("id, uniqueCode, grade, issuedAt, userId, applicationId")
+    .eq("uniqueCode", code)
     .single();
 
   if (error || !certificate) return null;
@@ -39,13 +39,13 @@ async function getCertificate(
   const { data: user } = await supabaseAdmin
     .from("User")
     .select("name, email")
-    .eq("id", certificate.user_id)
+    .eq("id", certificate.userId)
     .single();
 
   const { data: application } = await supabaseAdmin
     .from("Application")
-    .select("internship_id")
-    .eq("id", certificate.application_id)
+    .select("internshipId")
+    .eq("id", certificate.applicationId)
     .single();
 
   let internship = { title: "", track: "" };
@@ -53,16 +53,16 @@ async function getCertificate(
     const { data: i } = await supabaseAdmin
       .from("Internship")
       .select("title, track")
-      .eq("id", application.internship_id)
+      .eq("id", application.internshipId)
       .single();
     internship = i || { title: "", track: "" };
   }
 
   return {
     id: certificate.id,
-    uniqueCode: certificate.unique_code,
+    uniqueCode: certificate.uniqueCode,
     grade: certificate.grade,
-    issuedAt: certificate.issued_at,
+    issuedAt: certificate.issuedAt,
     user: { name: user?.name || null, email: user?.email || "" },
     application: { internship },
   };
