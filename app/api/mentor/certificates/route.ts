@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import { auth } from "@/auth";
 import { nanoid } from "nanoid";
 
@@ -19,23 +19,25 @@ export async function POST(request: Request) {
       );
     }
 
-    const application = await prisma.application.findFirst({
-      where: {
-        id: applicationId,
-        mentorId: session.user.id,
-      },
-    });
+    const { data: application, error: appError } = await supabaseAdmin
+      .from("applications")
+      .select("id, user_id")
+      .eq("id", applicationId)
+      .eq("mentor_id", session.user.id)
+      .single();
 
-    if (!application) {
+    if (appError || !application) {
       return NextResponse.json(
         { error: "Not authorized to issue certificate" },
         { status: 403 }
       );
     }
 
-    const existing = await prisma.certificate.findFirst({
-      where: { applicationId },
-    });
+    const { data: existing } = await supabaseAdmin
+      .from("certificates")
+      .select("id")
+      .eq("application_id", applicationId)
+      .single();
 
     if (existing) {
       return NextResponse.json(
@@ -45,19 +47,23 @@ export async function POST(request: Request) {
     }
 
     const uniqueCode = `GRYF-${nanoid(8).toUpperCase()}`;
-    const certificate = await prisma.certificate.create({
-      data: {
-        applicationId,
-        userId: application.userId,
-        uniqueCode,
+    const { data: certificate, error } = await supabaseAdmin
+      .from("certificates")
+      .insert({
+        application_id: applicationId,
+        user_id: application.user_id,
+        unique_code: uniqueCode,
         grade: grade || "Pass",
-      },
-    });
+      })
+      .select()
+      .single();
 
-    await prisma.application.update({
-      where: { id: applicationId },
-      data: { status: "COMPLETED" },
-    });
+    if (error) throw error;
+
+    await supabaseAdmin
+      .from("applications")
+      .update({ status: "COMPLETED" })
+      .eq("id", applicationId);
 
     return NextResponse.json(certificate, { status: 201 });
   } catch (error) {

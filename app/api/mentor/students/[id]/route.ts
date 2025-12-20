@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import { auth } from "@/auth";
 
-export async function GET({ params }: { params: Promise<{ id: string }> }) {
+export async function GET(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
@@ -11,76 +14,108 @@ export async function GET({ params }: { params: Promise<{ id: string }> }) {
 
     const { id } = await params;
 
-    const application = await prisma.application.findFirst({
-      where: {
-        id,
-        mentorId: session.user.id,
-      },
-      include: {
-        user: {
-          select: { id: true, name: true, email: true },
-        },
-        internship: {
-          select: { id: true, title: true, track: true },
-        },
-        certificate: {
-          select: { id: true, uniqueCode: true, grade: true },
-        },
-      },
-    });
+    const { data: application, error } = await supabaseAdmin
+      .from("applications")
+      .select("*")
+      .eq("id", id)
+      .eq("mentor_id", session.user.id)
+      .single();
 
-    if (!application) {
+    if (error || !application) {
       return NextResponse.json({ error: "Student not found" }, { status: 404 });
     }
 
-    const course = await prisma.course.findFirst({
-      where: { internshipId: application.internship.id },
-      include: {
-        modules: {
-          orderBy: { order: "asc" },
-          include: {
-            lessons: {
-              orderBy: { order: "asc" },
-              select: { id: true, title: true, type: true },
-            },
-          },
-        },
-      },
-    });
+    const { data: user } = await supabaseAdmin
+      .from("users")
+      .select("id, name, email")
+      .eq("id", application.user_id)
+      .single();
 
-    const lessonProgress = await prisma.lessonProgress.findMany({
-      where: { userId: application.user.id },
-      select: { lessonId: true, completed: true },
-    });
+    const { data: internship } = await supabaseAdmin
+      .from("internships")
+      .select("id, title, track")
+      .eq("id", application.internship_id)
+      .single();
 
-    const submissions = await prisma.submission.findMany({
-      where: { userId: application.user.id },
-      select: { lessonId: true, status: true },
-      orderBy: { submittedAt: "desc" },
-    });
+    const { data: certificate } = await supabaseAdmin
+      .from("certificates")
+      .select("id, unique_code, grade")
+      .eq("application_id", application.id)
+      .single();
 
-    const progressMap = new Map(
-      lessonProgress.map((p) => [p.lessonId, p.completed])
-    );
-    const submissionMap = new Map(
-      submissions.map((s) => [s.lessonId, s.status])
-    );
+    const { data: course } = await supabaseAdmin
+      .from("courses")
+      .select("id")
+      .eq("internship_id", application.internship_id)
+      .single();
 
-    const progress = course
-      ? course.modules.flatMap((module) =>
-          module.lessons.map((lesson) => ({
+    const progress: Array<{
+      lessonId: string;
+      lessonTitle: string;
+      moduleTitle: string;
+      type: string;
+      completed: boolean;
+      submissionStatus: string | null;
+    }> = [];
+
+    if (course) {
+      const { data: modules } = await supabaseAdmin
+        .from("modules")
+        .select("id, title, order")
+        .eq("course_id", course.id)
+        .order("order");
+
+      const { data: lessonProgress } = await supabaseAdmin
+        .from("lesson_progress")
+        .select("lesson_id, completed")
+        .eq("user_id", application.user_id);
+
+      const { data: submissions } = await supabaseAdmin
+        .from("submissions")
+        .select("lesson_id, status")
+        .eq("user_id", application.user_id)
+        .order("submitted_at", { ascending: false });
+
+      const progressMap = new Map(
+        (lessonProgress || []).map((p) => [p.lesson_id, p.completed])
+      );
+      const submissionMap = new Map(
+        (submissions || []).map((s) => [s.lesson_id, s.status])
+      );
+
+      for (const mod of modules || []) {
+        const { data: lessons } = await supabaseAdmin
+          .from("lessons")
+          .select("id, title, type, order")
+          .eq("module_id", mod.id)
+          .order("order");
+
+        for (const lesson of lessons || []) {
+          progress.push({
             lessonId: lesson.id,
             lessonTitle: lesson.title,
-            moduleTitle: module.title,
+            moduleTitle: mod.title,
             type: lesson.type,
             completed: progressMap.get(lesson.id) || false,
             submissionStatus: submissionMap.get(lesson.id) || null,
-          }))
-        )
-      : [];
+          });
+        }
+      }
+    }
 
     return NextResponse.json({
-      student: application,
+      student: {
+        ...application,
+        user,
+        internship,
+        certificate: certificate
+          ? {
+              id: certificate.id,
+              uniqueCode: certificate.unique_code,
+              grade: certificate.grade,
+            }
+          : null,
+      },
       progress,
     });
   } catch (error) {

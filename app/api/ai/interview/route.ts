@@ -1,7 +1,7 @@
 import { createGroq } from "@ai-sdk/groq";
 import { LanguageModel, streamText } from "ai";
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import { auth } from "@/auth";
 
 const groq = createGroq({
@@ -107,39 +107,45 @@ async function handleInterviewComplete(
       }
     }
 
-    await prisma.interviewResult.upsert({
-      where: {
-        userId_internshipId: { userId, internshipId },
-      },
-      update: {
+    const { data: existing } = await supabaseAdmin
+      .from("interview_results")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("internship_id", internshipId)
+      .single();
+
+    if (existing) {
+      await supabaseAdmin
+        .from("interview_results")
+        .update({
+          score,
+          passed,
+          transcript: messages,
+          feedback: lastMessage?.content,
+        })
+        .eq("id", existing.id);
+    } else {
+      await supabaseAdmin.from("interview_results").insert({
+        user_id: userId,
+        internship_id: internshipId,
         score,
         passed,
         transcript: messages,
         feedback: lastMessage?.content,
-      },
-      create: {
-        userId,
-        internshipId,
-        score,
-        passed,
-        transcript: messages,
-        feedback: lastMessage?.content,
-      },
-    });
+      });
+    }
 
     if (passed) {
-      await prisma.application.updateMany({
-        where: {
-          userId,
-          internshipId,
-          status: "ELIGIBILITY_PASSED",
-        },
-        data: {
+      await supabaseAdmin
+        .from("applications")
+        .update({
           status: "INTERVIEW_PASSED",
-          interviewScore: score,
-          interviewLog: messages,
-        },
-      });
+          interview_score: score,
+          interview_log: messages,
+        })
+        .eq("user_id", userId)
+        .eq("internship_id", internshipId)
+        .eq("status", "ELIGIBILITY_PASSED");
     }
 
     return NextResponse.json({ score, passed });
@@ -169,14 +175,12 @@ export async function GET(request: Request) {
       );
     }
 
-    const result = await prisma.interviewResult.findUnique({
-      where: {
-        userId_internshipId: {
-          userId: session.user.id,
-          internshipId,
-        },
-      },
-    });
+    const { data: result } = await supabaseAdmin
+      .from("interview_results")
+      .select("*")
+      .eq("user_id", session.user.id)
+      .eq("internship_id", internshipId)
+      .single();
 
     return NextResponse.json(result || { completed: false });
   } catch (error) {

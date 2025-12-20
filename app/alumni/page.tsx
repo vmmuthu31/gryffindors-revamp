@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/db";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Trophy, Linkedin, Globe, Briefcase } from "lucide-react";
@@ -8,28 +8,113 @@ import Image from "next/image";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-async function getAlumni() {
+interface AlumniCert {
+  id: string;
+  application: {
+    internship: {
+      title: string;
+      track: string;
+    };
+  };
+}
+
+interface Alumni {
+  id: string;
+  name: string | null;
+  email: string;
+  bio: string | null;
+  currentJob: string | null;
+  company: string | null;
+  linkedIn: string | null;
+  portfolio: string | null;
+  certificates: AlumniCert[];
+}
+
+async function getAlumni(): Promise<Alumni[]> {
   try {
-    const alumni = await prisma.user.findMany({
-      where: {
-        isAlumni: true,
-      },
-      include: {
-        certificates: {
-          include: {
-            application: {
-              include: {
-                internship: {
-                  select: { title: true, track: true },
-                },
-              },
-            },
-          },
-        },
-      },
-      orderBy: { createdAt: "desc" },
-      take: 50,
-    });
+    interface UserRow {
+      id: string;
+      name: string | null;
+      email: string;
+      bio: string | null;
+      current_job: string | null;
+      company: string | null;
+      linked_in: string | null;
+      portfolio: string | null;
+    }
+    interface CertRow {
+      id: string;
+      application_id: string;
+    }
+    interface AppRow {
+      internship_id: string;
+    }
+
+    const { data, error } = await supabaseAdmin
+      .from("users")
+      .select(
+        "id, name, email, bio, current_job, company, linked_in, portfolio"
+      )
+      .eq("is_alumni", true)
+      .order("created_at", { ascending: false })
+      .limit(50);
+
+    if (error) throw error;
+
+    const users = (data || []) as UserRow[];
+
+    const alumni = await Promise.all(
+      users.map(async (user) => {
+        const { data: certData } = await supabaseAdmin
+          .from("certificates")
+          .select("id, application_id")
+          .eq("user_id", user.id);
+
+        const certificates = (certData || []) as CertRow[];
+
+        const certsWithRelations = await Promise.all(
+          certificates.map(async (cert) => {
+            const { data: appData } = await supabaseAdmin
+              .from("applications")
+              .select("internship_id")
+              .eq("id", cert.application_id)
+              .single();
+
+            const application = appData as AppRow | null;
+
+            let internship = { title: "", track: "" };
+            if (application) {
+              const { data: i } = await supabaseAdmin
+                .from("internships")
+                .select("title, track")
+                .eq("id", application.internship_id)
+                .single();
+              internship = (i as { title: string; track: string } | null) || {
+                title: "",
+                track: "",
+              };
+            }
+
+            return {
+              id: cert.id,
+              application: { internship },
+            };
+          })
+        );
+
+        return {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          bio: user.bio,
+          currentJob: user.current_job,
+          company: user.company,
+          linkedIn: user.linked_in,
+          portfolio: user.portfolio,
+          certificates: certsWithRelations,
+        };
+      })
+    );
 
     return alumni;
   } catch (error) {

@@ -1,34 +1,58 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
-import { Role } from "@prisma/client";
+import { supabaseAdmin } from "@/lib/supabase/admin";
+import type { Role } from "@/lib/supabase/types";
 import bcrypt from "bcryptjs";
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const role = searchParams.get("role");
+    const role = searchParams.get("role") as Role | null;
 
-    const users = await prisma.user.findMany({
-      where: role ? { role: role as Role } : undefined,
-      orderBy: { createdAt: "desc" },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        createdAt: true,
-        applications: {
-          select: {
-            id: true,
-            status: true,
-            internship: {
-              select: { title: true },
-            },
-          },
-        },
-      },
-    });
-    return NextResponse.json(users);
+    let query = supabaseAdmin
+      .from("users")
+      .select("id, name, email, role, created_at")
+      .order("created_at", { ascending: false });
+
+    if (role) {
+      query = query.eq("role", role);
+    }
+
+    const { data: users, error } = await query;
+
+    if (error) throw error;
+
+    const usersWithApplications = await Promise.all(
+      (users || []).map(async (user) => {
+        const { data: applications } = await supabaseAdmin
+          .from("applications")
+          .select("id, status, internship_id")
+          .eq("user_id", user.id);
+
+        const appsWithInternships = await Promise.all(
+          (applications || []).map(async (app) => {
+            const { data: internship } = await supabaseAdmin
+              .from("internships")
+              .select("title")
+              .eq("id", app.internship_id)
+              .single();
+
+            return {
+              id: app.id,
+              status: app.status,
+              internship: internship || { title: "" },
+            };
+          })
+        );
+
+        return {
+          ...user,
+          createdAt: user.created_at,
+          applications: appsWithInternships,
+        };
+      })
+    );
+
+    return NextResponse.json(usersWithApplications);
   } catch (error) {
     console.error("Failed to fetch users:", error);
     return NextResponse.json(
@@ -49,9 +73,12 @@ export async function POST(request: Request) {
       );
     }
 
-    const exists = await prisma.user.findUnique({
-      where: { email: data.email },
-    });
+    const { data: exists } = await supabaseAdmin
+      .from("users")
+      .select("id")
+      .eq("email", data.email)
+      .single();
+
     if (exists) {
       return NextResponse.json(
         { error: "User already exists" },
@@ -61,14 +88,18 @@ export async function POST(request: Request) {
 
     const passwordHash = await bcrypt.hash(data.password, 10);
 
-    const user = await prisma.user.create({
-      data: {
+    const { data: user, error } = await supabaseAdmin
+      .from("users")
+      .insert({
         name: data.name || null,
         email: data.email,
-        passwordHash,
+        password_hash: passwordHash,
         role: data.role || "STUDENT",
-      },
-    });
+      })
+      .select("id, email, role")
+      .single();
+
+    if (error) throw error;
 
     return NextResponse.json(
       { id: user.id, email: user.email, role: user.role },

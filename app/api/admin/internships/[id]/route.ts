@@ -1,28 +1,41 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 
 export async function GET(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
-    const internship = await prisma.internship.findUnique({
-      where: { id },
-      include: {
-        courses: true,
-        applications: true,
-      },
-    });
 
-    if (!internship) {
+    const { data: internship, error } = await supabaseAdmin
+      .from("internships")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (error || !internship) {
       return NextResponse.json(
         { error: "Internship not found" },
         { status: 404 }
       );
     }
 
-    return NextResponse.json(internship);
+    const { data: courses } = await supabaseAdmin
+      .from("courses")
+      .select("*")
+      .eq("internship_id", id);
+
+    const { data: applications } = await supabaseAdmin
+      .from("applications")
+      .select("*")
+      .eq("internship_id", id);
+
+    return NextResponse.json({
+      ...internship,
+      courses: courses || [],
+      applications: applications || [],
+    });
   } catch (error) {
     console.error("Failed to fetch internship:", error);
     return NextResponse.json(
@@ -40,17 +53,21 @@ export async function PUT(
     const { id } = await params;
     const data = await request.json();
 
-    const internship = await prisma.internship.update({
-      where: { id },
-      data: {
+    const { data: internship, error } = await supabaseAdmin
+      .from("internships")
+      .update({
         title: data.title,
         description: data.description,
         track: data.track,
         price: parseFloat(data.price),
         duration: data.duration,
-        isActive: data.isActive,
-      },
-    });
+        is_active: data.isActive,
+      })
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
 
     return NextResponse.json(internship);
   } catch (error) {
@@ -63,15 +80,18 @@ export async function PUT(
 }
 
 export async function DELETE(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
 
-    await prisma.internship.delete({
-      where: { id },
-    });
+    const { error } = await supabaseAdmin
+      .from("internships")
+      .delete()
+      .eq("id", id);
+
+    if (error) throw error;
 
     return NextResponse.json({ success: true });
   } catch (error) {

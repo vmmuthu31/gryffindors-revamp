@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import { auth } from "@/auth";
 import { nanoid } from "nanoid";
 
@@ -10,46 +10,62 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    let user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { referralCode: true },
-    });
+    let { data: user } = await supabaseAdmin
+      .from("users")
+      .select("referral_code")
+      .eq("id", session.user.id)
+      .single();
 
-    if (!user?.referralCode) {
+    if (!user?.referral_code) {
       const code = `GRYF${nanoid(6).toUpperCase()}`;
-      user = await prisma.user.update({
-        where: { id: session.user.id },
-        data: { referralCode: code },
-        select: { referralCode: true },
-      });
+      const { data: updated } = await supabaseAdmin
+        .from("users")
+        .update({ referral_code: code })
+        .eq("id", session.user.id)
+        .select("referral_code")
+        .single();
+      user = updated;
     }
 
-    const referrals = await prisma.referral.findMany({
-      where: { referrerId: session.user.id },
-      include: {
-        referredUser: {
-          select: { name: true, email: true },
-        },
-      },
-    });
+    const { data: referrals } = await supabaseAdmin
+      .from("referrals")
+      .select("*")
+      .eq("referrer_id", session.user.id);
 
-    const totalEarnings = referrals
+    const referralsWithUsers = await Promise.all(
+      (referrals || []).map(async (r) => {
+        let referredUser = null;
+        if (r.referred_user_id) {
+          const { data } = await supabaseAdmin
+            .from("users")
+            .select("name, email")
+            .eq("id", r.referred_user_id)
+            .single();
+          referredUser = data;
+        }
+        return { ...r, referredUser };
+      })
+    );
+
+    const totalEarnings = referralsWithUsers
       .filter((r) => r.status === "PAID")
-      .reduce((acc, r) => acc + r.earnedAmount, 0);
+      .reduce((acc, r) => acc + (r.earned_amount || 0), 0);
 
-    const usedCount = referrals.filter((r) => r.status !== "PENDING").length;
+    const usedCount = referralsWithUsers.filter(
+      (r) => r.status !== "PENDING"
+    ).length;
 
     return NextResponse.json({
-      code: user.referralCode,
-      totalReferrals: referrals.length,
+      code: user?.referral_code,
+      totalReferrals: referralsWithUsers.length,
       usedReferrals: usedCount,
       totalEarnings,
-      referrals: referrals.map((r) => ({
+      referrals: referralsWithUsers.map((r) => ({
         id: r.id,
         status: r.status,
-        usedAt: r.usedAt,
+        usedAt: r.used_at,
         referredUser: r.referredUser,
-        earnedAmount: r.earnedAmount,
+        earnedAmount: r.earned_amount,
       })),
     });
   } catch (error) {
@@ -72,9 +88,11 @@ export async function POST(request: Request) {
       );
     }
 
-    const referrer = await prisma.user.findFirst({
-      where: { referralCode: code },
-    });
+    const { data: referrer } = await supabaseAdmin
+      .from("users")
+      .select("id")
+      .eq("referral_code", code)
+      .single();
 
     if (!referrer) {
       return NextResponse.json(
@@ -90,9 +108,11 @@ export async function POST(request: Request) {
       );
     }
 
-    const existingReferral = await prisma.referral.findFirst({
-      where: { referredUserId: userId },
-    });
+    const { data: existingReferral } = await supabaseAdmin
+      .from("referrals")
+      .select("id")
+      .eq("referred_user_id", userId)
+      .single();
 
     if (existingReferral) {
       return NextResponse.json(
@@ -101,21 +121,25 @@ export async function POST(request: Request) {
       );
     }
 
-    const referral = await prisma.referral.create({
-      data: {
+    const { data: referral, error } = await supabaseAdmin
+      .from("referrals")
+      .insert({
         code: `${code}-${nanoid(4)}`,
-        referrerId: referrer.id,
-        referredUserId: userId,
+        referrer_id: referrer.id,
+        referred_user_id: userId,
         discount: 200,
         status: "USED",
-        usedAt: new Date(),
-      },
-    });
+        used_at: new Date().toISOString(),
+      })
+      .select()
+      .single();
 
-    await prisma.user.update({
-      where: { id: userId },
-      data: { referredBy: referrer.id },
-    });
+    if (error) throw error;
+
+    await supabaseAdmin
+      .from("users")
+      .update({ referred_by: referrer.id })
+      .eq("id", userId);
 
     return NextResponse.json({
       success: true,

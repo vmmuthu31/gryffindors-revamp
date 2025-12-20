@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 
 export async function DELETE(
   _request: Request,
@@ -8,9 +8,12 @@ export async function DELETE(
   try {
     const { id } = await params;
 
-    await prisma.certificate.delete({
-      where: { id },
-    });
+    const { error } = await supabaseAdmin
+      .from("certificates")
+      .delete()
+      .eq("id", id);
+
+    if (error) throw error;
 
     return NextResponse.json({ success: true });
   } catch (error) {

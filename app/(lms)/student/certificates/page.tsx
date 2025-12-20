@@ -1,5 +1,5 @@
 import { auth } from "@/auth";
-import { prisma } from "@/lib/db";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import { Card, CardContent } from "@/components/ui/card";
 import { Award, Download, ExternalLink } from "lucide-react";
 import Link from "next/link";
@@ -11,7 +11,7 @@ export const revalidate = 0;
 interface CertificateWithApplication {
   id: string;
   uniqueCode: string;
-  issuedAt: Date;
+  issuedAt: string;
   grade: string | null;
   application: {
     internship: {
@@ -20,20 +20,61 @@ interface CertificateWithApplication {
   };
 }
 
-async function getCertificates(userId: string) {
-  const certificates = await prisma.certificate.findMany({
-    where: { userId },
-    include: {
-      application: {
-        include: {
-          internship: true,
-        },
-      },
-    },
-    orderBy: { issuedAt: "desc" },
-  });
+async function getCertificates(
+  userId: string
+): Promise<CertificateWithApplication[]> {
+  interface CertRow {
+    id: string;
+    unique_code: string;
+    issued_at: string;
+    grade: string | null;
+    application_id: string;
+  }
+  interface AppRow {
+    internship_id: string;
+  }
 
-  return certificates as CertificateWithApplication[];
+  const { data, error } = await supabaseAdmin
+    .from("certificates")
+    .select("id, unique_code, issued_at, grade, application_id")
+    .eq("user_id", userId)
+    .order("issued_at", { ascending: false });
+
+  if (error) return [];
+
+  const certificates = (data || []) as CertRow[];
+
+  const result = await Promise.all(
+    certificates.map(async (cert) => {
+      const { data: appData } = await supabaseAdmin
+        .from("applications")
+        .select("internship_id")
+        .eq("id", cert.application_id)
+        .single();
+
+      const application = appData as AppRow | null;
+
+      let internship = { title: "" };
+      if (application) {
+        const { data: i } = await supabaseAdmin
+          .from("internships")
+          .select("title")
+          .eq("id", application.internship_id)
+          .single();
+        internship = (i as { title: string } | null) || { title: "" };
+      }
+
+      return {
+        id: cert.id,
+        uniqueCode: cert.unique_code,
+        issuedAt: cert.issued_at,
+        grade: cert.grade,
+        application: { internship },
+      };
+    })
+  );
+
+  return result;
 }
 
 export default async function CertificatesPage() {

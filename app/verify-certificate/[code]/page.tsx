@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/db";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Award,
@@ -18,7 +18,7 @@ interface CertificateWithRelations {
   id: string;
   uniqueCode: string;
   grade: string | null;
-  issuedAt: Date;
+  issuedAt: string;
   user: { name: string | null; email: string };
   application: {
     internship: { title: string; track: string };
@@ -28,23 +28,44 @@ interface CertificateWithRelations {
 async function getCertificate(
   code: string
 ): Promise<CertificateWithRelations | null> {
-  const certificate = await prisma.certificate.findUnique({
-    where: { uniqueCode: code },
-    include: {
-      user: {
-        select: { name: true, email: true },
-      },
-      application: {
-        include: {
-          internship: {
-            select: { title: true, track: true },
-          },
-        },
-      },
-    },
-  });
+  const { data: certificate, error } = await supabaseAdmin
+    .from("certificates")
+    .select("id, unique_code, grade, issued_at, user_id, application_id")
+    .eq("unique_code", code)
+    .single();
 
-  return certificate;
+  if (error || !certificate) return null;
+
+  const { data: user } = await supabaseAdmin
+    .from("users")
+    .select("name, email")
+    .eq("id", certificate.user_id)
+    .single();
+
+  const { data: application } = await supabaseAdmin
+    .from("applications")
+    .select("internship_id")
+    .eq("id", certificate.application_id)
+    .single();
+
+  let internship = { title: "", track: "" };
+  if (application) {
+    const { data: i } = await supabaseAdmin
+      .from("internships")
+      .select("title, track")
+      .eq("id", application.internship_id)
+      .single();
+    internship = i || { title: "", track: "" };
+  }
+
+  return {
+    id: certificate.id,
+    uniqueCode: certificate.unique_code,
+    grade: certificate.grade,
+    issuedAt: certificate.issued_at,
+    user: { name: user?.name || null, email: user?.email || "" },
+    application: { internship },
+  };
 }
 
 export default async function VerifyCertificatePage({

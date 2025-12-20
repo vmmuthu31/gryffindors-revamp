@@ -1,9 +1,20 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import { auth } from "@/auth";
 import { nanoid } from "nanoid";
 import { sendWelcomeEmail } from "@/lib/email";
 import bcrypt from "bcryptjs";
+
+interface AdminRow {
+  role: string;
+}
+
+interface UserRow {
+  id: string;
+  email: string;
+  name: string | null;
+  [key: string]: unknown;
+}
 
 export async function POST(request: Request) {
   try {
@@ -12,10 +23,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const admin = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { role: true },
-    });
+    const { data: adminData } = await supabaseAdmin
+      .from("users")
+      .select("role")
+      .eq("id", session.user.id)
+      .single();
+
+    const admin = adminData as AdminRow | null;
 
     if (admin?.role !== "ADMIN") {
       return NextResponse.json(
@@ -59,11 +73,13 @@ export async function POST(request: Request) {
       );
     }
 
-    const internship = await prisma.internship.findUnique({
-      where: { id: internshipId },
-    });
+    const { data: internship, error: internshipError } = await supabaseAdmin
+      .from("internships")
+      .select("id")
+      .eq("id", internshipId)
+      .single();
 
-    if (!internship) {
+    if (internshipError || !internship) {
       return NextResponse.json(
         { error: "Internship not found" },
         { status: 404 }
@@ -88,23 +104,30 @@ export async function POST(request: Request) {
       }
 
       try {
-        let user = await prisma.user.findUnique({
-          where: { email },
-        });
+        let { data: user } = await supabaseAdmin
+          .from("users")
+          .select("*")
+          .eq("email", email)
+          .single();
 
         const tempPassword = nanoid(8);
 
         if (!user) {
           const hashedPassword = await bcrypt.hash(tempPassword, 10);
-          user = await prisma.user.create({
-            data: {
+          const { data: newUser, error: createError } = await supabaseAdmin
+            .from("users")
+            .insert({
               email,
               name,
-              passwordHash: hashedPassword,
+              password_hash: hashedPassword,
               role: "STUDENT",
-              referralCode: `GRYF${nanoid(6).toUpperCase()}`,
-            },
-          });
+              referral_code: `GRYF${nanoid(6).toUpperCase()}`,
+            })
+            .select()
+            .single();
+
+          if (createError) throw createError;
+          user = newUser as UserRow;
 
           try {
             await sendWelcomeEmail(email, name || "Student", "STUDENT");
@@ -113,13 +136,13 @@ export async function POST(request: Request) {
           }
         }
 
-        const existingApp = await prisma.application.findFirst({
-          where: {
-            userId: user.id,
-            internshipId,
-            status: { in: ["ENROLLED", "IN_PROGRESS", "COMPLETED"] },
-          },
-        });
+        const { data: existingApp } = await supabaseAdmin
+          .from("applications")
+          .select("id")
+          .eq("user_id", user.id)
+          .eq("internship_id", internshipId)
+          .in("status", ["ENROLLED", "IN_PROGRESS", "COMPLETED"])
+          .single();
 
         if (existingApp) {
           errors.push(`${email}: Already enrolled`);
@@ -127,15 +150,13 @@ export async function POST(request: Request) {
           continue;
         }
 
-        await prisma.application.create({
-          data: {
-            userId: user.id,
-            internshipId,
-            mentorId: mentorId || null,
-            status: "ENROLLED",
-            paymentStatus: "SUCCESS",
-            paymentId: `BULK_${nanoid(8)}`,
-          },
+        await supabaseAdmin.from("applications").insert({
+          user_id: user.id,
+          internship_id: internshipId,
+          mentor_id: mentorId || null,
+          status: "ENROLLED",
+          payment_status: "SUCCESS",
+          payment_id: `BULK_${nanoid(8)}`,
         });
 
         success++;

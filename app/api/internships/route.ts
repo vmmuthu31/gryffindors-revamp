@@ -1,11 +1,15 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 
 export async function GET() {
   try {
-    const internships = await prisma.internship.findMany({
-      orderBy: { createdAt: "desc" },
-    });
+    const { data: internships, error } = await supabaseAdmin
+      .from("internships")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+
     return NextResponse.json(internships);
   } catch {
     return NextResponse.json(
@@ -18,15 +22,20 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const data = await request.json();
-    const internship = await prisma.internship.create({
-      data: {
+    const { data: internship, error } = await supabaseAdmin
+      .from("internships")
+      .insert({
         title: data.title,
         track: data.track,
         price: data.price,
         duration: data.duration,
         curriculum: data.curriculum || {},
-      },
-    });
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+
     return NextResponse.json(internship);
   } catch {
     return NextResponse.json(

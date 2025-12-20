@@ -1,25 +1,56 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import { nanoid } from "nanoid";
 
 export async function GET() {
   try {
-    const certificates = await prisma.certificate.findMany({
-      orderBy: { issuedAt: "desc" },
-      include: {
-        application: {
-          include: {
-            user: {
-              select: { id: true, name: true, email: true },
-            },
-            internship: {
-              select: { id: true, title: true, track: true },
-            },
-          },
-        },
-      },
-    });
-    return NextResponse.json(certificates);
+    const { data: certificates, error } = await supabaseAdmin
+      .from("certificates")
+      .select("*")
+      .order("issued_at", { ascending: false });
+
+    if (error) throw error;
+
+    const certsWithRelations = await Promise.all(
+      (certificates || []).map(async (cert) => {
+        const { data: application } = await supabaseAdmin
+          .from("applications")
+          .select("*")
+          .eq("id", cert.application_id)
+          .single();
+
+        let user = null;
+        let internship = null;
+
+        if (application) {
+          const { data: userData } = await supabaseAdmin
+            .from("users")
+            .select("id, name, email")
+            .eq("id", application.user_id)
+            .single();
+          user = userData;
+
+          const { data: internshipData } = await supabaseAdmin
+            .from("internships")
+            .select("id, title, track")
+            .eq("id", application.internship_id)
+            .single();
+          internship = internshipData;
+        }
+
+        return {
+          ...cert,
+          issuedAt: cert.issued_at,
+          uniqueCode: cert.unique_code,
+          applicationId: cert.application_id,
+          application: application
+            ? { ...application, user, internship }
+            : null,
+        };
+      })
+    );
+
+    return NextResponse.json(certsWithRelations);
   } catch (error) {
     console.error("Failed to fetch certificates:", error);
     return NextResponse.json(
@@ -40,21 +71,24 @@ export async function POST(request: Request) {
       );
     }
 
-    const application = await prisma.application.findUnique({
-      where: { id: data.applicationId },
-      select: { userId: true },
-    });
+    const { data: application, error: appError } = await supabaseAdmin
+      .from("applications")
+      .select("user_id")
+      .eq("id", data.applicationId)
+      .single();
 
-    if (!application) {
+    if (appError || !application) {
       return NextResponse.json(
         { error: "Application not found" },
         { status: 404 }
       );
     }
 
-    const exists = await prisma.certificate.findFirst({
-      where: { applicationId: data.applicationId },
-    });
+    const { data: exists } = await supabaseAdmin
+      .from("certificates")
+      .select("id")
+      .eq("application_id", data.applicationId)
+      .single();
 
     if (exists) {
       return NextResponse.json(
@@ -65,14 +99,18 @@ export async function POST(request: Request) {
 
     const uniqueCode = `GRYF-${nanoid(8).toUpperCase()}`;
 
-    const certificate = await prisma.certificate.create({
-      data: {
-        applicationId: data.applicationId,
-        userId: application.userId,
-        uniqueCode,
+    const { data: certificate, error } = await supabaseAdmin
+      .from("certificates")
+      .insert({
+        application_id: data.applicationId,
+        user_id: application.user_id,
+        unique_code: uniqueCode,
         grade: data.grade || "Pass",
-      },
-    });
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
 
     return NextResponse.json(certificate, { status: 201 });
   } catch (error) {

@@ -1,26 +1,59 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
-import { AppStatus } from "@prisma/client";
+import { supabaseAdmin } from "@/lib/supabase/admin";
+import type { AppStatus } from "@/lib/supabase/types";
+
+interface AppRow {
+  id: string;
+  user_id: string;
+  internship_id: string;
+  created_at: string;
+  [key: string]: unknown;
+}
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const status = searchParams.get("status");
+    const status = searchParams.get("status") as AppStatus | null;
 
-    const applications = await prisma.application.findMany({
-      where: status ? { status: status as AppStatus } : undefined,
-      orderBy: { createdAt: "desc" },
-      include: {
-        user: {
-          select: { id: true, name: true, email: true },
-        },
-        internship: {
-          select: { id: true, title: true, track: true },
-        },
-      },
-    });
+    let query = supabaseAdmin
+      .from("applications")
+      .select("*")
+      .order("created_at", { ascending: false });
 
-    return NextResponse.json(applications);
+    if (status) {
+      query = query.eq("status", status);
+    }
+
+    const { data, error } = await query;
+
+    if (error) throw error;
+
+    const applications = (data || []) as AppRow[];
+
+    const appsWithRelations = await Promise.all(
+      applications.map(async (app) => {
+        const { data: user } = await supabaseAdmin
+          .from("users")
+          .select("id, name, email")
+          .eq("id", app.user_id)
+          .single();
+
+        const { data: internship } = await supabaseAdmin
+          .from("internships")
+          .select("id, title, track")
+          .eq("id", app.internship_id)
+          .single();
+
+        return {
+          ...app,
+          createdAt: app.created_at,
+          user,
+          internship,
+        };
+      })
+    );
+
+    return NextResponse.json(appsWithRelations);
   } catch (error) {
     console.error("Failed to fetch applications:", error);
     return NextResponse.json(

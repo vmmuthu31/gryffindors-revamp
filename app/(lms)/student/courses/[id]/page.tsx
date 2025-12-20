@@ -1,5 +1,5 @@
 import { auth } from "@/auth";
-import { prisma } from "@/lib/db";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import {
   Accordion,
   AccordionContent,
@@ -32,36 +32,100 @@ interface Module {
   lessons: Lesson[];
 }
 
-async function getCourse(courseId: string) {
-  const course = await prisma.course.findUnique({
-    where: { id: courseId },
-    include: {
-      internship: true,
-      modules: {
-        orderBy: { order: "asc" },
-        include: {
-          lessons: {
-            orderBy: { order: "asc" },
-          },
-        },
-      },
+interface Course {
+  id: string;
+  title: string;
+  description: string;
+  internship: { title: string };
+  modules: Module[];
+}
+
+async function getCourse(courseId: string): Promise<Course | null> {
+  interface CourseRow {
+    id: string;
+    title: string;
+    description: string | null;
+    internship_id: string;
+  }
+  interface ModRow {
+    id: string;
+    title: string;
+    order: number;
+  }
+  interface LessonRow {
+    id: string;
+    title: string;
+    type: string;
+    duration: number | null;
+    order: number;
+  }
+
+  const { data, error } = await supabaseAdmin
+    .from("courses")
+    .select("id, title, description, internship_id")
+    .eq("id", courseId)
+    .single();
+
+  if (error || !data) return null;
+
+  const course = data as CourseRow;
+
+  const { data: internship } = await supabaseAdmin
+    .from("internships")
+    .select("title")
+    .eq("id", course.internship_id)
+    .single();
+
+  const { data: mods } = await supabaseAdmin
+    .from("modules")
+    .select("id, title, order")
+    .eq("course_id", courseId)
+    .order("order");
+
+  const modules = (mods || []) as ModRow[];
+
+  const modulesWithLessons = await Promise.all(
+    modules.map(async (mod) => {
+      const { data: lessonData } = await supabaseAdmin
+        .from("lessons")
+        .select("id, title, type, duration, order")
+        .eq("module_id", mod.id)
+        .order("order");
+
+      const lessons = (lessonData || []) as LessonRow[];
+
+      return { ...mod, lessons };
+    })
+  );
+
+  return {
+    id: course.id,
+    title: course.title,
+    description: course.description || "",
+    internship: {
+      title: (internship as { title: string } | null)?.title || "",
     },
-  });
-  return course;
+    modules: modulesWithLessons,
+  };
 }
 
 async function getUserLessonProgress(userId: string, lessonIds: string[]) {
-  const progress = await prisma.lessonProgress.findMany({
-    where: {
-      userId,
-      lessonId: { in: lessonIds },
-      completed: true,
-    },
-    select: {
-      lessonId: true,
-    },
-  });
-  return new Set(progress.map((p) => p.lessonId));
+  if (lessonIds.length === 0) return new Set<string>();
+
+  interface ProgressRow {
+    lesson_id: string;
+  }
+
+  const { data } = await supabaseAdmin
+    .from("lesson_progress")
+    .select("lesson_id")
+    .eq("user_id", userId)
+    .in("lesson_id", lessonIds)
+    .eq("completed", true);
+
+  const progress = (data || []) as ProgressRow[];
+
+  return new Set(progress.map((p) => p.lesson_id));
 }
 
 export default async function CourseDetailPage({

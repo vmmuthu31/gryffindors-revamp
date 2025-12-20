@@ -1,15 +1,9 @@
-import { prisma } from "@/lib/db";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IndianRupee, Users, BookOpen, Award, TrendingUp } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
-
-interface InternshipWithApps {
-  title: string;
-  price: number;
-  applications: { id: string }[];
-}
 
 interface RevenueByProgram {
   title: string;
@@ -19,44 +13,56 @@ interface RevenueByProgram {
 }
 
 async function getStats() {
-  const totalStudents = await prisma.user.count({
-    where: { role: "STUDENT" },
-  });
+  const { count: totalStudents } = await supabaseAdmin
+    .from("users")
+    .select("*", { count: "exact", head: true })
+    .eq("role", "STUDENT");
 
-  const enrolledStudents = await prisma.application.count({
-    where: { status: { in: ["ENROLLED", "IN_PROGRESS", "COMPLETED"] } },
-  });
+  const { count: enrolledStudents } = await supabaseAdmin
+    .from("applications")
+    .select("*", { count: "exact", head: true })
+    .in("status", ["ENROLLED", "IN_PROGRESS", "COMPLETED"]);
 
-  const internships = await prisma.internship.findMany({
-    include: {
-      applications: {
-        where: { paymentStatus: "SUCCESS" },
-      },
-    },
-  });
+  const { count: certificates } = await supabaseAdmin
+    .from("certificates")
+    .select("*", { count: "exact", head: true });
 
-  const revenue = internships.reduce(
-    (acc: number, int: InternshipWithApps) =>
-      acc + int.price * int.applications.length,
-    0
-  );
+  const { data } = await supabaseAdmin
+    .from("internships")
+    .select("id, title, price");
 
-  const certificates = await prisma.certificate.count();
+  interface IntRow {
+    id: string;
+    title: string;
+    price: number;
+  }
+  const internships = (data || []) as IntRow[];
 
-  const revenueByProgram: RevenueByProgram[] = internships.map(
-    (int: InternshipWithApps) => ({
-      title: int.title,
-      price: int.price,
-      students: int.applications.length,
-      revenue: int.price * int.applications.length,
+  const revenueByProgram: RevenueByProgram[] = await Promise.all(
+    internships.map(async (int) => {
+      const { count } = await supabaseAdmin
+        .from("applications")
+        .select("*", { count: "exact", head: true })
+        .eq("internship_id", int.id)
+        .eq("payment_status", "SUCCESS");
+
+      const students = count || 0;
+      return {
+        title: int.title,
+        price: int.price,
+        students,
+        revenue: int.price * students,
+      };
     })
   );
 
+  const revenue = revenueByProgram.reduce((acc, p) => acc + p.revenue, 0);
+
   return {
-    totalStudents,
-    enrolledStudents,
+    totalStudents: totalStudents || 0,
+    enrolledStudents: enrolledStudents || 0,
     revenue,
-    certificates,
+    certificates: certificates || 0,
     revenueByProgram,
   };
 }

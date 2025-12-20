@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 
 export async function GET(
   request: Request,
@@ -8,32 +8,44 @@ export async function GET(
   try {
     const { code } = await params;
 
-    const certificate = await prisma.certificate.findUnique({
-      where: { uniqueCode: code },
-      include: {
-        user: {
-          select: { name: true, email: true },
-        },
-        application: {
-          include: {
-            internship: {
-              select: { title: true, track: true },
-            },
-          },
-        },
-      },
-    });
+    const { data: certificate, error } = await supabaseAdmin
+      .from("certificates")
+      .select("*")
+      .eq("unique_code", code)
+      .single();
 
-    if (!certificate) {
+    if (error || !certificate) {
       return NextResponse.json(
         { error: "Certificate not found" },
         { status: 404 }
       );
     }
 
-    const studentName = certificate.user.name || "Student";
-    const programTitle = certificate.application.internship.title;
-    const issuedDate = new Date(certificate.issuedAt).toLocaleDateString(
+    const { data: user } = await supabaseAdmin
+      .from("users")
+      .select("name, email")
+      .eq("id", certificate.user_id)
+      .single();
+
+    const { data: application } = await supabaseAdmin
+      .from("applications")
+      .select("internship_id")
+      .eq("id", certificate.application_id)
+      .single();
+
+    let internship = null;
+    if (application) {
+      const { data } = await supabaseAdmin
+        .from("internships")
+        .select("title, track")
+        .eq("id", application.internship_id)
+        .single();
+      internship = data;
+    }
+
+    const studentName = user?.name || "Student";
+    const programTitle = internship?.title || "Internship Program";
+    const issuedDate = new Date(certificate.issued_at).toLocaleDateString(
       "en-IN",
       {
         year: "numeric",
@@ -42,6 +54,7 @@ export async function GET(
       }
     );
     const grade = certificate.grade || "Pass";
+    const uniqueCode = certificate.unique_code;
 
     const requestUrl = new URL(request.url);
     const baseUrl = `${requestUrl.protocol}//${requestUrl.host}`;
@@ -51,7 +64,7 @@ export async function GET(
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Certificate - ${certificate.uniqueCode}</title>
+  <title>Certificate - ${uniqueCode}</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@400;500;600&display=swap');
     
@@ -387,8 +400,8 @@ export async function GET(
       <div class="bottom-section">
         <div class="verify-section">
           <p class="verify-label">Verification Code</p>
-          <p class="verify-code">${certificate.uniqueCode}</p>
-          <p class="verify-url">gryffindors.in/verify-certificate/${certificate.uniqueCode}</p>
+          <p class="verify-code">${uniqueCode}</p>
+          <p class="verify-url">gryffindors.in/verify-certificate/${uniqueCode}</p>
         </div>
         
         <div class="seal-section">

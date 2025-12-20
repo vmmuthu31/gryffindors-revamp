@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 
 export async function POST(
   request: Request,
@@ -16,18 +16,25 @@ export async function POST(
       );
     }
 
-    const mentor = await prisma.user.findFirst({
-      where: { id: mentorId, role: "MENTOR" },
-    });
+    const { data: mentor, error: mentorError } = await supabaseAdmin
+      .from("users")
+      .select("id")
+      .eq("id", mentorId)
+      .eq("role", "MENTOR")
+      .single();
 
-    if (!mentor) {
+    if (mentorError || !mentor) {
       return NextResponse.json({ error: "Invalid mentor" }, { status: 400 });
     }
 
-    const updated = await prisma.application.update({
-      where: { id },
-      data: { mentorId },
-    });
+    const { data: updated, error } = await supabaseAdmin
+      .from("applications")
+      .update({ mentor_id: mentorId })
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
 
     return NextResponse.json(updated);
   } catch (error) {

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import { auth } from "@/auth";
 
 export async function GET() {
@@ -9,26 +9,48 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const students = await prisma.application.findMany({
-      where: {
-        mentorId: session.user.id,
-        status: { in: ["ENROLLED", "IN_PROGRESS", "COMPLETED"] },
-      },
-      orderBy: { createdAt: "desc" },
-      include: {
-        user: {
-          select: { id: true, name: true, email: true },
-        },
-        internship: {
-          select: { id: true, title: true, track: true },
-        },
-        certificate: {
-          select: { id: true, uniqueCode: true },
-        },
-      },
-    });
+    const { data: students, error } = await supabaseAdmin
+      .from("applications")
+      .select("*")
+      .eq("mentor_id", session.user.id)
+      .in("status", ["ENROLLED", "IN_PROGRESS", "COMPLETED"])
+      .order("created_at", { ascending: false });
 
-    return NextResponse.json(students);
+    if (error) throw error;
+
+    const studentsWithRelations = await Promise.all(
+      (students || []).map(async (student) => {
+        const { data: user } = await supabaseAdmin
+          .from("users")
+          .select("id, name, email")
+          .eq("id", student.user_id)
+          .single();
+
+        const { data: internship } = await supabaseAdmin
+          .from("internships")
+          .select("id, title, track")
+          .eq("id", student.internship_id)
+          .single();
+
+        const { data: certificate } = await supabaseAdmin
+          .from("certificates")
+          .select("id, unique_code")
+          .eq("application_id", student.id)
+          .single();
+
+        return {
+          ...student,
+          createdAt: student.created_at,
+          user,
+          internship,
+          certificate: certificate
+            ? { id: certificate.id, uniqueCode: certificate.unique_code }
+            : null,
+        };
+      })
+    );
+
+    return NextResponse.json(studentsWithRelations);
   } catch (error) {
     console.error("Failed to fetch mentor students:", error);
     return NextResponse.json(

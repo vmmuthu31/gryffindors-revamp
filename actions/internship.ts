@@ -1,8 +1,8 @@
 "use server";
 
-import { prisma } from "@/lib/db";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
-import { Prisma } from "@prisma/client";
+import type { Track, Internship } from "@/lib/supabase/types";
 
 const TRACK_METADATA = {
   FULL_STACK: {
@@ -55,17 +55,22 @@ const TRACK_METADATA = {
 
 export async function getInternship(id: string) {
   try {
-    const internship = await prisma.internship.findUnique({
-      where: { id },
-    });
+    const { data, error } = await supabaseAdmin
+      .from("internships")
+      .select("*")
+      .eq("id", id)
+      .single();
 
-    if (!internship) return null;
+    if (error || !data) return null;
 
+    const internship = data as Internship;
     const trackMeta =
-      TRACK_METADATA[internship.track] || TRACK_METADATA.FULL_STACK;
+      TRACK_METADATA[internship.track as Track] || TRACK_METADATA.FULL_STACK;
 
     return {
       ...internship,
+      isActive: internship.is_active,
+      createdAt: internship.created_at,
       skills: trackMeta.skills,
       roles: trackMeta.roles,
       tags: trackMeta.tags,
@@ -78,16 +83,22 @@ export async function getInternship(id: string) {
 
 export async function getInternships() {
   try {
-    const internships = await prisma.internship.findMany({
-      where: { isActive: true },
-      orderBy: { createdAt: "desc" },
-    });
+    const { data, error } = await supabaseAdmin
+      .from("internships")
+      .select("*")
+      .eq("is_active", true)
+      .order("created_at", { ascending: false });
 
+    if (error) throw error;
+
+    const internships = (data || []) as Internship[];
     return internships.map((internship) => {
       const trackMeta =
-        TRACK_METADATA[internship.track] || TRACK_METADATA.FULL_STACK;
+        TRACK_METADATA[internship.track as Track] || TRACK_METADATA.FULL_STACK;
       return {
         ...internship,
+        isActive: internship.is_active,
+        createdAt: internship.created_at,
         skills: trackMeta.skills,
         roles: trackMeta.roles,
         tags: trackMeta.tags,
@@ -105,19 +116,24 @@ export async function createInternship(data: {
   price: number;
   duration: string;
   description?: string;
-  curriculum?: Prisma.InputJsonValue;
+  curriculum?: Record<string, unknown>;
 }) {
   try {
-    const internship = await prisma.internship.create({
-      data: {
+    const { data: internship, error } = await supabaseAdmin
+      .from("internships")
+      .insert({
         title: data.title,
         track: data.track,
         price: data.price,
         duration: data.duration,
         description: data.description || "",
         curriculum: data.curriculum || {},
-      },
-    });
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+
     revalidatePath("/admin/internships");
     revalidatePath("/internships");
     return internship;
@@ -135,14 +151,19 @@ export async function updateInternship(
     price?: number;
     duration?: string;
     description?: string;
-    curriculum?: Prisma.InputJsonValue;
+    curriculum?: Record<string, unknown>;
   }
 ) {
   try {
-    const internship = await prisma.internship.update({
-      where: { id },
-      data,
-    });
+    const { data: internship, error } = await supabaseAdmin
+      .from("internships")
+      .update(data)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
     revalidatePath("/admin/internships");
     revalidatePath("/internships");
     return internship;
@@ -154,9 +175,13 @@ export async function updateInternship(
 
 export async function deleteInternship(id: string) {
   try {
-    await prisma.internship.delete({
-      where: { id },
-    });
+    const { error } = await supabaseAdmin
+      .from("internships")
+      .delete()
+      .eq("id", id);
+
+    if (error) throw error;
+
     revalidatePath("/admin/internships");
     revalidatePath("/internships");
     return true;
@@ -168,13 +193,17 @@ export async function deleteInternship(id: string) {
 
 export async function createApplication(internshipId: string, userId: string) {
   try {
-    const application = await prisma.application.create({
-      data: {
-        internshipId,
-        userId,
+    const { data: application, error } = await supabaseAdmin
+      .from("applications")
+      .insert({
+        internship_id: internshipId,
+        user_id: userId,
         status: "PENDING",
-      },
-    });
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
     return application;
   } catch (error) {
     console.error("Failed to create application:", error);
@@ -191,10 +220,20 @@ export async function updateApplicationStatus(
   }
 ) {
   try {
-    await prisma.application.update({
-      where: { id: applicationId },
-      data,
-    });
+    const updateData: Record<string, unknown> = {};
+    if (data.eligibilityScore !== undefined)
+      updateData.eligibility_score = data.eligibilityScore;
+    if (data.interviewScore !== undefined)
+      updateData.interview_score = data.interviewScore;
+    if (data.status !== undefined) updateData.status = data.status;
+
+    const { error } = await supabaseAdmin
+      .from("applications")
+      .update(updateData)
+      .eq("id", applicationId);
+
+    if (error) throw error;
+
     revalidatePath("/student/dashboard");
     return true;
   } catch (error) {
@@ -205,16 +244,53 @@ export async function updateApplicationStatus(
 
 export async function getUsers() {
   try {
-    return await prisma.user.findMany({
-      orderBy: { createdAt: "desc" },
-      include: {
-        applications: {
-          include: {
-            internship: true,
-          },
-        },
-      },
-    });
+    const { data, error } = await supabaseAdmin
+      .from("users")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+
+    interface UserRow {
+      id: string;
+      created_at: string;
+      [key: string]: unknown;
+    }
+    interface AppRow {
+      internship_id: string;
+      [key: string]: unknown;
+    }
+
+    const users = (data || []) as UserRow[];
+    const usersWithApps = await Promise.all(
+      users.map(async (user) => {
+        const { data: applications } = await supabaseAdmin
+          .from("applications")
+          .select("*")
+          .eq("user_id", user.id);
+
+        const apps = (applications || []) as AppRow[];
+        const appsWithInternships = await Promise.all(
+          apps.map(async (app) => {
+            const { data: internship } = await supabaseAdmin
+              .from("internships")
+              .select("*")
+              .eq("id", app.internship_id)
+              .single();
+
+            return { ...app, internship };
+          })
+        );
+
+        return {
+          ...user,
+          createdAt: user.created_at,
+          applications: appsWithInternships,
+        };
+      })
+    );
+
+    return usersWithApps;
   } catch (error) {
     console.error("Failed to fetch users:", error);
     return [];
@@ -226,10 +302,13 @@ export async function updateUserRole(
   role: "STUDENT" | "ADMIN"
 ) {
   try {
-    await prisma.user.update({
-      where: { id: userId },
-      data: { role },
-    });
+    const { error } = await supabaseAdmin
+      .from("users")
+      .update({ role })
+      .eq("id", userId);
+
+    if (error) throw error;
+
     revalidatePath("/admin/users");
     return true;
   } catch (error) {
@@ -240,9 +319,13 @@ export async function updateUserRole(
 
 export async function deleteUser(userId: string) {
   try {
-    await prisma.user.delete({
-      where: { id: userId },
-    });
+    const { error } = await supabaseAdmin
+      .from("users")
+      .delete()
+      .eq("id", userId);
+
+    if (error) throw error;
+
     revalidatePath("/admin/users");
     return true;
   } catch (error) {

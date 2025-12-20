@@ -1,72 +1,97 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import { auth } from "@/auth";
 
-export async function GET({ params }: { params: Promise<{ id: string }> }) {
+export async function GET(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
     const { id } = await params;
     const session = await auth();
 
-    const lesson = await prisma.lesson.findUnique({
-      where: { id },
-      include: {
-        module: {
-          include: {
-            course: {
-              select: { id: true, title: true },
-            },
-            lessons: {
-              orderBy: { order: "asc" },
-              select: { id: true, title: true, order: true },
-            },
-          },
-        },
-        lessonProgress: session?.user?.id
-          ? {
-              where: { userId: session.user.id },
-              select: { completed: true },
-            }
-          : false,
-      },
-    });
+    const { data: lesson, error } = await supabaseAdmin
+      .from("lessons")
+      .select("*")
+      .eq("id", id)
+      .single();
 
-    if (!lesson) {
+    if (error || !lesson) {
       return NextResponse.json({ error: "Lesson not found" }, { status: 404 });
+    }
+
+    const { data: module } = await supabaseAdmin
+      .from("modules")
+      .select("*")
+      .eq("id", lesson.module_id)
+      .single();
+
+    const { data: course } = await supabaseAdmin
+      .from("courses")
+      .select("id, title")
+      .eq("id", module?.course_id)
+      .single();
+
+    const { data: allLessons } = await supabaseAdmin
+      .from("lessons")
+      .select("id, title, order")
+      .eq("module_id", lesson.module_id)
+      .order("order");
+
+    let lessonProgress = null;
+    if (session?.user?.id) {
+      const { data: progress } = await supabaseAdmin
+        .from("lesson_progress")
+        .select("completed")
+        .eq("user_id", session.user.id)
+        .eq("lesson_id", id)
+        .single();
+      lessonProgress = progress;
     }
 
     let submission = null;
     if (session?.user?.id && lesson.type === "TASK") {
-      submission = await prisma.submission.findFirst({
-        where: {
-          lessonId: id,
-          userId: session.user.id,
-        },
-        orderBy: { submittedAt: "desc" },
-        select: {
-          id: true,
-          status: true,
-          mentorFeedback: true,
-          grade: true,
-          submittedAt: true,
-        },
-      });
+      const { data: sub } = await supabaseAdmin
+        .from("submissions")
+        .select("id, status, mentor_feedback, grade, submitted_at")
+        .eq("lesson_id", id)
+        .eq("user_id", session.user.id)
+        .order("submitted_at", { ascending: false })
+        .limit(1)
+        .single();
+
+      if (sub) {
+        submission = {
+          id: sub.id,
+          status: sub.status,
+          mentorFeedback: sub.mentor_feedback,
+          grade: sub.grade,
+          submittedAt: sub.submitted_at,
+        };
+      }
     }
 
-    const allLessons = lesson.module.lessons;
-    const currentIndex = allLessons.findIndex((l) => l.id === id);
-    const prevLesson = currentIndex > 0 ? allLessons[currentIndex - 1] : null;
+    const lessonsList = allLessons || [];
+    const currentIndex = lessonsList.findIndex((l) => l.id === id);
+    const prevLesson = currentIndex > 0 ? lessonsList[currentIndex - 1] : null;
     const nextLesson =
-      currentIndex < allLessons.length - 1
-        ? allLessons[currentIndex + 1]
+      currentIndex < lessonsList.length - 1
+        ? lessonsList[currentIndex + 1]
         : null;
 
     return NextResponse.json({
       ...lesson,
-      completed: lesson.lessonProgress?.[0]?.completed || false,
+      videoUrl: lesson.video_url,
+      module: {
+        ...module,
+        course,
+        lessons: lessonsList,
+      },
+      completed: lessonProgress?.completed || false,
       submission,
       prevLesson,
       nextLesson,
-      totalLessons: allLessons.length,
+      totalLessons: lessonsList.length,
       currentLessonIndex: currentIndex + 1,
     });
   } catch (error) {

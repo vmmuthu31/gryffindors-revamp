@@ -1,5 +1,5 @@
 import { auth } from "@/auth";
-import { prisma } from "@/lib/db";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BookOpen, Trophy, Target, Flame, Users, Medal } from "lucide-react";
 import Link from "next/link";
@@ -7,78 +7,194 @@ import Link from "next/link";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-async function getStudentData(userId: string) {
-  let user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: {
-      id: true,
-      name: true,
-      learningStreak: true,
-      totalTimeSpent: true,
-      referralCode: true,
-    },
-  });
+interface Course {
+  id: string;
+  title: string;
+  modules: Array<{
+    id: string;
+    title: string;
+    lessons: Array<{ id: string; title: string }>;
+  }>;
+}
 
-  if (user && !user.referralCode) {
+interface Application {
+  internship: {
+    title: string;
+    courses: Course[];
+  };
+}
+
+async function getStudentData(userId: string) {
+  interface UserRow {
+    id: string;
+    name: string | null;
+    learning_streak: number;
+    total_time_spent: number;
+    referral_code: string | null;
+  }
+  interface AppRow {
+    id: string;
+    internship_id: string;
+  }
+  interface CourseRow {
+    id: string;
+    title: string;
+  }
+  interface ModRow {
+    id: string;
+    title: string;
+  }
+  interface LessonRow {
+    id: string;
+    title: string;
+  }
+  interface LeaderRow {
+    id: string;
+    name: string | null;
+    learning_streak: number;
+  }
+
+  const { data: userData } = await supabaseAdmin
+    .from("users")
+    .select("id, name, learning_streak, total_time_spent, referral_code")
+    .eq("id", userId)
+    .single();
+
+  let user = userData as UserRow | null;
+
+  if (user && !user.referral_code) {
     const code = `${
       user.name?.split(" ")[0].toUpperCase() || "GRYF"
     }${Math.floor(1000 + Math.random() * 9000)}`;
-    user = await prisma.user.update({
-      where: { id: userId },
-      data: { referralCode: code },
-      select: {
-        id: true,
-        name: true,
-        learningStreak: true,
-        totalTimeSpent: true,
-        referralCode: true,
-      },
-    });
+    const { data: updated } = await supabaseAdmin
+      .from("users")
+      .update({ referral_code: code })
+      .eq("id", userId)
+      .select("id, name, learning_streak, total_time_spent, referral_code")
+      .single();
+    user = updated as UserRow | null;
   }
 
-  const [application, certificates, lessonProgress, leaderboard] =
-    await Promise.all([
-      prisma.application.findFirst({
-        where: { userId, status: { in: ["ENROLLED", "IN_PROGRESS"] } },
-        include: {
-          internship: {
-            include: {
-              courses: {
-                include: {
-                  modules: {
-                    include: {
-                      lessons: true,
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-      }),
-      prisma.certificate.count({ where: { userId } }),
-      prisma.lessonProgress.count({ where: { userId, completed: true } }),
-      prisma.user.findMany({
-        where: { role: "STUDENT" },
-        orderBy: { learningStreak: "desc" },
-        take: 5,
-        select: { id: true, name: true, learningStreak: true },
-      }),
-    ]);
+  const { data: appData } = await supabaseAdmin
+    .from("applications")
+    .select("id, internship_id")
+    .eq("user_id", userId)
+    .in("status", ["ENROLLED", "IN_PROGRESS"])
+    .limit(1)
+    .single();
 
-  return { user, application, certificates, lessonProgress, leaderboard };
+  const applicationData = appData as AppRow | null;
+
+  let application: Application | null = null;
+  if (applicationData) {
+    const { data: intData } = await supabaseAdmin
+      .from("internships")
+      .select("id, title")
+      .eq("id", applicationData.internship_id)
+      .single();
+
+    const internship = intData as { id: string; title: string } | null;
+
+    const { data: cData } = await supabaseAdmin
+      .from("courses")
+      .select("id, title")
+      .eq("internship_id", applicationData.internship_id)
+      .order("order");
+
+    const courses = (cData || []) as CourseRow[];
+
+    const coursesWithModules = await Promise.all(
+      courses.map(async (course) => {
+        const { data: mData } = await supabaseAdmin
+          .from("modules")
+          .select("id, title")
+          .eq("course_id", course.id)
+          .order("order");
+
+        const modules = (mData || []) as ModRow[];
+
+        const modulesWithLessons = await Promise.all(
+          modules.map(async (mod) => {
+            const { data: lData } = await supabaseAdmin
+              .from("lessons")
+              .select("id, title")
+              .eq("module_id", mod.id)
+              .order("order");
+
+            const lessons = (lData || []) as LessonRow[];
+
+            return { ...mod, lessons };
+          })
+        );
+
+        return { ...course, modules: modulesWithLessons };
+      })
+    );
+
+    application = {
+      internship: {
+        title: internship?.title || "",
+        courses: coursesWithModules,
+      },
+    };
+  }
+
+  const { count: certificates } = await supabaseAdmin
+    .from("certificates")
+    .select("*", { count: "exact", head: true })
+    .eq("user_id", userId);
+
+  const { count: lessonProgress } = await supabaseAdmin
+    .from("lesson_progress")
+    .select("*", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .eq("completed", true);
+
+  const { data: lbData } = await supabaseAdmin
+    .from("users")
+    .select("id, name, learning_streak")
+    .eq("role", "STUDENT")
+    .order("learning_streak", { ascending: false })
+    .limit(5);
+
+  const leaderboard = (lbData || []) as LeaderRow[];
+
+  return {
+    user: user
+      ? {
+          ...user,
+          learningStreak: user.learning_streak,
+          referralCode: user.referral_code,
+        }
+      : null,
+    application,
+    certificates: certificates || 0,
+    lessonProgress: lessonProgress || 0,
+    leaderboard: leaderboard.map((s) => ({
+      ...s,
+      learningStreak: s.learning_streak,
+    })),
+  };
 }
 
 async function updateStreak(userId: string) {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { lastActiveAt: true, learningStreak: true },
-  });
+  interface StreakRow {
+    last_active_at: string | null;
+    learning_streak: number;
+  }
+
+  const { data } = await supabaseAdmin
+    .from("users")
+    .select("last_active_at, learning_streak")
+    .eq("id", userId)
+    .single();
+
+  const user = data as StreakRow | null;
 
   if (!user) return;
 
   const now = new Date();
-  const lastActive = user.lastActiveAt ? new Date(user.lastActiveAt) : null;
+  const lastActive = user.last_active_at ? new Date(user.last_active_at) : null;
 
   const isNewDay =
     !lastActive || now.toDateString() !== lastActive.toDateString();
@@ -87,13 +203,13 @@ async function updateStreak(userId: string) {
     const isConsecutive =
       lastActive && now.getTime() - lastActive.getTime() < 48 * 60 * 60 * 1000;
 
-    await prisma.user.update({
-      where: { id: userId },
-      data: {
-        lastActiveAt: now,
-        learningStreak: isConsecutive ? user.learningStreak + 1 : 1,
-      },
-    });
+    await supabaseAdmin
+      .from("users")
+      .update({
+        last_active_at: now.toISOString(),
+        learning_streak: isConsecutive ? (user.learning_streak || 0) + 1 : 1,
+      })
+      .eq("id", userId);
   }
 }
 

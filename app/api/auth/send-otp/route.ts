@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import { generateOTP, sendOTPEmail } from "@/lib/email";
 
 export async function POST(request: Request) {
@@ -10,21 +10,23 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Email is required" }, { status: 400 });
     }
 
-    const user = await prisma.user.findUnique({
-      where: { email },
-    });
+    const { data: user, error } = await supabaseAdmin
+      .from("users")
+      .select("id")
+      .eq("email", email)
+      .single();
 
-    if (!user) {
+    if (error || !user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     const otp = generateOTP();
-    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000).toISOString();
 
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { otp, otpExpiry },
-    });
+    await supabaseAdmin
+      .from("users")
+      .update({ otp, otp_expiry: otpExpiry })
+      .eq("id", user.id);
 
     const sent = await sendOTPEmail(email, otp);
 

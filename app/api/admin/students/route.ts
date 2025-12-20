@@ -1,27 +1,51 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 
 export async function GET() {
   try {
-    const students = await prisma.application.findMany({
-      where: {
-        status: { in: ["ENROLLED", "IN_PROGRESS", "COMPLETED"] },
-      },
-      orderBy: { createdAt: "desc" },
-      include: {
-        user: {
-          select: { id: true, name: true, email: true },
-        },
-        internship: {
-          select: { id: true, title: true },
-        },
-        mentor: {
-          select: { id: true, name: true },
-        },
-      },
-    });
+    const { data: students, error } = await supabaseAdmin
+      .from("applications")
+      .select("*")
+      .in("status", ["ENROLLED", "IN_PROGRESS", "COMPLETED"])
+      .order("created_at", { ascending: false });
 
-    return NextResponse.json(students);
+    if (error) throw error;
+
+    const studentsWithRelations = await Promise.all(
+      (students || []).map(async (student) => {
+        const { data: user } = await supabaseAdmin
+          .from("users")
+          .select("id, name, email")
+          .eq("id", student.user_id)
+          .single();
+
+        const { data: internship } = await supabaseAdmin
+          .from("internships")
+          .select("id, title")
+          .eq("id", student.internship_id)
+          .single();
+
+        let mentor = null;
+        if (student.mentor_id) {
+          const { data: mentorData } = await supabaseAdmin
+            .from("users")
+            .select("id, name")
+            .eq("id", student.mentor_id)
+            .single();
+          mentor = mentorData;
+        }
+
+        return {
+          ...student,
+          createdAt: student.created_at,
+          user,
+          internship,
+          mentor,
+        };
+      })
+    );
+
+    return NextResponse.json(studentsWithRelations);
   } catch (error) {
     console.error("Failed to fetch students:", error);
     return NextResponse.json(

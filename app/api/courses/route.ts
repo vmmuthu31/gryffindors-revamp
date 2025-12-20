@@ -1,20 +1,51 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 
 export async function GET() {
   try {
-    const courses = await prisma.course.findMany({
-      orderBy: { order: "asc" },
-      include: {
-        internship: true,
-        modules: {
-          include: {
-            lessons: true,
-          },
-        },
-      },
-    });
-    return NextResponse.json(courses);
+    const { data: courses, error } = await supabaseAdmin
+      .from("courses")
+      .select("*")
+      .order("order");
+
+    if (error) throw error;
+
+    const coursesWithRelations = await Promise.all(
+      (courses || []).map(async (course) => {
+        const { data: internship } = await supabaseAdmin
+          .from("internships")
+          .select("*")
+          .eq("id", course.internship_id)
+          .single();
+
+        const { data: modules } = await supabaseAdmin
+          .from("modules")
+          .select("*")
+          .eq("course_id", course.id)
+          .order("order");
+
+        const modulesWithLessons = await Promise.all(
+          (modules || []).map(async (module) => {
+            const { data: lessons } = await supabaseAdmin
+              .from("lessons")
+              .select("*")
+              .eq("module_id", module.id)
+              .order("order");
+
+            return { ...module, lessons: lessons || [] };
+          })
+        );
+
+        return {
+          ...course,
+          internshipId: course.internship_id,
+          internship,
+          modules: modulesWithLessons,
+        };
+      })
+    );
+
+    return NextResponse.json(coursesWithRelations);
   } catch {
     return NextResponse.json(
       { error: "Failed to fetch courses" },
@@ -26,14 +57,19 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const data = await request.json();
-    const course = await prisma.course.create({
-      data: {
-        internshipId: data.internshipId,
+    const { data: course, error } = await supabaseAdmin
+      .from("courses")
+      .insert({
+        internship_id: data.internshipId,
         title: data.title,
         description: data.description || "",
         order: data.order || 1,
-      },
-    });
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+
     return NextResponse.json(course);
   } catch {
     return NextResponse.json(

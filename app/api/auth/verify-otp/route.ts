@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 
 export async function POST(request: Request) {
   try {
@@ -12,19 +12,21 @@ export async function POST(request: Request) {
       );
     }
 
-    const user = await prisma.user.findUnique({
-      where: { email },
-    });
+    const { data: user, error } = await supabaseAdmin
+      .from("users")
+      .select("id, otp, otp_expiry")
+      .eq("email", email)
+      .single();
 
-    if (!user) {
+    if (error || !user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    if (!user.otp || !user.otpExpiry) {
+    if (!user.otp || !user.otp_expiry) {
       return NextResponse.json({ error: "No OTP requested" }, { status: 400 });
     }
 
-    if (new Date() > user.otpExpiry) {
+    if (new Date() > new Date(user.otp_expiry)) {
       return NextResponse.json({ error: "OTP expired" }, { status: 400 });
     }
 
@@ -32,14 +34,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid OTP" }, { status: 400 });
     }
 
-    await prisma.user.update({
-      where: { id: user.id },
-      data: {
+    await supabaseAdmin
+      .from("users")
+      .update({
         otp: null,
-        otpExpiry: null,
-        emailVerified: true,
-      },
-    });
+        otp_expiry: null,
+        email_verified: true,
+      })
+      .eq("id", user.id);
 
     return NextResponse.json({ success: true, verified: true });
   } catch (error) {

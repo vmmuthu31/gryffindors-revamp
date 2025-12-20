@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/db";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import { auth } from "@/auth";
 import { NextResponse } from "next/server";
 import { sendNewSubmissionEmail } from "@/lib/email";
@@ -13,13 +13,14 @@ export async function POST(request: Request) {
 
     const { lessonId, content, fileUrl } = await request.json();
 
-    const existingSubmission = await prisma.submission.findFirst({
-      where: {
-        lessonId,
-        userId: session.user.id,
-        status: { in: ["PENDING", "UNDER_REVIEW", "APPROVED"] },
-      },
-    });
+    const { data: existingSubmission } = await supabaseAdmin
+      .from("submissions")
+      .select("id, status")
+      .eq("lesson_id", lessonId)
+      .eq("user_id", session.user.id)
+      .in("status", ["PENDING", "UNDER_REVIEW", "APPROVED"])
+      .limit(1)
+      .single();
 
     if (existingSubmission) {
       if (existingSubmission.status === "APPROVED") {
@@ -34,63 +35,79 @@ export async function POST(request: Request) {
       );
     }
 
-    await prisma.submission.deleteMany({
-      where: {
-        lessonId,
-        userId: session.user.id,
-        status: { in: ["REJECTED", "RESUBMIT"] },
-      },
-    });
+    await supabaseAdmin
+      .from("submissions")
+      .delete()
+      .eq("lesson_id", lessonId)
+      .eq("user_id", session.user.id)
+      .in("status", ["REJECTED", "RESUBMIT"]);
 
-    const submission = await prisma.submission.create({
-      data: {
-        lessonId,
-        userId: session.user.id,
+    const { data: submission, error } = await supabaseAdmin
+      .from("submissions")
+      .insert({
+        lesson_id: lessonId,
+        user_id: session.user.id,
         content,
-        fileUrl,
+        file_url: fileUrl,
         status: "PENDING",
-      },
-      include: {
-        user: { select: { name: true } },
-        lesson: {
-          select: {
-            title: true,
-            module: {
-              select: {
-                course: {
-                  select: {
-                    internship: {
-                      select: { id: true },
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-    });
+      })
+      .select()
+      .single();
 
-    const internshipId = submission.lesson.module.course.internship?.id;
-    if (internshipId) {
-      const application = await prisma.application.findFirst({
-        where: {
-          userId: session.user.id,
-          internshipId,
-          mentorId: { not: null },
-        },
-        include: {
-          mentor: { select: { name: true, email: true } },
-        },
-      });
+    if (error) throw error;
 
-      if (application?.mentor?.email) {
-        await sendNewSubmissionEmail(
-          application.mentor.email,
-          application.mentor.name || "Mentor",
-          submission.user.name || "Student",
-          submission.lesson.title
-        );
+    const { data: user } = await supabaseAdmin
+      .from("users")
+      .select("name")
+      .eq("id", session.user.id)
+      .single();
+
+    const { data: lesson } = await supabaseAdmin
+      .from("lessons")
+      .select("title, module_id")
+      .eq("id", lessonId)
+      .single();
+
+    if (lesson) {
+      const { data: module } = await supabaseAdmin
+        .from("modules")
+        .select("course_id")
+        .eq("id", lesson.module_id)
+        .single();
+
+      if (module) {
+        const { data: course } = await supabaseAdmin
+          .from("courses")
+          .select("internship_id")
+          .eq("id", module.course_id)
+          .single();
+
+        if (course?.internship_id) {
+          const { data: application } = await supabaseAdmin
+            .from("applications")
+            .select("mentor_id")
+            .eq("user_id", session.user.id)
+            .eq("internship_id", course.internship_id)
+            .not("mentor_id", "is", null)
+            .single();
+
+          if (application?.mentor_id) {
+            const { data: mentor } = await supabaseAdmin
+              .from("users")
+              .select("name, email")
+              .eq("id", application.mentor_id)
+              .single();
+
+            if (mentor?.email) {
+              await sendNewSubmissionEmail(
+                mentor.email,
+                mentor.name || "Mentor",
+                user?.name || "Student",
+                lesson.title
+              );
+            }
+          }
+        }
       }
     }
 
@@ -112,24 +129,46 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const submissions = await prisma.submission.findMany({
-      where: { userId: session.user.id },
-      include: {
-        lesson: {
-          select: {
-            title: true,
-            module: {
-              select: {
-                title: true,
-              },
-            },
-          },
-        },
-      },
-      orderBy: { submittedAt: "desc" },
-    });
+    const { data: submissions, error } = await supabaseAdmin
+      .from("submissions")
+      .select("*")
+      .eq("user_id", session.user.id)
+      .order("submitted_at", { ascending: false });
 
-    return NextResponse.json(submissions);
+    if (error) throw error;
+
+    const subsWithLessons = await Promise.all(
+      (submissions || []).map(async (sub) => {
+        const { data: lesson } = await supabaseAdmin
+          .from("lessons")
+          .select("title, module_id")
+          .eq("id", sub.lesson_id)
+          .single();
+
+        let moduleTitle = "";
+        if (lesson) {
+          const { data: module } = await supabaseAdmin
+            .from("modules")
+            .select("title")
+            .eq("id", lesson.module_id)
+            .single();
+          moduleTitle = module?.title || "";
+        }
+
+        return {
+          ...sub,
+          submittedAt: sub.submitted_at,
+          lessonId: sub.lesson_id,
+          userId: sub.user_id,
+          lesson: {
+            title: lesson?.title || "",
+            module: { title: moduleTitle },
+          },
+        };
+      })
+    );
+
+    return NextResponse.json(subsWithLessons);
   } catch (error) {
     console.error("Error fetching submissions:", error);
     return NextResponse.json(

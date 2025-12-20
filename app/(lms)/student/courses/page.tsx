@@ -1,5 +1,5 @@
 import { auth } from "@/auth";
-import { prisma } from "@/lib/db";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import {
   Card,
   CardContent,
@@ -14,51 +14,124 @@ import Link from "next/link";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-async function getEnrolledCourses(userId: string) {
-  const applications = await prisma.application.findMany({
-    where: {
-      userId,
-      status: { in: ["ENROLLED", "IN_PROGRESS", "COMPLETED"] },
-    },
-    include: {
-      internship: {
-        include: {
-          courses: {
-            include: {
-              modules: {
-                include: {
-                  lessons: {
-                    select: {
-                      id: true,
-                      title: true,
-                      type: true,
-                      duration: true,
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-  });
+interface Course {
+  id: string;
+  title: string;
+  internshipTitle: string;
+  track: string;
+  modules: Array<{
+    id: string;
+    lessons: Array<{
+      id: string;
+      title: string;
+      type: string;
+      duration: number | null;
+    }>;
+  }>;
+}
 
-  return applications;
+async function getEnrolledCourses(userId: string) {
+  interface AppRow {
+    id: string;
+    internship_id: string;
+  }
+  interface InternRow {
+    id: string;
+    title: string;
+    track: string;
+  }
+  interface CourseRow {
+    id: string;
+    title: string;
+  }
+  interface ModRow {
+    id: string;
+  }
+  interface LessonRow {
+    id: string;
+    title: string;
+    type: string;
+    duration: number | null;
+  }
+
+  const { data: apps } = await supabaseAdmin
+    .from("applications")
+    .select("id, internship_id")
+    .eq("user_id", userId)
+    .in("status", ["ENROLLED", "IN_PROGRESS", "COMPLETED"]);
+
+  const applications = (apps || []) as AppRow[];
+  const courses: Course[] = [];
+
+  for (const app of applications) {
+    const { data: intData } = await supabaseAdmin
+      .from("internships")
+      .select("id, title, track")
+      .eq("id", app.internship_id)
+      .single();
+
+    const internship = intData as InternRow | null;
+
+    const { data: cList } = await supabaseAdmin
+      .from("courses")
+      .select("id, title")
+      .eq("internship_id", app.internship_id)
+      .order("order");
+
+    const coursesList = (cList || []) as CourseRow[];
+
+    for (const course of coursesList) {
+      const { data: mods } = await supabaseAdmin
+        .from("modules")
+        .select("id")
+        .eq("course_id", course.id)
+        .order("order");
+
+      const modules = (mods || []) as ModRow[];
+
+      const modulesWithLessons = await Promise.all(
+        modules.map(async (mod) => {
+          const { data: lessonData } = await supabaseAdmin
+            .from("lessons")
+            .select("id, title, type, duration")
+            .eq("module_id", mod.id)
+            .order("order");
+
+          const lessons = (lessonData || []) as LessonRow[];
+
+          return { ...mod, lessons };
+        })
+      );
+
+      courses.push({
+        ...course,
+        internshipTitle: internship?.title || "",
+        track: internship?.track || "",
+        modules: modulesWithLessons,
+      });
+    }
+  }
+
+  return courses;
 }
 
 async function getUserProgress(userId: string, lessonIds: string[]) {
-  const progress = await prisma.lessonProgress.findMany({
-    where: {
-      userId,
-      lessonId: { in: lessonIds },
-      completed: true,
-    },
-    select: {
-      lessonId: true,
-    },
-  });
-  return new Set(progress.map((p) => p.lessonId));
+  if (lessonIds.length === 0) return new Set<string>();
+
+  interface ProgressRow {
+    lesson_id: string;
+  }
+
+  const { data } = await supabaseAdmin
+    .from("lesson_progress")
+    .select("lesson_id")
+    .eq("user_id", userId)
+    .in("lesson_id", lessonIds)
+    .eq("completed", true);
+
+  const progress = (data || []) as ProgressRow[];
+
+  return new Set(progress.map((p) => p.lesson_id));
 }
 
 export default async function CoursesPage() {
@@ -68,15 +141,7 @@ export default async function CoursesPage() {
     return <div className="p-8">Please log in to view your courses.</div>;
   }
 
-  const applications = await getEnrolledCourses(session.user.id);
-
-  const courses = applications.flatMap((app) =>
-    app.internship.courses.map((course) => ({
-      ...course,
-      internshipTitle: app.internship.title,
-      track: app.internship.track,
-    }))
-  );
+  const courses = await getEnrolledCourses(session.user.id);
 
   const allLessonIds = courses.flatMap((course) =>
     course.modules.flatMap((mod) => mod.lessons.map((lesson) => lesson.id))

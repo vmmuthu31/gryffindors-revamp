@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import { auth } from "@/auth";
 
-export async function POST({ params }: { params: Promise<{ id: string }> }) {
+export async function POST(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
@@ -11,24 +14,42 @@ export async function POST({ params }: { params: Promise<{ id: string }> }) {
 
     const { id: lessonId } = await params;
 
-    const progress = await prisma.lessonProgress.upsert({
-      where: {
-        userId_lessonId: {
-          userId: session.user.id,
-          lessonId,
-        },
-      },
-      update: {
-        completed: true,
-        completedAt: new Date(),
-      },
-      create: {
-        userId: session.user.id,
-        lessonId,
-        completed: true,
-        completedAt: new Date(),
-      },
-    });
+    const { data: existing } = await supabaseAdmin
+      .from("lesson_progress")
+      .select("id")
+      .eq("user_id", session.user.id)
+      .eq("lesson_id", lessonId)
+      .single();
+
+    let progress;
+    if (existing) {
+      const { data, error } = await supabaseAdmin
+        .from("lesson_progress")
+        .update({
+          completed: true,
+          completed_at: new Date().toISOString(),
+        })
+        .eq("id", existing.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      progress = data;
+    } else {
+      const { data, error } = await supabaseAdmin
+        .from("lesson_progress")
+        .insert({
+          user_id: session.user.id,
+          lesson_id: lessonId,
+          completed: true,
+          completed_at: new Date().toISOString(),
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      progress = data;
+    }
 
     return NextResponse.json(progress);
   } catch (error) {
@@ -40,7 +61,10 @@ export async function POST({ params }: { params: Promise<{ id: string }> }) {
   }
 }
 
-export async function GET({ params }: { params: Promise<{ id: string }> }) {
+export async function GET(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
@@ -49,14 +73,12 @@ export async function GET({ params }: { params: Promise<{ id: string }> }) {
 
     const { id: lessonId } = await params;
 
-    const progress = await prisma.lessonProgress.findUnique({
-      where: {
-        userId_lessonId: {
-          userId: session.user.id,
-          lessonId,
-        },
-      },
-    });
+    const { data: progress } = await supabaseAdmin
+      .from("lesson_progress")
+      .select("completed")
+      .eq("user_id", session.user.id)
+      .eq("lesson_id", lessonId)
+      .single();
 
     return NextResponse.json({ completed: progress?.completed || false });
   } catch {

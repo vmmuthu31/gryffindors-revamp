@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/db";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ClipboardList, CheckCircle, Clock, AlertCircle } from "lucide-react";
 import Link from "next/link";
@@ -7,20 +7,32 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 async function getStats() {
-  const pending = await prisma.submission.count({
-    where: { status: "PENDING" },
-  });
-  const underReview = await prisma.submission.count({
-    where: { status: "UNDER_REVIEW" },
-  });
-  const approved = await prisma.submission.count({
-    where: { status: "APPROVED" },
-  });
-  const rejected = await prisma.submission.count({
-    where: { status: "REJECTED" },
-  });
+  const { count: pending } = await supabaseAdmin
+    .from("submissions")
+    .select("*", { count: "exact", head: true })
+    .eq("status", "PENDING");
 
-  return { pending, underReview, approved, rejected };
+  const { count: underReview } = await supabaseAdmin
+    .from("submissions")
+    .select("*", { count: "exact", head: true })
+    .eq("status", "UNDER_REVIEW");
+
+  const { count: approved } = await supabaseAdmin
+    .from("submissions")
+    .select("*", { count: "exact", head: true })
+    .eq("status", "APPROVED");
+
+  const { count: rejected } = await supabaseAdmin
+    .from("submissions")
+    .select("*", { count: "exact", head: true })
+    .eq("status", "REJECTED");
+
+  return {
+    pending: pending || 0,
+    underReview: underReview || 0,
+    approved: approved || 0,
+    rejected: rejected || 0,
+  };
 }
 
 export default async function MentorDashboard() {
