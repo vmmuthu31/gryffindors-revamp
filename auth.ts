@@ -48,7 +48,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           console.error("[Auth] Supabase error:", error);
         }
 
-        // Handle potential camelCase from Prisma migration
         const passwordHash = user?.password_hash || user?.passwordHash;
 
         if (error || !user || !passwordHash) {
