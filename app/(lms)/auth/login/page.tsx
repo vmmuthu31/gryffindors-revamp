@@ -100,7 +100,6 @@ function LoginForm() {
         </div>
       </div>
 
-      {/* Right Side - Form */}
       <div className="flex-1 flex items-center justify-center p-8">
         <Card className="w-full max-w-md shadow-xl">
           <CardHeader className="text-center">
@@ -180,7 +179,6 @@ function LoginForm() {
               </Link>
             </div>
 
-            {/* Demo Accounts */}
             <div className="mt-8 pt-6 border-t">
               <p className="text-xs text-gray-400 text-center mb-3">
                 Demo Accounts

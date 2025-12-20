@@ -49,7 +49,6 @@ export default async function AlumniPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <div className="bg-gradient-to-br from-[#841a1c] to-[#a52528] text-white py-20">
         <div className="container mx-auto px-4 text-center">
           <div className="flex items-center justify-center gap-3 mb-6">
@@ -79,7 +78,6 @@ export default async function AlumniPage() {
         </div>
       </div>
 
-      {/* Alumni Grid */}
       <div className="container mx-auto px-4 py-16">
         {alumni.length === 0 ? (
           <div className="text-center py-20">
@@ -123,7 +121,6 @@ export default async function AlumniPage() {
                     </p>
                   )}
 
-                  {/* Certificates */}
                   <div className="mt-4 flex flex-wrap gap-2">
                     {alum.certificates.map((cert) => (
                       <Badge
@@ -138,7 +135,6 @@ export default async function AlumniPage() {
                     ))}
                   </div>
 
-                  {/* Social Links */}
                   <div className="mt-4 flex gap-3">
                     {alum.linkedIn && (
                       <a
@@ -168,7 +164,6 @@ export default async function AlumniPage() {
         )}
       </div>
 
-      {/* CTA */}
       <div className="bg-[#841a1c] py-16">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold text-white mb-4">

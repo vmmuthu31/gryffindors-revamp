@@ -238,7 +238,6 @@ const ServicesPage = () => {
         />
 
         <div className="max-w-6xl mx-auto">
-          {/* Services introduction */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -256,7 +255,6 @@ const ServicesPage = () => {
             </p>
           </motion.div>
 
-          {/* Services grid */}
           <motion.div
             variants={containerVariants}
             initial="hidden"
@@ -330,7 +328,6 @@ const ServicesPage = () => {
             ))}
           </motion.div>
 
-          {/* Process section */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -386,7 +383,6 @@ const ServicesPage = () => {
             </div>
           </motion.div>
 
-          {/* Call to action */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}

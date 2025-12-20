@@ -35,7 +35,6 @@ export default async function MentorDashboard() {
         </p>
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card className="border-l-4 border-l-orange-500">
           <CardContent className="p-6">
@@ -102,7 +101,6 @@ export default async function MentorDashboard() {
         </Card>
       </div>
 
-      {/* Quick Action */}
       <Card>
         <CardHeader>
           <CardTitle>Quick Actions</CardTitle>

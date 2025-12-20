@@ -71,7 +71,6 @@ const TestimonialsSection = () => {
           </div>
 
           <div className="relative w-full max-w-7xl mx-auto min-h-[400px]">
-            {/* Mobile view: Single testimonial */}
             <div className="lg:hidden">
               <AnimatePresence mode="wait">
                 <motion.div
@@ -107,7 +106,6 @@ const TestimonialsSection = () => {
               </AnimatePresence>
             </div>
 
-            {/* Desktop view: Grid layout */}
             <div className="hidden mb-10 lg:block">
               <div className="grid grid-cols-3 gap-6">
                 <AnimatePresence mode="popLayout">
@@ -162,7 +160,6 @@ const TestimonialsSection = () => {
               </div>
             </div>
 
-            {/* Navigation dots */}
             <div className="flex justify-center gap-2 my-8">
               {testimonials.map((_, index) => (
                 <button

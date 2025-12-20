@@ -74,7 +74,6 @@ export default async function CertificatesPage() {
         <div className="grid md:grid-cols-2 gap-6">
           {certificates.map((cert: CertificateWithApplication) => (
             <Card key={cert.id} className="overflow-hidden">
-              {/* Certificate Preview */}
               <div className="h-48 bg-gradient-to-br from-[#841a1c] via-[#a52528] to-[#d79c64] flex items-center justify-center relative">
                 <div className="absolute inset-0 opacity-10">
                   <div className="absolute top-4 left-4 w-20 h-20 border border-white/30 rounded-full" />

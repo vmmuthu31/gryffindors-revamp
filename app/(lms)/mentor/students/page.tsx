@@ -108,7 +108,6 @@ export default function MentorStudentsPage() {
         <p className="text-gray-500 mt-1">Manage your assigned students</p>
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card className="border-l-4 border-l-[#841a1c]">
           <CardContent className="p-6">
@@ -156,7 +155,6 @@ export default function MentorStudentsPage() {
         </Card>
       </div>
 
-      {/* Students List */}
       <Card>
         <CardHeader>
           <CardTitle>All Students</CardTitle>
@@ -257,7 +255,6 @@ export default function MentorStudentsPage() {
         </CardContent>
       </Card>
 
-      {/* Issue Certificate Dialog */}
       <Dialog open={!!certDialog} onOpenChange={() => setCertDialog(null)}>
         <DialogContent>
           <DialogHeader>

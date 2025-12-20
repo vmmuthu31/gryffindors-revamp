@@ -84,7 +84,6 @@ const ServicesSection = () => {
               onMouseLeave={handleMouseLeave}
               className="border-b border-muted py-4 transition-all duration-300"
             >
-              {/* Mobile view - original layout */}
               <div className="flex lg:hidden border-b cursor-pointer border-[#511111]/50 pb-4 justify-between items-center">
                 <div className="flex items-center gap-8">
                   <span
@@ -111,7 +110,6 @@ const ServicesSection = () => {
                 </p>
               </div>
 
-              {/* Desktop view - restructured layout */}
               <div className="hidden lg:flex lg:flex-row lg:items-start border-b cursor-pointer border-[#511111]/50 pb-4">
                 <div className="flex items-center gap-32 lg:w-1/3">
                   <span
@@ -149,7 +147,6 @@ const ServicesSection = () => {
                 </div>
               </div>
 
-              {/* Mobile description - only shown when hovered */}
               {hoveredIndex === index && (
                 <div className="lg:hidden text-foreground/80 mt-2 border-l-2 border-primary/20 pl-4 py-2">
                   <div className="justify-end">

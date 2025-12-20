@@ -58,7 +58,6 @@ export default async function VerifyCertificatePage({
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
       <div className="max-w-2xl mx-auto">
-        {/* Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#841a1c]/10 text-[#841a1c] rounded-full mb-4">
             <Image
@@ -79,13 +78,11 @@ export default async function VerifyCertificatePage({
 
         {certificate ? (
           <Card className="overflow-hidden">
-            {/* Valid Badge */}
             <div className="bg-green-500 text-white p-4 flex items-center justify-center gap-2">
               <CheckCircle className="w-6 h-6" />
               <span className="font-bold text-lg">VERIFIED & AUTHENTIC</span>
             </div>
 
-            {/* Certificate Preview */}
             <div
               className="p-8 bg-gradient-to-br from-[#841a1c] to-[#a52528] text-white text-center"
               id="certificate-preview"
@@ -162,7 +159,6 @@ export default async function VerifyCertificatePage({
                 </div>
               )}
 
-              {/* Download Button */}
               <Link
                 href={`/api/certificate/download/${certificate.uniqueCode}`}
                 className="flex items-center justify-center gap-2 w-full bg-[#841a1c] hover:bg-[#681416] text-white py-3 rounded-lg transition-colors font-medium"
@@ -195,7 +191,6 @@ export default async function VerifyCertificatePage({
           </Card>
         )}
 
-        {/* Footer */}
         <div className="mt-8 text-center text-sm text-gray-400">
           <p>Verified by Gryffindors LMS</p>
           <p>https://www.gryffindors.in</p>

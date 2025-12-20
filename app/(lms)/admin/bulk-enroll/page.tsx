@@ -149,7 +149,6 @@ export default function BulkEnrollmentPage() {
               Download CSV Template
             </Button>
 
-            {/* File Upload */}
             <div className="border-2 border-dashed rounded-lg p-8 text-center">
               <FileSpreadsheet className="w-12 h-12 text-gray-400 mx-auto mb-4" />
               <label className="cursor-pointer">
@@ -172,7 +171,6 @@ export default function BulkEnrollmentPage() {
               )}
             </div>
 
-            {/* Settings */}
             <div className="space-y-4">
               <div>
                 <label className="text-sm font-medium text-gray-700 block mb-2">
@@ -231,9 +229,7 @@ export default function BulkEnrollmentPage() {
           </CardContent>
         </Card>
 
-        {/* Preview & Results */}
         <div className="space-y-6">
-          {/* CSV Preview */}
           {preview.length > 0 && (
             <Card>
               <CardHeader>
@@ -271,7 +267,6 @@ export default function BulkEnrollmentPage() {
             </Card>
           )}
 
-          {/* Results */}
           {result && (
             <Card>
               <CardHeader>
@@ -312,7 +307,6 @@ export default function BulkEnrollmentPage() {
             </Card>
           )}
 
-          {/* Instructions */}
           <Card className="bg-gray-50 border-dashed">
             <CardContent className="p-6">
               <h3 className="font-semibold mb-4">CSV Format</h3>

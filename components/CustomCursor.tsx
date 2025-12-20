@@ -725,7 +725,6 @@ export default function CustomCursor() {
         </svg>
       </motion.div>
 
-      {/* Blockchain data effect on click */}
       <AnimatePresence>
         {cursorVariant === "clicking" && (
           <motion.div

@@ -182,9 +182,7 @@ const TeamSection = () => {
             </p>
           </div>
 
-          {/* Main team members */}
           <div className="max-w-7xl mx-auto">
-            {/* Mobile view: Single card */}
             <div className="lg:hidden">
               <AnimatePresence mode="wait">
                 <motion.div
@@ -252,7 +250,6 @@ const TeamSection = () => {
                 </motion.div>
               </AnimatePresence>
 
-              {/* Navigation dots for mobile */}
               <div className="flex justify-center gap-2 mt-8">
                 {positions.map((_, index) => (
                   <button
@@ -266,7 +263,6 @@ const TeamSection = () => {
               </div>
             </div>
 
-            {/* Desktop view: Grid layout */}
             <div className="hidden lg:block">
               <div className="grid grid-cols-4 gap-6">
                 <AnimatePresence>
@@ -357,10 +353,8 @@ const TeamSection = () => {
             </div>
           </div>
 
-          {/* Extended team - Single item slide carousel that works on all screens */}
           <div className="mt-20 mb-10">
             <div className="relative overflow-hidden max-w-7xl mx-auto">
-              {/* This is the key to making it work on all screens - a single slide approach */}
               <AnimatePresence custom={direction} mode="popLayout">
                 <motion.div
                   key={slideIndex}
@@ -452,7 +446,6 @@ const TeamSection = () => {
               </AnimatePresence>
             </div>
 
-            {/* Simple indicators */}
             <div className="flex justify-center mt-6 space-x-1.5">
               {extendedTeamMembers.map((_, idx) => (
                 <button

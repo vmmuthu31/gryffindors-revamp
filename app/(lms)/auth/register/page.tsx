@@ -78,7 +78,6 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      {/* Left Side - Branding */}
       <div className="hidden lg:flex lg:w-1/2 bg-[#841a1c] p-12 flex-col justify-between">
         <div>
           <div className="flex items-center gap-3 mb-12">
@@ -118,7 +117,6 @@ export default function RegisterPage() {
         </div>
       </div>
 
-      {/* Right Side - Form */}
       <div className="flex-1 flex items-center justify-center p-8">
         <Card className="w-full max-w-md shadow-xl">
           <CardHeader className="text-center">

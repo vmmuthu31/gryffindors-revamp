@@ -71,7 +71,6 @@ export default async function AdminDashboard() {
         <p className="text-gray-500 mt-1">Platform overview and analytics</p>
       </div>
 
-      {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card className="bg-gradient-to-br from-[#841a1c] to-[#a52528] text-white">
           <CardContent className="p-6">
@@ -138,7 +137,6 @@ export default async function AdminDashboard() {
         </Card>
       </div>
 
-      {/* Quick Stats */}
       <div className="grid lg:grid-cols-2 gap-8">
         <Card>
           <CardHeader>

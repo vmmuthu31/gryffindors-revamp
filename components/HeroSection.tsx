@@ -34,18 +34,13 @@ const HeroSection = () => {
 
   return (
     <section className="relative pt-10 pb-0 overflow-hidden">
-      {/* Background Elements */}
-      <div className="absolute inset-0 -z-10 opacity-20">
-        {/* TODO: ADD STATS */}
-      </div>
+      <div className="absolute inset-0 -z-10 opacity-20"></div>
 
-      {/* Decorative circles */}
       <div className="circle-decoration w-64 h-64 -top-32 -left-32 opacity-5"></div>
       <div className="circle-decoration w-96 h-96 -bottom-48 -right-48 opacity-5"></div>
 
       <div className="mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center justify-center ">
-          {/* Main Heading */}
           <div
             className={`opacity-0 ${
               isLoaded ? "animate-fade-in animate-delay-100" : ""
@@ -121,7 +116,6 @@ const HeroSection = () => {
             </div>
           </div>
 
-          {/* Description */}
           <div
             className={`mb-8 lg:px-24 w-full opacity-0 ${
               isLoaded ? "animate-fade-in animate-delay-200" : ""
@@ -187,7 +181,6 @@ const HeroSection = () => {
             </div>
           </div>
 
-          {/* Service Tags as running ticker */}
           <div
             className={`w-full opacity-0 ${
               isLoaded ? "animate-fade-in animate-delay-300" : ""

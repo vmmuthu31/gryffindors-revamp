@@ -50,7 +50,6 @@ const RunningHeading: React.FC<RunningHeadingProps> = ({
   return (
     <div className={`w-full overflow-hidden relative ${className}`}>
       <div className="flex whitespace-nowrap">
-        {/* Create an infinite marquee animation with CSS instead of framer-motion */}
         <div
           className="flex whitespace-nowrap animate-marquee"
           style={{
@@ -58,7 +57,6 @@ const RunningHeading: React.FC<RunningHeadingProps> = ({
             animationDuration: `${speed}s`,
           }}
         >
-          {/* Use multiple copies to ensure continuous flow */}
           {Array(10)
             .fill(0)
             .map((_, i) => (

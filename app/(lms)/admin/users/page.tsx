@@ -180,7 +180,6 @@ export default function AdminUsersPage() {
         </Button>
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card className="border-l-4 border-l-[#841a1c]">
           <CardContent className="p-6">
@@ -234,7 +233,6 @@ export default function AdminUsersPage() {
         </Card>
       </div>
 
-      {/* Users Table */}
       <Card>
         <CardHeader>
           <CardTitle>All Users</CardTitle>
@@ -323,7 +321,6 @@ export default function AdminUsersPage() {
         </CardContent>
       </Card>
 
-      {/* Edit Dialog */}
       <Dialog open={!!editUser} onOpenChange={() => setEditUser(null)}>
         <DialogContent>
           <DialogHeader>
@@ -383,7 +380,6 @@ export default function AdminUsersPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
       <Dialog open={!!deleteUser} onOpenChange={() => setDeleteUser(null)}>
         <DialogContent>
           <DialogHeader>
@@ -410,7 +406,6 @@ export default function AdminUsersPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Add User Dialog */}
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
         <DialogContent>
           <DialogHeader>

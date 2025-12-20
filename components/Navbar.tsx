@@ -54,7 +54,6 @@ const Navbar = () => {
           </Button>
         </div>
 
-        {/* Mobile Menu Button */}
         <button className="md:hidden" onClick={toggleMenu}>
           {isMenuOpen ? (
             <X className="w-6 h-6 text-foreground" />
@@ -64,7 +63,6 @@ const Navbar = () => {
         </button>
       </div>
 
-      {/* Mobile Navigation */}
       {isMenuOpen && (
         <div className="md:hidden bg-[#fff8f9] border-t border-border py-4 px-4 absolute w-full z-50">
           <div className="flex flex-col space-y-4">

@@ -122,7 +122,6 @@ export default function AdminStudentsPage() {
         <p className="text-gray-500 mt-1">View and manage enrolled students</p>
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="border-l-4 border-l-[#841a1c]">
           <CardContent className="p-6">
@@ -165,7 +164,6 @@ export default function AdminStudentsPage() {
         </Card>
       </div>
 
-      {/* Search */}
       <div className="relative max-w-md">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
         <Input
@@ -176,7 +174,6 @@ export default function AdminStudentsPage() {
         />
       </div>
 
-      {/* Students Table */}
       <Card>
         <CardHeader>
           <CardTitle>All Students</CardTitle>
@@ -261,7 +258,6 @@ export default function AdminStudentsPage() {
         </CardContent>
       </Card>
 
-      {/* Assign Mentor Dialog */}
       <Dialog open={!!assignDialog} onOpenChange={() => setAssignDialog(null)}>
         <DialogContent>
           <DialogHeader>

@@ -155,7 +155,6 @@ export default function AdminCertificatesPage() {
         </Button>
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="border-l-4 border-l-[#841a1c]">
           <CardContent className="p-6">
@@ -192,7 +191,6 @@ export default function AdminCertificatesPage() {
         </Card>
       </div>
 
-      {/* Certificates Table */}
       <Card>
         <CardHeader>
           <CardTitle>All Certificates</CardTitle>
@@ -276,7 +274,6 @@ export default function AdminCertificatesPage() {
         </CardContent>
       </Card>
 
-      {/* Create Dialog */}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
         <DialogContent>
           <DialogHeader>
@@ -329,7 +326,6 @@ export default function AdminCertificatesPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Dialog */}
       <Dialog open={!!deleteCert} onOpenChange={() => setDeleteCert(null)}>
         <DialogContent>
           <DialogHeader>

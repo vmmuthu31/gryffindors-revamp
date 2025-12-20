@@ -251,7 +251,6 @@ export default function AdminInternshipsPage() {
         </Button>
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card className="border-l-4 border-l-[#841a1c]">
           <CardContent className="p-6">
@@ -316,7 +315,6 @@ export default function AdminInternshipsPage() {
         </Card>
       </div>
 
-      {/* Internships List */}
       <Card>
         <CardHeader>
           <CardTitle>All Internship Programs</CardTitle>
@@ -403,7 +401,6 @@ export default function AdminInternshipsPage() {
         </CardContent>
       </Card>
 
-      {/* Add Dialog */}
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
@@ -427,7 +424,6 @@ export default function AdminInternshipsPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Edit Dialog */}
       <Dialog
         open={!!editInternship}
         onOpenChange={() => setEditInternship(null)}
@@ -454,7 +450,6 @@ export default function AdminInternshipsPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Dialog */}
       <Dialog
         open={!!deleteInternship}
         onOpenChange={() => setDeleteInternship(null)}
