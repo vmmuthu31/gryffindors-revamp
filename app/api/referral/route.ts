@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { auth } from "@/auth";
 import { nanoid } from "nanoid";
+import { sanitizeInput } from "@/lib/security";
 
 export async function GET() {
   try {
@@ -79,7 +80,17 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const { code, userId } = await request.json();
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { code: rawCode, userId } = await request.json();
+    const code = sanitizeInput(rawCode);
+
+    if (userId !== session.user.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
 
     if (!code || !userId) {
       return NextResponse.json(

@@ -161,7 +161,7 @@ export default async function InternshipsPage() {
         </div>
       </section>
 
-      <section className="py-20 -mt-20 relative z-10">
+      <section className="py-20 mt-10 relative z-10">
         <div className="container mx-auto px-4">
           {internships.length === 0 ? (
             <Card className="text-center p-16 max-w-lg mx-auto shadow-xl border-0">

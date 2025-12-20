@@ -1,11 +1,15 @@
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { sanitizeInput, sanitizeEmail } from "@/lib/security";
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { nanoid } from "nanoid";
 
 export async function POST(request: Request) {
   try {
-    const { name, email, password } = await request.json();
+    const { name: rawName, email: rawEmail, password } = await request.json();
+
+    const name = sanitizeInput(rawName);
+    const email = sanitizeEmail(rawEmail);
 
     if (!email || !password) {
       return NextResponse.json(
