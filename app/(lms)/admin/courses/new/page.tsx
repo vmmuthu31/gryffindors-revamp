@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { toast } from "sonner";
 
 interface Internship {
   id: string;
@@ -44,11 +45,11 @@ export default function NewCoursePage() {
       if (res.ok) {
         router.push("/admin/courses");
       } else {
-        alert("Failed to create course");
+        toast.error("Failed to create course");
         setLoading(false);
       }
     } catch {
-      alert("Failed to create course");
+      toast.error("Failed to create course");
       setLoading(false);
     }
   };

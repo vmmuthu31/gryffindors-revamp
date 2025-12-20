@@ -178,7 +178,9 @@ const ApplyPage = () => {
       image: "/assets/logo.png",
       order_id: orderData.id,
       handler: function (response: RazorpayResponse) {
-        alert(`Payment Successful! Payment ID: ${response.razorpay_paymentId}`);
+        toast.success(
+          `Payment Successful! Payment ID: ${response.razorpay_paymentId}`
+        );
         setStep("completed");
       },
       prefill: {
