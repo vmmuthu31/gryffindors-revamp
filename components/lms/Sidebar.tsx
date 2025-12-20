@@ -43,22 +43,25 @@ export default function LMSSidebar() {
   const pathname = usePathname();
   const { data: session, status } = useSession();
 
-  const role =
-    (session?.user as { role?: string } | undefined)?.role || "STUDENT";
+  const role = (session?.user as { role?: string } | undefined)?.role;
 
   const links =
     role === "ADMIN"
       ? adminLinks
       : role === "MENTOR"
       ? mentorLinks
-      : studentLinks;
+      : role === "STUDENT"
+      ? studentLinks
+      : [];
 
   const menuLabel =
     role === "ADMIN"
       ? "Admin Menu"
       : role === "MENTOR"
       ? "Mentor Menu"
-      : "Student Menu";
+      : role === "STUDENT"
+      ? "Student Menu"
+      : "";
 
   if (status === "loading") {
     return (

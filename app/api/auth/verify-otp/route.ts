@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { sanitizeEmail } from "@/lib/security";
 
 export async function POST(request: Request) {
   try {
-    const { email, otp } = await request.json();
+    const { email: rawEmail, otp } = await request.json();
+    const email = sanitizeEmail(rawEmail as string);
 
     if (!email || !otp) {
       return NextResponse.json(
@@ -14,7 +16,7 @@ export async function POST(request: Request) {
 
     const { data: user, error } = await supabaseAdmin
       .from("User")
-      .select("id, otp, otp_expiry")
+      .select("id, otp, otpExpiry")
       .eq("email", email)
       .single();
 
@@ -22,11 +24,22 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    if (!user.otp || !user.otp_expiry) {
+    if (!user.otp || !user.otpExpiry) {
       return NextResponse.json({ error: "No OTP requested" }, { status: 400 });
     }
 
-    if (new Date() > new Date(user.otp_expiry)) {
+    console.log("[Verify] User:", user);
+    console.log(
+      "[Verify] Expiry Check:",
+      new Date().toISOString(),
+      " > ",
+      user.otpExpiry
+    );
+
+    const expiryStr = user.otpExpiry.endsWith("Z")
+      ? user.otpExpiry
+      : `${user.otpExpiry}Z`;
+    if (new Date() > new Date(expiryStr)) {
       return NextResponse.json({ error: "OTP expired" }, { status: 400 });
     }
 
@@ -38,7 +51,7 @@ export async function POST(request: Request) {
       .from("User")
       .update({
         otp: null,
-        otp_expiry: null,
+        otpExpiry: null,
         emailVerified: true,
       })
       .eq("id", user.id);

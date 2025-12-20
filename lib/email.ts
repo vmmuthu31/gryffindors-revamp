@@ -62,10 +62,6 @@ function baseTemplate(content: string, title: string): string {
   `;
 }
 
-export function generateOTP(): string {
-  return Math.floor(100000 + Math.random() * 900000).toString();
-}
-
 export async function sendOTPEmail(
   email: string,
   otp: string

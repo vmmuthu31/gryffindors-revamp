@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
-import { generateOTP, sendOTPEmail } from "@/lib/email";
+import { sendOTPEmail } from "@/lib/email";
+import { generateOTP, sanitizeEmail } from "@/lib/security";
 
 export async function POST(request: Request) {
   try {
-    const { email } = await request.json();
+    const { email: rawEmail } = await request.json();
+    const email = sanitizeEmail(rawEmail);
 
     if (!email) {
       return NextResponse.json({ error: "Email is required" }, { status: 400 });
@@ -21,11 +23,12 @@ export async function POST(request: Request) {
     }
 
     const otp = generateOTP();
+    console.log(`[DEV ONLY] OTP for ${email}: ${otp}`);
     const otpExpiry = new Date(Date.now() + 10 * 60 * 1000).toISOString();
 
     await supabaseAdmin
       .from("User")
-      .update({ otp, otp_expiry: otpExpiry })
+      .update({ otp, otpExpiry: otpExpiry })
       .eq("id", user.id);
 
     const sent = await sendOTPEmail(email, otp);

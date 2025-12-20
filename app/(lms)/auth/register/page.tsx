@@ -10,12 +10,14 @@ import Image from "next/image";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const [step, setStep] = useState<"register" | "otp">("register");
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
     confirmPassword: "",
   });
+  const [otp, setOtp] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -24,38 +26,69 @@ export default function RegisterPage() {
     e.preventDefault();
     setError("");
 
-    if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match");
-      return;
-    }
+    if (step === "register") {
+      if (formData.password !== formData.confirmPassword) {
+        setError("Passwords do not match");
+        return;
+      }
 
-    if (formData.password.length < 6) {
-      setError("Password must be at least 6 characters");
-      return;
+      if (formData.password.length < 6) {
+        setError("Password must be at least 6 characters");
+        return;
+      }
     }
 
     setLoading(true);
 
     try {
-      const res = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          password: formData.password,
-        }),
-      });
+      if (step === "register") {
+        const res = await fetch("/api/auth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: formData.name,
+            email: formData.email,
+            password: formData.password,
+          }),
+        });
 
-      const data = await res.json();
+        const data = await res.json();
 
-      if (!res.ok) {
-        setError(data.error || "Registration failed");
+        if (!res.ok) {
+          setError(data.error || "Registration failed");
+        } else {
+          // Send OTP
+          const otpRes = await fetch("/api/auth/send-otp", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: formData.email }),
+          });
+
+          if (otpRes.ok) {
+            setStep("otp");
+          } else {
+            setError("Account created but failed to send OTP. Please login.");
+            setTimeout(() => router.push("/auth/login"), 2000);
+          }
+        }
       } else {
-        setSuccess(true);
-        setTimeout(() => {
-          router.push("/auth/login");
-        }, 2000);
+        // Verify OTP
+        const res = await fetch("/api/auth/verify-otp", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: formData.email, otp }),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          setError(data.error || "Verification failed");
+        } else {
+          setSuccess(true);
+          setTimeout(() => {
+            router.push("/auth/login");
+          }, 2000);
+        }
       }
     } catch {
       setError("Something went wrong. Please try again.");
@@ -129,9 +162,13 @@ export default function RegisterPage() {
                 className="object-contain"
               />{" "}
             </div>
-            <CardTitle className="text-2xl">Create Account</CardTitle>
+            <CardTitle className="text-2xl">
+              {step === "register" ? "Create Account" : "Verify Email"}
+            </CardTitle>
             <p className="text-gray-500 text-sm mt-1">
-              Sign up to get started with your learning journey
+              {step === "register"
+                ? "Sign up to get started with your learning journey"
+                : `We sent a code to ${formData.email}`}
             </p>
           </CardHeader>
           <CardContent>
@@ -142,72 +179,108 @@ export default function RegisterPage() {
                 </div>
               )}
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">
-                  Full Name
-                </label>
-                <input
-                  type="text"
-                  placeholder="John Doe"
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
-                  required
-                  className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#841a1c] focus:border-transparent outline-none transition"
-                />
-              </div>
+              {step === "register" ? (
+                <>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">
+                      Full Name
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="John Doe"
+                      value={formData.name}
+                      onChange={(e) =>
+                        setFormData({ ...formData, name: e.target.value })
+                      }
+                      required
+                      className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#841a1c] focus:border-transparent outline-none transition"
+                    />
+                  </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  placeholder="you@example.com"
-                  value={formData.email}
-                  onChange={(e) =>
-                    setFormData({ ...formData, email: e.target.value })
-                  }
-                  required
-                  className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#841a1c] focus:border-transparent outline-none transition"
-                />
-              </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      placeholder="you@example.com"
+                      value={formData.email}
+                      onChange={(e) =>
+                        setFormData({ ...formData, email: e.target.value })
+                      }
+                      required
+                      className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#841a1c] focus:border-transparent outline-none transition"
+                    />
+                  </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">
-                  Password
-                </label>
-                <input
-                  type="password"
-                  placeholder="Min. 6 characters"
-                  value={formData.password}
-                  onChange={(e) =>
-                    setFormData({ ...formData, password: e.target.value })
-                  }
-                  required
-                  className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#841a1c] focus:border-transparent outline-none transition"
-                />
-              </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">
+                      Password
+                    </label>
+                    <input
+                      type="password"
+                      placeholder="Min. 6 characters"
+                      value={formData.password}
+                      onChange={(e) =>
+                        setFormData({ ...formData, password: e.target.value })
+                      }
+                      required
+                      className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#841a1c] focus:border-transparent outline-none transition"
+                    />
+                  </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">
-                  Confirm Password
-                </label>
-                <input
-                  type="password"
-                  placeholder="Repeat password"
-                  value={formData.confirmPassword}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      confirmPassword: e.target.value,
-                    })
-                  }
-                  required
-                  className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#841a1c] focus:border-transparent outline-none transition"
-                />
-              </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">
+                      Confirm Password
+                    </label>
+                    <input
+                      type="password"
+                      placeholder="Repeat password"
+                      value={formData.confirmPassword}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          confirmPassword: e.target.value,
+                        })
+                      }
+                      required
+                      className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#841a1c] focus:border-transparent outline-none transition"
+                    />
+                  </div>
+                </>
+              ) : (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">
+                    Verification Code
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Enter 6-digit code"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                    required
+                    maxLength={6}
+                    className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#841a1c] focus:border-transparent outline-none transition text-center tracking-widest text-lg"
+                  />
+                  <div className="text-center mt-2">
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        const res = await fetch("/api/auth/send-otp", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ email: formData.email }),
+                        });
+                        if (res.ok) setError("");
+                        else setError("Failed to resend code");
+                      }}
+                      className="text-sm text-[#841a1c] hover:underline"
+                    >
+                      Resend Code
+                    </button>
+                  </div>
+                </div>
+              )}
 
               <Button
                 type="submit"
@@ -217,10 +290,14 @@ export default function RegisterPage() {
                 {loading ? (
                   <>
                     <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                    Creating account...
+                    {step === "register"
+                      ? "Creating account..."
+                      : "Verifying..."}
                   </>
-                ) : (
+                ) : step === "register" ? (
                   "Create Account"
+                ) : (
+                  "Verify & Login"
                 )}
               </Button>
             </form>

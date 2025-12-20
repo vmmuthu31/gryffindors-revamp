@@ -79,6 +79,10 @@ export function generateSecureToken(length: number = 32): string {
   return result;
 }
 
+export function generateOTP(): string {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
 export function getRateLimitKey(ip: string, endpoint: string): string {
   return `rate_limit:${endpoint}:${ip}`;
 }
