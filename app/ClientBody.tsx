@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { SessionProvider } from "next-auth/react";
 import CustomCursor from "@/components/CustomCursor";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
@@ -24,12 +25,14 @@ export default function ClientBody({
 
   return (
     <body className="antialiased" suppressHydrationWarning>
-      {!isLMSRoute && <Navbar />}
-      {children}
-      <Toaster />
-      {!isLMSRoute && <Footer />}
-      {!isLMSRoute && <ScrollToTop />}
-      {!isLMSRoute && <CustomCursor />}
+      <SessionProvider>
+        {!isLMSRoute && <Navbar />}
+        {children}
+        <Toaster />
+        {!isLMSRoute && <Footer />}
+        {!isLMSRoute && <ScrollToTop />}
+        {!isLMSRoute && <CustomCursor />}
+      </SessionProvider>
     </body>
   );
 }
