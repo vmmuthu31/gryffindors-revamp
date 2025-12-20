@@ -8,22 +8,22 @@ export const revalidate = 0;
 
 async function getStats() {
   const { count: pending } = await supabaseAdmin
-    .from("submissions")
+    .from("Submission")
     .select("*", { count: "exact", head: true })
     .eq("status", "PENDING");
 
   const { count: underReview } = await supabaseAdmin
-    .from("submissions")
+    .from("Submission")
     .select("*", { count: "exact", head: true })
     .eq("status", "UNDER_REVIEW");
 
   const { count: approved } = await supabaseAdmin
-    .from("submissions")
+    .from("Submission")
     .select("*", { count: "exact", head: true })
     .eq("status", "APPROVED");
 
   const { count: rejected } = await supabaseAdmin
-    .from("submissions")
+    .from("Submission")
     .select("*", { count: "exact", head: true })
     .eq("status", "REJECTED");
 

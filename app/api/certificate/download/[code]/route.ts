@@ -9,7 +9,7 @@ export async function GET(
     const { code } = await params;
 
     const { data: certificate, error } = await supabaseAdmin
-      .from("certificates")
+      .from("Certificate")
       .select("*")
       .eq("unique_code", code)
       .single();
@@ -22,13 +22,13 @@ export async function GET(
     }
 
     const { data: user } = await supabaseAdmin
-      .from("users")
+      .from("User")
       .select("name, email")
       .eq("id", certificate.user_id)
       .single();
 
     const { data: application } = await supabaseAdmin
-      .from("applications")
+      .from("Application")
       .select("internship_id")
       .eq("id", certificate.application_id)
       .single();
@@ -36,7 +36,7 @@ export async function GET(
     let internship = null;
     if (application) {
       const { data } = await supabaseAdmin
-        .from("internships")
+        .from("Internship")
         .select("title, track")
         .eq("id", application.internship_id)
         .single();

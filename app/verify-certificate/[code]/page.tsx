@@ -29,7 +29,7 @@ async function getCertificate(
   code: string
 ): Promise<CertificateWithRelations | null> {
   const { data: certificate, error } = await supabaseAdmin
-    .from("certificates")
+    .from("Certificate")
     .select("id, unique_code, grade, issued_at, user_id, application_id")
     .eq("unique_code", code)
     .single();
@@ -37,13 +37,13 @@ async function getCertificate(
   if (error || !certificate) return null;
 
   const { data: user } = await supabaseAdmin
-    .from("users")
+    .from("User")
     .select("name, email")
     .eq("id", certificate.user_id)
     .single();
 
   const { data: application } = await supabaseAdmin
-    .from("applications")
+    .from("Application")
     .select("internship_id")
     .eq("id", certificate.application_id)
     .single();
@@ -51,7 +51,7 @@ async function getCertificate(
   let internship = { title: "", track: "" };
   if (application) {
     const { data: i } = await supabaseAdmin
-      .from("internships")
+      .from("Internship")
       .select("title, track")
       .eq("id", application.internship_id)
       .single();

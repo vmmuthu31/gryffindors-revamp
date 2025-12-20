@@ -9,7 +9,7 @@ export async function DELETE(
     const { id } = await params;
 
     const { error } = await supabaseAdmin
-      .from("certificates")
+      .from("Certificate")
       .delete()
       .eq("id", id);
 

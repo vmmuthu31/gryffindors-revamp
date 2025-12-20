@@ -14,7 +14,7 @@ export async function POST(request: Request) {
     const { lessonId, content, fileUrl } = await request.json();
 
     const { data: existingSubmission } = await supabaseAdmin
-      .from("submissions")
+      .from("Submission")
       .select("id, status")
       .eq("lesson_id", lessonId)
       .eq("user_id", session.user.id)
@@ -36,14 +36,14 @@ export async function POST(request: Request) {
     }
 
     await supabaseAdmin
-      .from("submissions")
+      .from("Submission")
       .delete()
       .eq("lesson_id", lessonId)
       .eq("user_id", session.user.id)
       .in("status", ["REJECTED", "RESUBMIT"]);
 
     const { data: submission, error } = await supabaseAdmin
-      .from("submissions")
+      .from("Submission")
       .insert({
         lesson_id: lessonId,
         user_id: session.user.id,
@@ -57,34 +57,34 @@ export async function POST(request: Request) {
     if (error) throw error;
 
     const { data: user } = await supabaseAdmin
-      .from("users")
+      .from("User")
       .select("name")
       .eq("id", session.user.id)
       .single();
 
     const { data: lesson } = await supabaseAdmin
-      .from("lessons")
+      .from("Lesson")
       .select("title, module_id")
       .eq("id", lessonId)
       .single();
 
     if (lesson) {
       const { data: module } = await supabaseAdmin
-        .from("modules")
+        .from("Module")
         .select("course_id")
         .eq("id", lesson.module_id)
         .single();
 
       if (module) {
         const { data: course } = await supabaseAdmin
-          .from("courses")
+          .from("Course")
           .select("internship_id")
           .eq("id", module.course_id)
           .single();
 
         if (course?.internship_id) {
           const { data: application } = await supabaseAdmin
-            .from("applications")
+            .from("Application")
             .select("mentor_id")
             .eq("user_id", session.user.id)
             .eq("internship_id", course.internship_id)
@@ -93,7 +93,7 @@ export async function POST(request: Request) {
 
           if (application?.mentor_id) {
             const { data: mentor } = await supabaseAdmin
-              .from("users")
+              .from("User")
               .select("name, email")
               .eq("id", application.mentor_id)
               .single();
@@ -130,7 +130,7 @@ export async function GET() {
     }
 
     const { data: submissions, error } = await supabaseAdmin
-      .from("submissions")
+      .from("Submission")
       .select("*")
       .eq("user_id", session.user.id)
       .order("submitted_at", { ascending: false });
@@ -140,7 +140,7 @@ export async function GET() {
     const subsWithLessons = await Promise.all(
       (submissions || []).map(async (sub) => {
         const { data: lesson } = await supabaseAdmin
-          .from("lessons")
+          .from("Lesson")
           .select("title, module_id")
           .eq("id", sub.lesson_id)
           .single();
@@ -148,7 +148,7 @@ export async function GET() {
         let moduleTitle = "";
         if (lesson) {
           const { data: module } = await supabaseAdmin
-            .from("modules")
+            .from("Module")
             .select("title")
             .eq("id", lesson.module_id)
             .single();

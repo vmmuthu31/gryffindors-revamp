@@ -15,7 +15,7 @@ export async function POST(
     const { id: lessonId } = await params;
 
     const { data: existing } = await supabaseAdmin
-      .from("lesson_progress")
+      .from("LessonProgress")
       .select("id")
       .eq("user_id", session.user.id)
       .eq("lesson_id", lessonId)
@@ -24,7 +24,7 @@ export async function POST(
     let progress;
     if (existing) {
       const { data, error } = await supabaseAdmin
-        .from("lesson_progress")
+        .from("LessonProgress")
         .update({
           completed: true,
           completed_at: new Date().toISOString(),
@@ -37,7 +37,7 @@ export async function POST(
       progress = data;
     } else {
       const { data, error } = await supabaseAdmin
-        .from("lesson_progress")
+        .from("LessonProgress")
         .insert({
           user_id: session.user.id,
           lesson_id: lessonId,
@@ -74,7 +74,7 @@ export async function GET(
     const { id: lessonId } = await params;
 
     const { data: progress } = await supabaseAdmin
-      .from("lesson_progress")
+      .from("LessonProgress")
       .select("completed")
       .eq("user_id", session.user.id)
       .eq("lesson_id", lessonId)

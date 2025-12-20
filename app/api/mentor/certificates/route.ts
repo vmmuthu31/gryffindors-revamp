@@ -20,7 +20,7 @@ export async function POST(request: Request) {
     }
 
     const { data: application, error: appError } = await supabaseAdmin
-      .from("applications")
+      .from("Application")
       .select("id, user_id")
       .eq("id", applicationId)
       .eq("mentor_id", session.user.id)
@@ -34,7 +34,7 @@ export async function POST(request: Request) {
     }
 
     const { data: existing } = await supabaseAdmin
-      .from("certificates")
+      .from("Certificate")
       .select("id")
       .eq("application_id", applicationId)
       .single();
@@ -48,7 +48,7 @@ export async function POST(request: Request) {
 
     const uniqueCode = `GRYF-${nanoid(8).toUpperCase()}`;
     const { data: certificate, error } = await supabaseAdmin
-      .from("certificates")
+      .from("Certificate")
       .insert({
         application_id: applicationId,
         user_id: application.user_id,
@@ -61,7 +61,7 @@ export async function POST(request: Request) {
     if (error) throw error;
 
     await supabaseAdmin
-      .from("applications")
+      .from("Application")
       .update({ status: "COMPLETED" })
       .eq("id", applicationId);
 

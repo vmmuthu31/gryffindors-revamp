@@ -4,7 +4,7 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 export async function GET() {
   try {
     const { data: courses, error } = await supabaseAdmin
-      .from("courses")
+      .from("Course")
       .select("*")
       .order("order");
 
@@ -13,13 +13,13 @@ export async function GET() {
     const coursesWithRelations = await Promise.all(
       (courses || []).map(async (course) => {
         const { data: internship } = await supabaseAdmin
-          .from("internships")
+          .from("Internship")
           .select("*")
           .eq("id", course.internship_id)
           .single();
 
         const { data: modules } = await supabaseAdmin
-          .from("modules")
+          .from("Module")
           .select("*")
           .eq("course_id", course.id)
           .order("order");
@@ -27,7 +27,7 @@ export async function GET() {
         const modulesWithLessons = await Promise.all(
           (modules || []).map(async (module) => {
             const { data: lessons } = await supabaseAdmin
-              .from("lessons")
+              .from("Lesson")
               .select("*")
               .eq("module_id", module.id)
               .order("order");
@@ -58,7 +58,7 @@ export async function POST(request: Request) {
   try {
     const data = await request.json();
     const { data: course, error } = await supabaseAdmin
-      .from("courses")
+      .from("Course")
       .insert({
         internship_id: data.internshipId,
         title: data.title,

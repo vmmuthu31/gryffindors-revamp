@@ -9,7 +9,7 @@ export async function GET(
     const { id } = await params;
 
     const { data: course, error } = await supabaseAdmin
-      .from("courses")
+      .from("Course")
       .select("*")
       .eq("id", id)
       .single();
@@ -19,13 +19,13 @@ export async function GET(
     }
 
     const { data: internship } = await supabaseAdmin
-      .from("internships")
+      .from("Internship")
       .select("*")
       .eq("id", course.internship_id)
       .single();
 
     const { data: modules } = await supabaseAdmin
-      .from("modules")
+      .from("Module")
       .select("*")
       .eq("course_id", id)
       .order("order");
@@ -33,7 +33,7 @@ export async function GET(
     const modulesWithLessons = await Promise.all(
       (modules || []).map(async (module) => {
         const { data: lessons } = await supabaseAdmin
-          .from("lessons")
+          .from("Lesson")
           .select("*")
           .eq("module_id", module.id)
           .order("order");
@@ -65,7 +65,7 @@ export async function PUT(
     const data = await request.json();
 
     const { data: course, error } = await supabaseAdmin
-      .from("courses")
+      .from("Course")
       .update({
         title: data.title,
         description: data.description,
@@ -94,7 +94,7 @@ export async function DELETE(
   try {
     const { id } = await params;
 
-    const { error } = await supabaseAdmin.from("courses").delete().eq("id", id);
+    const { error } = await supabaseAdmin.from("Course").delete().eq("id", id);
 
     if (error) throw error;
 

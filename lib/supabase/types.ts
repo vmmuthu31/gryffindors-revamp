@@ -174,12 +174,12 @@ export interface LessonProgress {
 export interface Database {
   public: {
     Tables: {
-      users: {
+      User: {
         Row: User;
         Insert: Partial<User> & Pick<User, "email">;
         Update: Partial<User>;
       };
-      accounts: {
+      Account: {
         Row: Account;
         Insert: Partial<Account> &
           Pick<
@@ -188,19 +188,19 @@ export interface Database {
           >;
         Update: Partial<Account>;
       };
-      internships: {
+      Internship: {
         Row: Internship;
         Insert: Partial<Internship> &
           Pick<Internship, "title" | "track" | "price" | "duration">;
         Update: Partial<Internship>;
       };
-      applications: {
+      Application: {
         Row: Application;
         Insert: Partial<Application> &
           Pick<Application, "user_id" | "internship_id">;
         Update: Partial<Application>;
       };
-      interview_results: {
+      InterviewResult: {
         Row: InterviewResult;
         Insert: Partial<InterviewResult> &
           Pick<
@@ -209,38 +209,38 @@ export interface Database {
           >;
         Update: Partial<InterviewResult>;
       };
-      referrals: {
+      Referral: {
         Row: Referral;
         Insert: Partial<Referral> & Pick<Referral, "code" | "referrer_id">;
         Update: Partial<Referral>;
       };
-      courses: {
+      Course: {
         Row: Course;
         Insert: Partial<Course> & Pick<Course, "internship_id" | "title">;
         Update: Partial<Course>;
       };
-      modules: {
+      Module: {
         Row: Module;
         Insert: Partial<Module> & Pick<Module, "course_id" | "title">;
         Update: Partial<Module>;
       };
-      lessons: {
+      Lesson: {
         Row: Lesson;
         Insert: Partial<Lesson> & Pick<Lesson, "module_id" | "title" | "type">;
         Update: Partial<Lesson>;
       };
-      submissions: {
+      Submission: {
         Row: Submission;
         Insert: Partial<Submission> & Pick<Submission, "lesson_id" | "user_id">;
         Update: Partial<Submission>;
       };
-      certificates: {
+      Certificate: {
         Row: Certificate;
         Insert: Partial<Certificate> &
           Pick<Certificate, "application_id" | "user_id" | "unique_code">;
         Update: Partial<Certificate>;
       };
-      lesson_progress: {
+      LessonProgress: {
         Row: LessonProgress;
         Insert: Partial<LessonProgress> &
           Pick<LessonProgress, "user_id" | "lesson_id">;

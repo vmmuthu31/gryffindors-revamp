@@ -11,7 +11,7 @@ export async function GET() {
     }
 
     let { data: user } = await supabaseAdmin
-      .from("users")
+      .from("User")
       .select("referral_code")
       .eq("id", session.user.id)
       .single();
@@ -19,7 +19,7 @@ export async function GET() {
     if (!user?.referral_code) {
       const code = `GRYF${nanoid(6).toUpperCase()}`;
       const { data: updated } = await supabaseAdmin
-        .from("users")
+        .from("User")
         .update({ referral_code: code })
         .eq("id", session.user.id)
         .select("referral_code")
@@ -28,7 +28,7 @@ export async function GET() {
     }
 
     const { data: referrals } = await supabaseAdmin
-      .from("referrals")
+      .from("Referral")
       .select("*")
       .eq("referrer_id", session.user.id);
 
@@ -37,7 +37,7 @@ export async function GET() {
         let referredUser = null;
         if (r.referred_user_id) {
           const { data } = await supabaseAdmin
-            .from("users")
+            .from("User")
             .select("name, email")
             .eq("id", r.referred_user_id)
             .single();
@@ -89,7 +89,7 @@ export async function POST(request: Request) {
     }
 
     const { data: referrer } = await supabaseAdmin
-      .from("users")
+      .from("User")
       .select("id")
       .eq("referral_code", code)
       .single();
@@ -109,7 +109,7 @@ export async function POST(request: Request) {
     }
 
     const { data: existingReferral } = await supabaseAdmin
-      .from("referrals")
+      .from("Referral")
       .select("id")
       .eq("referred_user_id", userId)
       .single();
@@ -122,7 +122,7 @@ export async function POST(request: Request) {
     }
 
     const { data: referral, error } = await supabaseAdmin
-      .from("referrals")
+      .from("Referral")
       .insert({
         code: `${code}-${nanoid(4)}`,
         referrer_id: referrer.id,
@@ -137,7 +137,7 @@ export async function POST(request: Request) {
     if (error) throw error;
 
     await supabaseAdmin
-      .from("users")
+      .from("User")
       .update({ referred_by: referrer.id })
       .eq("id", userId);
 

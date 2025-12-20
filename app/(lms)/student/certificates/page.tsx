@@ -35,7 +35,7 @@ async function getCertificates(
   }
 
   const { data, error } = await supabaseAdmin
-    .from("certificates")
+    .from("Certificate")
     .select("id, unique_code, issued_at, grade, application_id")
     .eq("user_id", userId)
     .order("issued_at", { ascending: false });
@@ -47,7 +47,7 @@ async function getCertificates(
   const result = await Promise.all(
     certificates.map(async (cert) => {
       const { data: appData } = await supabaseAdmin
-        .from("applications")
+        .from("Application")
         .select("internship_id")
         .eq("id", cert.application_id)
         .single();
@@ -57,7 +57,7 @@ async function getCertificates(
       let internship = { title: "" };
       if (application) {
         const { data: i } = await supabaseAdmin
-          .from("internships")
+          .from("Internship")
           .select("title")
           .eq("id", application.internship_id)
           .single();

@@ -51,7 +51,7 @@ async function getAlumni(): Promise<Alumni[]> {
     }
 
     const { data, error } = await supabaseAdmin
-      .from("users")
+      .from("User")
       .select(
         "id, name, email, bio, current_job, company, linked_in, portfolio"
       )
@@ -66,7 +66,7 @@ async function getAlumni(): Promise<Alumni[]> {
     const alumni = await Promise.all(
       users.map(async (user) => {
         const { data: certData } = await supabaseAdmin
-          .from("certificates")
+          .from("Certificate")
           .select("id, application_id")
           .eq("user_id", user.id);
 
@@ -75,7 +75,7 @@ async function getAlumni(): Promise<Alumni[]> {
         const certsWithRelations = await Promise.all(
           certificates.map(async (cert) => {
             const { data: appData } = await supabaseAdmin
-              .from("applications")
+              .from("Application")
               .select("internship_id")
               .eq("id", cert.application_id)
               .single();
@@ -85,7 +85,7 @@ async function getAlumni(): Promise<Alumni[]> {
             let internship = { title: "", track: "" };
             if (application) {
               const { data: i } = await supabaseAdmin
-                .from("internships")
+                .from("Internship")
                 .select("title, track")
                 .eq("id", application.internship_id)
                 .single();

@@ -24,7 +24,7 @@ export async function POST(request: Request) {
     }
 
     const { data: adminData } = await supabaseAdmin
-      .from("users")
+      .from("User")
       .select("role")
       .eq("id", session.user.id)
       .single();
@@ -74,7 +74,7 @@ export async function POST(request: Request) {
     }
 
     const { data: internship, error: internshipError } = await supabaseAdmin
-      .from("internships")
+      .from("Internship")
       .select("id")
       .eq("id", internshipId)
       .single();
@@ -105,7 +105,7 @@ export async function POST(request: Request) {
 
       try {
         let { data: user } = await supabaseAdmin
-          .from("users")
+          .from("User")
           .select("*")
           .eq("email", email)
           .single();
@@ -115,7 +115,7 @@ export async function POST(request: Request) {
         if (!user) {
           const hashedPassword = await bcrypt.hash(tempPassword, 10);
           const { data: newUser, error: createError } = await supabaseAdmin
-            .from("users")
+            .from("User")
             .insert({
               email,
               name,
@@ -137,7 +137,7 @@ export async function POST(request: Request) {
         }
 
         const { data: existingApp } = await supabaseAdmin
-          .from("applications")
+          .from("Application")
           .select("id")
           .eq("user_id", user.id)
           .eq("internship_id", internshipId)
@@ -150,7 +150,7 @@ export async function POST(request: Request) {
           continue;
         }
 
-        await supabaseAdmin.from("applications").insert({
+        await supabaseAdmin.from("Application").insert({
           user_id: user.id,
           internship_id: internshipId,
           mentor_id: mentorId || null,

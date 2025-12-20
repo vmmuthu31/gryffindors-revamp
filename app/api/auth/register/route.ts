@@ -14,7 +14,7 @@ export async function POST(request: Request) {
     }
 
     const { data: existingUser } = await supabaseAdmin
-      .from("users")
+      .from("User")
       .select("id")
       .eq("email", email)
       .single();
@@ -29,7 +29,7 @@ export async function POST(request: Request) {
     const passwordHash = await bcrypt.hash(password, 10);
 
     const { data: user, error } = await supabaseAdmin
-      .from("users")
+      .from("User")
       .insert({
         name,
         email,

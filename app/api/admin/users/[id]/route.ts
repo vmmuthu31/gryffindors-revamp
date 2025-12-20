@@ -9,7 +9,7 @@ export async function GET(
     const { id } = await params;
 
     const { data: user, error } = await supabaseAdmin
-      .from("users")
+      .from("User")
       .select("*")
       .eq("id", id)
       .single();
@@ -19,14 +19,14 @@ export async function GET(
     }
 
     const { data: applications } = await supabaseAdmin
-      .from("applications")
+      .from("Application")
       .select("*")
       .eq("user_id", id);
 
     const appsWithInternships = await Promise.all(
       (applications || []).map(async (app) => {
         const { data: internship } = await supabaseAdmin
-          .from("internships")
+          .from("Internship")
           .select("*")
           .eq("id", app.internship_id)
           .single();
@@ -57,7 +57,7 @@ export async function PUT(
     const data = await request.json();
 
     const { data: user, error } = await supabaseAdmin
-      .from("users")
+      .from("User")
       .update({
         name: data.name,
         email: data.email,
@@ -86,7 +86,7 @@ export async function DELETE(
   try {
     const { id } = await params;
 
-    const { error } = await supabaseAdmin.from("users").delete().eq("id", id);
+    const { error } = await supabaseAdmin.from("User").delete().eq("id", id);
 
     if (error) throw error;
 

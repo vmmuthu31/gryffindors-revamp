@@ -11,7 +11,7 @@ export async function POST(request: Request) {
     }
 
     const { data: user, error } = await supabaseAdmin
-      .from("users")
+      .from("User")
       .select("id")
       .eq("email", email)
       .single();
@@ -24,7 +24,7 @@ export async function POST(request: Request) {
     const otpExpiry = new Date(Date.now() + 10 * 60 * 1000).toISOString();
 
     await supabaseAdmin
-      .from("users")
+      .from("User")
       .update({ otp, otp_expiry: otpExpiry })
       .eq("id", user.id);
 

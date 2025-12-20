@@ -4,7 +4,7 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 export async function GET() {
   try {
     const { data: students, error } = await supabaseAdmin
-      .from("applications")
+      .from("Application")
       .select("*")
       .in("status", ["ENROLLED", "IN_PROGRESS", "COMPLETED"])
       .order("created_at", { ascending: false });
@@ -14,13 +14,13 @@ export async function GET() {
     const studentsWithRelations = await Promise.all(
       (students || []).map(async (student) => {
         const { data: user } = await supabaseAdmin
-          .from("users")
+          .from("User")
           .select("id, name, email")
           .eq("id", student.user_id)
           .single();
 
         const { data: internship } = await supabaseAdmin
-          .from("internships")
+          .from("Internship")
           .select("id, title")
           .eq("id", student.internship_id)
           .single();
@@ -28,7 +28,7 @@ export async function GET() {
         let mentor = null;
         if (student.mentor_id) {
           const { data: mentorData } = await supabaseAdmin
-            .from("users")
+            .from("User")
             .select("id, name")
             .eq("id", student.mentor_id)
             .single();

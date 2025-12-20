@@ -17,7 +17,7 @@ export async function POST(
     }
 
     const { data: mentor, error: mentorError } = await supabaseAdmin
-      .from("users")
+      .from("User")
       .select("id")
       .eq("id", mentorId)
       .eq("role", "MENTOR")
@@ -28,7 +28,7 @@ export async function POST(
     }
 
     const { data: updated, error } = await supabaseAdmin
-      .from("applications")
+      .from("Application")
       .update({ mentor_id: mentorId })
       .eq("id", id)
       .select()

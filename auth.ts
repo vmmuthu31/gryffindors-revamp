@@ -33,7 +33,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
 
         const { data: user, error } = await supabaseAdmin
-          .from("users")
+          .from("User")
           .select("*")
           .eq("email", credentials.email as string)
           .single();

@@ -108,7 +108,7 @@ async function handleInterviewComplete(
     }
 
     const { data: existing } = await supabaseAdmin
-      .from("interview_results")
+      .from("InterviewResult")
       .select("id")
       .eq("user_id", userId)
       .eq("internship_id", internshipId)
@@ -116,7 +116,7 @@ async function handleInterviewComplete(
 
     if (existing) {
       await supabaseAdmin
-        .from("interview_results")
+        .from("InterviewResult")
         .update({
           score,
           passed,
@@ -125,7 +125,7 @@ async function handleInterviewComplete(
         })
         .eq("id", existing.id);
     } else {
-      await supabaseAdmin.from("interview_results").insert({
+      await supabaseAdmin.from("InterviewResult").insert({
         user_id: userId,
         internship_id: internshipId,
         score,
@@ -137,7 +137,7 @@ async function handleInterviewComplete(
 
     if (passed) {
       await supabaseAdmin
-        .from("applications")
+        .from("Application")
         .update({
           status: "INTERVIEW_PASSED",
           interview_score: score,
@@ -176,7 +176,7 @@ export async function GET(request: Request) {
     }
 
     const { data: result } = await supabaseAdmin
-      .from("interview_results")
+      .from("InterviewResult")
       .select("*")
       .eq("user_id", session.user.id)
       .eq("internship_id", internshipId)

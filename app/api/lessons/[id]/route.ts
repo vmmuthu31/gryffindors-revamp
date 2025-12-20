@@ -11,7 +11,7 @@ export async function GET(
     const session = await auth();
 
     const { data: lesson, error } = await supabaseAdmin
-      .from("lessons")
+      .from("Lesson")
       .select("*")
       .eq("id", id)
       .single();
@@ -21,19 +21,19 @@ export async function GET(
     }
 
     const { data: module } = await supabaseAdmin
-      .from("modules")
+      .from("Module")
       .select("*")
       .eq("id", lesson.module_id)
       .single();
 
     const { data: course } = await supabaseAdmin
-      .from("courses")
+      .from("Course")
       .select("id, title")
       .eq("id", module?.course_id)
       .single();
 
     const { data: allLessons } = await supabaseAdmin
-      .from("lessons")
+      .from("Lesson")
       .select("id, title, order")
       .eq("module_id", lesson.module_id)
       .order("order");
@@ -41,7 +41,7 @@ export async function GET(
     let lessonProgress = null;
     if (session?.user?.id) {
       const { data: progress } = await supabaseAdmin
-        .from("lesson_progress")
+        .from("LessonProgress")
         .select("completed")
         .eq("user_id", session.user.id)
         .eq("lesson_id", id)
@@ -52,7 +52,7 @@ export async function GET(
     let submission = null;
     if (session?.user?.id && lesson.type === "TASK") {
       const { data: sub } = await supabaseAdmin
-        .from("submissions")
+        .from("Submission")
         .select("id, status, mentor_feedback, grade, submitted_at")
         .eq("lesson_id", id)
         .eq("user_id", session.user.id)

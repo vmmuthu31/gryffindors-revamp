@@ -16,7 +16,7 @@ export async function GET(request: Request) {
     const status = searchParams.get("status") as AppStatus | null;
 
     let query = supabaseAdmin
-      .from("applications")
+      .from("Application")
       .select("*")
       .order("created_at", { ascending: false });
 
@@ -33,13 +33,13 @@ export async function GET(request: Request) {
     const appsWithRelations = await Promise.all(
       applications.map(async (app) => {
         const { data: user } = await supabaseAdmin
-          .from("users")
+          .from("User")
           .select("id, name, email")
           .eq("id", app.user_id)
           .single();
 
         const { data: internship } = await supabaseAdmin
-          .from("internships")
+          .from("Internship")
           .select("id, title, track")
           .eq("id", app.internship_id)
           .single();

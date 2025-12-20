@@ -15,7 +15,7 @@ export async function GET(
     const { id } = await params;
 
     const { data: application, error } = await supabaseAdmin
-      .from("applications")
+      .from("Application")
       .select("*")
       .eq("id", id)
       .eq("mentor_id", session.user.id)
@@ -26,25 +26,25 @@ export async function GET(
     }
 
     const { data: user } = await supabaseAdmin
-      .from("users")
+      .from("User")
       .select("id, name, email")
       .eq("id", application.user_id)
       .single();
 
     const { data: internship } = await supabaseAdmin
-      .from("internships")
+      .from("Internship")
       .select("id, title, track")
       .eq("id", application.internship_id)
       .single();
 
     const { data: certificate } = await supabaseAdmin
-      .from("certificates")
+      .from("Certificate")
       .select("id, unique_code, grade")
       .eq("application_id", application.id)
       .single();
 
     const { data: course } = await supabaseAdmin
-      .from("courses")
+      .from("Course")
       .select("id")
       .eq("internship_id", application.internship_id)
       .single();
@@ -60,18 +60,18 @@ export async function GET(
 
     if (course) {
       const { data: modules } = await supabaseAdmin
-        .from("modules")
+        .from("Module")
         .select("id, title, order")
         .eq("course_id", course.id)
         .order("order");
 
       const { data: lessonProgress } = await supabaseAdmin
-        .from("lesson_progress")
+        .from("LessonProgress")
         .select("lesson_id, completed")
         .eq("user_id", application.user_id);
 
       const { data: submissions } = await supabaseAdmin
-        .from("submissions")
+        .from("Submission")
         .select("lesson_id, status")
         .eq("user_id", application.user_id)
         .order("submitted_at", { ascending: false });
@@ -85,7 +85,7 @@ export async function GET(
 
       for (const mod of modules || []) {
         const { data: lessons } = await supabaseAdmin
-          .from("lessons")
+          .from("Lesson")
           .select("id, title, type, order")
           .eq("module_id", mod.id)
           .order("order");

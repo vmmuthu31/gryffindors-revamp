@@ -55,7 +55,7 @@ async function getEnrolledCourses(userId: string) {
   }
 
   const { data: apps } = await supabaseAdmin
-    .from("applications")
+    .from("Application")
     .select("id, internship_id")
     .eq("user_id", userId)
     .in("status", ["ENROLLED", "IN_PROGRESS", "COMPLETED"]);
@@ -65,7 +65,7 @@ async function getEnrolledCourses(userId: string) {
 
   for (const app of applications) {
     const { data: intData } = await supabaseAdmin
-      .from("internships")
+      .from("Internship")
       .select("id, title, track")
       .eq("id", app.internship_id)
       .single();
@@ -73,7 +73,7 @@ async function getEnrolledCourses(userId: string) {
     const internship = intData as InternRow | null;
 
     const { data: cList } = await supabaseAdmin
-      .from("courses")
+      .from("Course")
       .select("id, title")
       .eq("internship_id", app.internship_id)
       .order("order");
@@ -82,7 +82,7 @@ async function getEnrolledCourses(userId: string) {
 
     for (const course of coursesList) {
       const { data: mods } = await supabaseAdmin
-        .from("modules")
+        .from("Module")
         .select("id")
         .eq("course_id", course.id)
         .order("order");
@@ -92,7 +92,7 @@ async function getEnrolledCourses(userId: string) {
       const modulesWithLessons = await Promise.all(
         modules.map(async (mod) => {
           const { data: lessonData } = await supabaseAdmin
-            .from("lessons")
+            .from("Lesson")
             .select("id, title, type, duration")
             .eq("module_id", mod.id)
             .order("order");
@@ -123,7 +123,7 @@ async function getUserProgress(userId: string, lessonIds: string[]) {
   }
 
   const { data } = await supabaseAdmin
-    .from("lesson_progress")
+    .from("LessonProgress")
     .select("lesson_id")
     .eq("user_id", userId)
     .in("lesson_id", lessonIds)

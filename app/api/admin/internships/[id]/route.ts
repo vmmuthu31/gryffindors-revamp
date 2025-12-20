@@ -9,7 +9,7 @@ export async function GET(
     const { id } = await params;
 
     const { data: internship, error } = await supabaseAdmin
-      .from("internships")
+      .from("Internship")
       .select("*")
       .eq("id", id)
       .single();
@@ -22,12 +22,12 @@ export async function GET(
     }
 
     const { data: courses } = await supabaseAdmin
-      .from("courses")
+      .from("Course")
       .select("*")
       .eq("internship_id", id);
 
     const { data: applications } = await supabaseAdmin
-      .from("applications")
+      .from("Application")
       .select("*")
       .eq("internship_id", id);
 
@@ -54,7 +54,7 @@ export async function PUT(
     const data = await request.json();
 
     const { data: internship, error } = await supabaseAdmin
-      .from("internships")
+      .from("Internship")
       .update({
         title: data.title,
         description: data.description,
@@ -87,7 +87,7 @@ export async function DELETE(
     const { id } = await params;
 
     const { error } = await supabaseAdmin
-      .from("internships")
+      .from("Internship")
       .delete()
       .eq("id", id);
 

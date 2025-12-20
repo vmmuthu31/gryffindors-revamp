@@ -56,7 +56,7 @@ const TRACK_METADATA = {
 export async function getInternship(id: string) {
   try {
     const { data, error } = await supabaseAdmin
-      .from("internships")
+      .from("Internship")
       .select("*")
       .eq("id", id)
       .single();
@@ -84,7 +84,7 @@ export async function getInternship(id: string) {
 export async function getInternships() {
   try {
     const { data, error } = await supabaseAdmin
-      .from("internships")
+      .from("Internship")
       .select("*")
       .eq("is_active", true)
       .order("created_at", { ascending: false });
@@ -120,7 +120,7 @@ export async function createInternship(data: {
 }) {
   try {
     const { data: internship, error } = await supabaseAdmin
-      .from("internships")
+      .from("Internship")
       .insert({
         title: data.title,
         track: data.track,
@@ -156,7 +156,7 @@ export async function updateInternship(
 ) {
   try {
     const { data: internship, error } = await supabaseAdmin
-      .from("internships")
+      .from("Internship")
       .update(data)
       .eq("id", id)
       .select()
@@ -176,7 +176,7 @@ export async function updateInternship(
 export async function deleteInternship(id: string) {
   try {
     const { error } = await supabaseAdmin
-      .from("internships")
+      .from("Internship")
       .delete()
       .eq("id", id);
 
@@ -194,7 +194,7 @@ export async function deleteInternship(id: string) {
 export async function createApplication(internshipId: string, userId: string) {
   try {
     const { data: application, error } = await supabaseAdmin
-      .from("applications")
+      .from("Application")
       .insert({
         internship_id: internshipId,
         user_id: userId,
@@ -228,7 +228,7 @@ export async function updateApplicationStatus(
     if (data.status !== undefined) updateData.status = data.status;
 
     const { error } = await supabaseAdmin
-      .from("applications")
+      .from("Application")
       .update(updateData)
       .eq("id", applicationId);
 
@@ -245,7 +245,7 @@ export async function updateApplicationStatus(
 export async function getUsers() {
   try {
     const { data, error } = await supabaseAdmin
-      .from("users")
+      .from("User")
       .select("*")
       .order("created_at", { ascending: false });
 
@@ -265,7 +265,7 @@ export async function getUsers() {
     const usersWithApps = await Promise.all(
       users.map(async (user) => {
         const { data: applications } = await supabaseAdmin
-          .from("applications")
+          .from("Application")
           .select("*")
           .eq("user_id", user.id);
 
@@ -273,7 +273,7 @@ export async function getUsers() {
         const appsWithInternships = await Promise.all(
           apps.map(async (app) => {
             const { data: internship } = await supabaseAdmin
-              .from("internships")
+              .from("Internship")
               .select("*")
               .eq("id", app.internship_id)
               .single();
@@ -303,7 +303,7 @@ export async function updateUserRole(
 ) {
   try {
     const { error } = await supabaseAdmin
-      .from("users")
+      .from("User")
       .update({ role })
       .eq("id", userId);
 
@@ -320,7 +320,7 @@ export async function updateUserRole(
 export async function deleteUser(userId: string) {
   try {
     const { error } = await supabaseAdmin
-      .from("users")
+      .from("User")
       .delete()
       .eq("id", userId);
 

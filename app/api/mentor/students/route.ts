@@ -10,7 +10,7 @@ export async function GET() {
     }
 
     const { data: students, error } = await supabaseAdmin
-      .from("applications")
+      .from("Application")
       .select("*")
       .eq("mentor_id", session.user.id)
       .in("status", ["ENROLLED", "IN_PROGRESS", "COMPLETED"])
@@ -21,19 +21,19 @@ export async function GET() {
     const studentsWithRelations = await Promise.all(
       (students || []).map(async (student) => {
         const { data: user } = await supabaseAdmin
-          .from("users")
+          .from("User")
           .select("id, name, email")
           .eq("id", student.user_id)
           .single();
 
         const { data: internship } = await supabaseAdmin
-          .from("internships")
+          .from("Internship")
           .select("id, title, track")
           .eq("id", student.internship_id)
           .single();
 
         const { data: certificate } = await supabaseAdmin
-          .from("certificates")
+          .from("Certificate")
           .select("id, unique_code")
           .eq("application_id", student.id)
           .single();

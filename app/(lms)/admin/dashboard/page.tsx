@@ -14,21 +14,21 @@ interface RevenueByProgram {
 
 async function getStats() {
   const { count: totalStudents } = await supabaseAdmin
-    .from("users")
+    .from("User")
     .select("*", { count: "exact", head: true })
     .eq("role", "STUDENT");
 
   const { count: enrolledStudents } = await supabaseAdmin
-    .from("applications")
+    .from("Application")
     .select("*", { count: "exact", head: true })
     .in("status", ["ENROLLED", "IN_PROGRESS", "COMPLETED"]);
 
   const { count: certificates } = await supabaseAdmin
-    .from("certificates")
+    .from("Certificate")
     .select("*", { count: "exact", head: true });
 
   const { data } = await supabaseAdmin
-    .from("internships")
+    .from("Internship")
     .select("id, title, price");
 
   interface IntRow {
@@ -41,7 +41,7 @@ async function getStats() {
   const revenueByProgram: RevenueByProgram[] = await Promise.all(
     internships.map(async (int) => {
       const { count } = await supabaseAdmin
-        .from("applications")
+        .from("Application")
         .select("*", { count: "exact", head: true })
         .eq("internship_id", int.id)
         .eq("payment_status", "SUCCESS");

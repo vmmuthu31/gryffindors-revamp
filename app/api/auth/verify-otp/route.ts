@@ -13,7 +13,7 @@ export async function POST(request: Request) {
     }
 
     const { data: user, error } = await supabaseAdmin
-      .from("users")
+      .from("User")
       .select("id, otp, otp_expiry")
       .eq("email", email)
       .single();
@@ -35,7 +35,7 @@ export async function POST(request: Request) {
     }
 
     await supabaseAdmin
-      .from("users")
+      .from("User")
       .update({
         otp: null,
         otp_expiry: null,

@@ -5,7 +5,7 @@ import { nanoid } from "nanoid";
 export async function GET() {
   try {
     const { data: certificates, error } = await supabaseAdmin
-      .from("certificates")
+      .from("Certificate")
       .select("*")
       .order("issued_at", { ascending: false });
 
@@ -14,7 +14,7 @@ export async function GET() {
     const certsWithRelations = await Promise.all(
       (certificates || []).map(async (cert) => {
         const { data: application } = await supabaseAdmin
-          .from("applications")
+          .from("Application")
           .select("*")
           .eq("id", cert.application_id)
           .single();
@@ -24,14 +24,14 @@ export async function GET() {
 
         if (application) {
           const { data: userData } = await supabaseAdmin
-            .from("users")
+            .from("User")
             .select("id, name, email")
             .eq("id", application.user_id)
             .single();
           user = userData;
 
           const { data: internshipData } = await supabaseAdmin
-            .from("internships")
+            .from("Internship")
             .select("id, title, track")
             .eq("id", application.internship_id)
             .single();
@@ -72,7 +72,7 @@ export async function POST(request: Request) {
     }
 
     const { data: application, error: appError } = await supabaseAdmin
-      .from("applications")
+      .from("Application")
       .select("user_id")
       .eq("id", data.applicationId)
       .single();
@@ -85,7 +85,7 @@ export async function POST(request: Request) {
     }
 
     const { data: exists } = await supabaseAdmin
-      .from("certificates")
+      .from("Certificate")
       .select("id")
       .eq("application_id", data.applicationId)
       .single();
@@ -100,7 +100,7 @@ export async function POST(request: Request) {
     const uniqueCode = `GRYF-${nanoid(8).toUpperCase()}`;
 
     const { data: certificate, error } = await supabaseAdmin
-      .from("certificates")
+      .from("Certificate")
       .insert({
         application_id: data.applicationId,
         user_id: application.user_id,

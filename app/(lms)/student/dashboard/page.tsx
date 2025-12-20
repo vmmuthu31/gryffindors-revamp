@@ -55,7 +55,7 @@ async function getStudentData(userId: string) {
   }
 
   const { data: userData } = await supabaseAdmin
-    .from("users")
+    .from("User")
     .select("id, name, learning_streak, total_time_spent, referral_code")
     .eq("id", userId)
     .single();
@@ -67,7 +67,7 @@ async function getStudentData(userId: string) {
       user.name?.split(" ")[0].toUpperCase() || "GRYF"
     }${Math.floor(1000 + Math.random() * 9000)}`;
     const { data: updated } = await supabaseAdmin
-      .from("users")
+      .from("User")
       .update({ referral_code: code })
       .eq("id", userId)
       .select("id, name, learning_streak, total_time_spent, referral_code")
@@ -76,7 +76,7 @@ async function getStudentData(userId: string) {
   }
 
   const { data: appData } = await supabaseAdmin
-    .from("applications")
+    .from("Application")
     .select("id, internship_id")
     .eq("user_id", userId)
     .in("status", ["ENROLLED", "IN_PROGRESS"])
@@ -88,7 +88,7 @@ async function getStudentData(userId: string) {
   let application: Application | null = null;
   if (applicationData) {
     const { data: intData } = await supabaseAdmin
-      .from("internships")
+      .from("Internship")
       .select("id, title")
       .eq("id", applicationData.internship_id)
       .single();
@@ -96,7 +96,7 @@ async function getStudentData(userId: string) {
     const internship = intData as { id: string; title: string } | null;
 
     const { data: cData } = await supabaseAdmin
-      .from("courses")
+      .from("Course")
       .select("id, title")
       .eq("internship_id", applicationData.internship_id)
       .order("order");
@@ -106,7 +106,7 @@ async function getStudentData(userId: string) {
     const coursesWithModules = await Promise.all(
       courses.map(async (course) => {
         const { data: mData } = await supabaseAdmin
-          .from("modules")
+          .from("Module")
           .select("id, title")
           .eq("course_id", course.id)
           .order("order");
@@ -116,7 +116,7 @@ async function getStudentData(userId: string) {
         const modulesWithLessons = await Promise.all(
           modules.map(async (mod) => {
             const { data: lData } = await supabaseAdmin
-              .from("lessons")
+              .from("Lesson")
               .select("id, title")
               .eq("module_id", mod.id)
               .order("order");
@@ -140,18 +140,18 @@ async function getStudentData(userId: string) {
   }
 
   const { count: certificates } = await supabaseAdmin
-    .from("certificates")
+    .from("Certificate")
     .select("*", { count: "exact", head: true })
     .eq("user_id", userId);
 
   const { count: lessonProgress } = await supabaseAdmin
-    .from("lesson_progress")
+    .from("LessonProgress")
     .select("*", { count: "exact", head: true })
     .eq("user_id", userId)
     .eq("completed", true);
 
   const { data: lbData } = await supabaseAdmin
-    .from("users")
+    .from("User")
     .select("id, name, learning_streak")
     .eq("role", "STUDENT")
     .order("learning_streak", { ascending: false })
@@ -184,7 +184,7 @@ async function updateStreak(userId: string) {
   }
 
   const { data } = await supabaseAdmin
-    .from("users")
+    .from("User")
     .select("last_active_at, learning_streak")
     .eq("id", userId)
     .single();
@@ -204,7 +204,7 @@ async function updateStreak(userId: string) {
       lastActive && now.getTime() - lastActive.getTime() < 48 * 60 * 60 * 1000;
 
     await supabaseAdmin
-      .from("users")
+      .from("User")
       .update({
         last_active_at: now.toISOString(),
         learning_streak: isConsecutive ? (user.learning_streak || 0) + 1 : 1,

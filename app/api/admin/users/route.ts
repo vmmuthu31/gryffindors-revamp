@@ -9,7 +9,7 @@ export async function GET(request: Request) {
     const role = searchParams.get("role") as Role | null;
 
     let query = supabaseAdmin
-      .from("users")
+      .from("User")
       .select("id, name, email, role, created_at")
       .order("created_at", { ascending: false });
 
@@ -24,14 +24,14 @@ export async function GET(request: Request) {
     const usersWithApplications = await Promise.all(
       (users || []).map(async (user) => {
         const { data: applications } = await supabaseAdmin
-          .from("applications")
+          .from("Application")
           .select("id, status, internship_id")
           .eq("user_id", user.id);
 
         const appsWithInternships = await Promise.all(
           (applications || []).map(async (app) => {
             const { data: internship } = await supabaseAdmin
-              .from("internships")
+              .from("Internship")
               .select("title")
               .eq("id", app.internship_id)
               .single();
@@ -74,7 +74,7 @@ export async function POST(request: Request) {
     }
 
     const { data: exists } = await supabaseAdmin
-      .from("users")
+      .from("User")
       .select("id")
       .eq("email", data.email)
       .single();
@@ -89,7 +89,7 @@ export async function POST(request: Request) {
     const passwordHash = await bcrypt.hash(data.password, 10);
 
     const { data: user, error } = await supabaseAdmin
-      .from("users")
+      .from("User")
       .insert({
         name: data.name || null,
         email: data.email,

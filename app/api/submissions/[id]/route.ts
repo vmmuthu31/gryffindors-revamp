@@ -12,7 +12,7 @@ export async function GET(
     const { id } = await params;
 
     const { data: submission, error } = await supabaseAdmin
-      .from("submissions")
+      .from("Submission")
       .select("*")
       .eq("id", id)
       .single();
@@ -25,13 +25,13 @@ export async function GET(
     }
 
     const { data: user } = await supabaseAdmin
-      .from("users")
+      .from("User")
       .select("name, email")
       .eq("id", submission.user_id)
       .single();
 
     const { data: lesson } = await supabaseAdmin
-      .from("lessons")
+      .from("Lesson")
       .select("title, content, module_id")
       .eq("id", submission.lesson_id)
       .single();
@@ -40,7 +40,7 @@ export async function GET(
     let course = null;
     if (lesson) {
       const { data: moduleData } = await supabaseAdmin
-        .from("modules")
+        .from("Module")
         .select("title, course_id")
         .eq("id", lesson.module_id)
         .single();
@@ -48,7 +48,7 @@ export async function GET(
 
       if (moduleData) {
         const { data: courseData } = await supabaseAdmin
-          .from("courses")
+          .from("Course")
           .select("id, title")
           .eq("id", moduleData.course_id)
           .single();
@@ -94,7 +94,7 @@ export async function PATCH(
     const { status, mentorFeedback, grade } = await request.json();
 
     const { data: submission, error: subError } = await supabaseAdmin
-      .from("submissions")
+      .from("Submission")
       .select("*")
       .eq("id", id)
       .single();
@@ -107,19 +107,19 @@ export async function PATCH(
     }
 
     const { data: user } = await supabaseAdmin
-      .from("users")
+      .from("User")
       .select("id, name, email")
       .eq("id", submission.user_id)
       .single();
 
     const { data: lesson } = await supabaseAdmin
-      .from("lessons")
+      .from("Lesson")
       .select("id, title, module_id")
       .eq("id", submission.lesson_id)
       .single();
 
     const { data: updated, error } = await supabaseAdmin
-      .from("submissions")
+      .from("Submission")
       .update({
         status,
         mentor_feedback: mentorFeedback,
@@ -134,7 +134,7 @@ export async function PATCH(
 
     if (status === "APPROVED" && lesson) {
       const { data: existing } = await supabaseAdmin
-        .from("lesson_progress")
+        .from("LessonProgress")
         .select("id")
         .eq("user_id", submission.user_id)
         .eq("lesson_id", submission.lesson_id)
@@ -142,14 +142,14 @@ export async function PATCH(
 
       if (existing) {
         await supabaseAdmin
-          .from("lesson_progress")
+          .from("LessonProgress")
           .update({
             completed: true,
             completed_at: new Date().toISOString(),
           })
           .eq("id", existing.id);
       } else {
-        await supabaseAdmin.from("lesson_progress").insert({
+        await supabaseAdmin.from("LessonProgress").insert({
           user_id: submission.user_id,
           lesson_id: submission.lesson_id,
           completed: true,
@@ -158,7 +158,7 @@ export async function PATCH(
       }
 
       const { data: module } = await supabaseAdmin
-        .from("modules")
+        .from("Module")
         .select("course_id")
         .eq("id", lesson.module_id)
         .single();
@@ -191,7 +191,7 @@ export async function PATCH(
 async function checkAndIssueCertificate(userId: string, courseId: string) {
   try {
     const { data: course } = await supabaseAdmin
-      .from("courses")
+      .from("Course")
       .select("id, internship_id")
       .eq("id", courseId)
       .single();
@@ -199,20 +199,20 @@ async function checkAndIssueCertificate(userId: string, courseId: string) {
     if (!course) return;
 
     const { data: internship } = await supabaseAdmin
-      .from("internships")
+      .from("Internship")
       .select("id, title")
       .eq("id", course.internship_id)
       .single();
 
     const { data: modules } = await supabaseAdmin
-      .from("modules")
+      .from("Module")
       .select("id")
       .eq("course_id", courseId);
 
     const moduleIds = (modules || []).map((m) => m.id);
 
     const { data: taskLessons } = await supabaseAdmin
-      .from("lessons")
+      .from("Lesson")
       .select("id")
       .in("module_id", moduleIds)
       .eq("type", "TASK");
@@ -222,7 +222,7 @@ async function checkAndIssueCertificate(userId: string, courseId: string) {
     if (allTaskLessonIds.length === 0) return;
 
     const { count } = await supabaseAdmin
-      .from("lesson_progress")
+      .from("LessonProgress")
       .select("*", { count: "exact", head: true })
       .eq("user_id", userId)
       .in("lesson_id", allTaskLessonIds)
@@ -230,7 +230,7 @@ async function checkAndIssueCertificate(userId: string, courseId: string) {
 
     if ((count || 0) >= allTaskLessonIds.length) {
       const { data: application } = await supabaseAdmin
-        .from("applications")
+        .from("Application")
         .select("id, user_id")
         .eq("user_id", userId)
         .eq("internship_id", course.internship_id)
@@ -240,7 +240,7 @@ async function checkAndIssueCertificate(userId: string, courseId: string) {
       if (!application) return;
 
       const { data: existingCert } = await supabaseAdmin
-        .from("certificates")
+        .from("Certificate")
         .select("id")
         .eq("application_id", application.id)
         .single();
@@ -248,13 +248,13 @@ async function checkAndIssueCertificate(userId: string, courseId: string) {
       if (existingCert) return;
 
       const { data: user } = await supabaseAdmin
-        .from("users")
+        .from("User")
         .select("name, email")
         .eq("id", userId)
         .single();
 
       const uniqueCode = `GRYF-${nanoid(8).toUpperCase()}`;
-      await supabaseAdmin.from("certificates").insert({
+      await supabaseAdmin.from("Certificate").insert({
         application_id: application.id,
         user_id: userId,
         unique_code: uniqueCode,
@@ -262,7 +262,7 @@ async function checkAndIssueCertificate(userId: string, courseId: string) {
       });
 
       await supabaseAdmin
-        .from("applications")
+        .from("Application")
         .update({ status: "COMPLETED" })
         .eq("id", application.id);
 

@@ -61,7 +61,7 @@ async function getCourse(courseId: string): Promise<Course | null> {
   }
 
   const { data, error } = await supabaseAdmin
-    .from("courses")
+    .from("Course")
     .select("id, title, description, internship_id")
     .eq("id", courseId)
     .single();
@@ -71,13 +71,13 @@ async function getCourse(courseId: string): Promise<Course | null> {
   const course = data as CourseRow;
 
   const { data: internship } = await supabaseAdmin
-    .from("internships")
+    .from("Internship")
     .select("title")
     .eq("id", course.internship_id)
     .single();
 
   const { data: mods } = await supabaseAdmin
-    .from("modules")
+    .from("Module")
     .select("id, title, order")
     .eq("course_id", courseId)
     .order("order");
@@ -87,7 +87,7 @@ async function getCourse(courseId: string): Promise<Course | null> {
   const modulesWithLessons = await Promise.all(
     modules.map(async (mod) => {
       const { data: lessonData } = await supabaseAdmin
-        .from("lessons")
+        .from("Lesson")
         .select("id, title, type, duration, order")
         .eq("module_id", mod.id)
         .order("order");
@@ -117,7 +117,7 @@ async function getUserLessonProgress(userId: string, lessonIds: string[]) {
   }
 
   const { data } = await supabaseAdmin
-    .from("lesson_progress")
+    .from("LessonProgress")
     .select("lesson_id")
     .eq("user_id", userId)
     .in("lesson_id", lessonIds)
