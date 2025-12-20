@@ -15,7 +15,7 @@ export async function GET() {
       },
     });
     return NextResponse.json(courses);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Failed to fetch courses" },
       { status: 500 }
@@ -35,7 +35,7 @@ export async function POST(request: Request) {
       },
     });
     return NextResponse.json(course);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Failed to create course" },
       { status: 500 }

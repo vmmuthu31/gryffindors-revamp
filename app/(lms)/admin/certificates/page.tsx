@@ -16,7 +16,6 @@ import {
   Award,
   CheckCircle,
   Clock,
-  Download,
   ExternalLink,
   Plus,
   Trash2,

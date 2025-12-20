@@ -135,7 +135,7 @@ export default function LessonPage() {
       } else {
         toast.error("Failed to mark as complete");
       }
-    } catch (error) {
+    } catch {
       toast.error("Something went wrong");
     } finally {
       setCompleting(false);
@@ -165,7 +165,7 @@ export default function LessonPage() {
       } else {
         toast.error(data.error || "Failed to submit task");
       }
-    } catch (error) {
+    } catch {
       toast.error("Something went wrong");
     } finally {
       setSubmitting(false);

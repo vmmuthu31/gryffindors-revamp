@@ -1,19 +1,9 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  BookOpen,
-  Clock,
-  Trophy,
-  Target,
-  Flame,
-  Users,
-  Medal,
-} from "lucide-react";
+import { BookOpen, Trophy, Target, Flame, Users, Medal } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
 
-// Force dynamic rendering to avoid database access during build
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 

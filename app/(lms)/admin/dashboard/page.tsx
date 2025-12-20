@@ -2,9 +2,21 @@ import { prisma } from "@/lib/db";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IndianRupee, Users, BookOpen, Award, TrendingUp } from "lucide-react";
 
-// Force dynamic rendering to avoid database access during build
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
+
+interface InternshipWithApps {
+  title: string;
+  price: number;
+  applications: { id: string }[];
+}
+
+interface RevenueByProgram {
+  title: string;
+  price: number;
+  students: number;
+  revenue: number;
+}
 
 async function getStats() {
   const totalStudents = await prisma.user.count({
@@ -24,18 +36,21 @@ async function getStats() {
   });
 
   const revenue = internships.reduce(
-    (acc: any, int: any) => acc + int.price * int.applications.length,
+    (acc: number, int: InternshipWithApps) =>
+      acc + int.price * int.applications.length,
     0
   );
 
   const certificates = await prisma.certificate.count();
 
-  const revenueByProgram = internships.map((int: any) => ({
-    title: int.title,
-    price: int.price,
-    students: int.applications.length,
-    revenue: int.price * int.applications.length,
-  }));
+  const revenueByProgram: RevenueByProgram[] = internships.map(
+    (int: InternshipWithApps) => ({
+      title: int.title,
+      price: int.price,
+      students: int.applications.length,
+      revenue: int.price * int.applications.length,
+    })
+  );
 
   return {
     totalStudents,
@@ -139,7 +154,7 @@ export default async function AdminDashboard() {
                   No programs yet
                 </p>
               ) : (
-                stats.revenueByProgram.map((program: any) => (
+                stats.revenueByProgram.map((program: RevenueByProgram) => (
                   <div
                     key={program.title}
                     className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"

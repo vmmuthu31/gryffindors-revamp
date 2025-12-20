@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import {
   Upload,
   Users,
@@ -104,7 +103,7 @@ export default function BulkEnrollmentPage() {
       } else {
         toast.error(data.error || "Failed to process file");
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to upload file");
     } finally {
       setUploading(false);

@@ -47,7 +47,7 @@ export default function NewCoursePage() {
         alert("Failed to create course");
         setLoading(false);
       }
-    } catch (error) {
+    } catch {
       alert("Failed to create course");
       setLoading(false);
     }

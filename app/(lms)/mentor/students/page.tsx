@@ -80,7 +80,7 @@ export default function MentorStudentsPage() {
         const data = await res.json();
         toast.error(data.error || "Failed to issue certificate");
       }
-    } catch (error) {
+    } catch {
       toast.error("Something went wrong");
     } finally {
       setIssuingCert(null);

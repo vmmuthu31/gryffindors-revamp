@@ -7,7 +7,7 @@ export async function GET() {
       orderBy: { createdAt: "desc" },
     });
     return NextResponse.json(internships);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Failed to fetch internships" },
       { status: 500 }
@@ -28,7 +28,7 @@ export async function POST(request: Request) {
       },
     });
     return NextResponse.json(internship);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Failed to create internship" },
       { status: 500 }

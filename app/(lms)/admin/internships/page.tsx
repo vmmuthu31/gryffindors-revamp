@@ -23,7 +23,6 @@ import {
   Trash2,
   Loader2,
 } from "lucide-react";
-import Link from "next/link";
 
 interface Internship {
   id: string;
@@ -172,7 +171,7 @@ export default function AdminInternshipsPage() {
     0
   );
 
-  const InternshipForm = ({ isEdit = false }: { isEdit?: boolean }) => (
+  const InternshipForm = () => (
     <div className="space-y-4 py-4">
       <div className="space-y-2">
         <label className="text-sm font-medium">Title *</label>
@@ -440,7 +439,7 @@ export default function AdminInternshipsPage() {
             <DialogTitle>Edit Internship</DialogTitle>
             <DialogDescription>Update internship details</DialogDescription>
           </DialogHeader>
-          <InternshipForm isEdit />
+          <InternshipForm />
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditInternship(null)}>
               Cancel

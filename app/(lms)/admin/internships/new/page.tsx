@@ -38,7 +38,7 @@ export default function NewInternshipPage() {
         const data = await res.json();
         setError(data.error || "Failed to create internship");
       }
-    } catch (err) {
+    } catch {
       setError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);

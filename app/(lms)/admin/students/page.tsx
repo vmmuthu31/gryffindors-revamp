@@ -12,7 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Users, GraduationCap, UserPlus, Loader2, Search } from "lucide-react";
+import { Users, UserPlus, Loader2, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import Image from "next/image";
@@ -88,7 +88,7 @@ export default function AdminStudentsPage() {
       } else {
         toast.error("Failed to assign mentor");
       }
-    } catch (error) {
+    } catch {
       toast.error("Something went wrong");
     } finally {
       setAssigning(false);

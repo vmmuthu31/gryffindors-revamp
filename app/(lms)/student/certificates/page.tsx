@@ -9,6 +9,18 @@ import Image from "next/image";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
+interface CertificateWithApplication {
+  id: string;
+  uniqueCode: string;
+  issuedAt: Date;
+  grade: string | null;
+  application: {
+    internship: {
+      title: string;
+    };
+  };
+}
+
 async function getCertificates(userId: string) {
   const certificates = await prisma.certificate.findMany({
     where: { userId },
@@ -22,7 +34,7 @@ async function getCertificates(userId: string) {
     orderBy: { issuedAt: "desc" },
   });
 
-  return certificates;
+  return certificates as CertificateWithApplication[];
 }
 
 export default async function CertificatesPage() {
@@ -61,7 +73,7 @@ export default async function CertificatesPage() {
         </Card>
       ) : (
         <div className="grid md:grid-cols-2 gap-6">
-          {certificates.map((cert: any) => (
+          {certificates.map((cert: CertificateWithApplication) => (
             <Card key={cert.id} className="overflow-hidden">
               {/* Certificate Preview */}
               <div className="h-48 bg-gradient-to-br from-[#841a1c] via-[#a52528] to-[#d79c64] flex items-center justify-center relative">
