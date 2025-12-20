@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -21,6 +22,8 @@ interface SubmissionData {
   fileUrl: string | null;
   status: string;
   submittedAt: string;
+  mentorFeedback: string | null;
+  grade: number | null;
   user: { name: string | null; email: string };
   lesson: {
     title: string;
@@ -46,6 +49,8 @@ export default function ReviewSubmissionPage() {
       .then((res) => res.json())
       .then((data) => {
         setSubmission(data);
+        setFeedback(data.mentorFeedback || "");
+        setGrade(data.grade);
         setLoading(false);
       })
       .catch(() => setLoading(false));
@@ -95,11 +100,18 @@ export default function ReviewSubmissionPage() {
           <p className="text-gray-500">{submission.lesson.title}</p>
         </div>
         <Badge
-          className={
-            submission.status === "PENDING"
-              ? "bg-orange-100 text-orange-700"
-              : "bg-blue-100 text-blue-700"
-          }
+          className={cn(
+            submission.status === "PENDING" &&
+              "bg-orange-100 text-orange-700 hover:bg-orange-100",
+            submission.status === "UNDER_REVIEW" &&
+              "bg-blue-100 text-blue-700 hover:bg-blue-100",
+            submission.status === "APPROVED" &&
+              "bg-green-100 text-green-700 hover:bg-green-100",
+            submission.status === "REJECTED" &&
+              "bg-red-100 text-red-700 hover:bg-red-100",
+            submission.status === "RESUBMIT" &&
+              "bg-purple-100 text-purple-700 hover:bg-purple-100"
+          )}
         >
           {submission.status}
         </Badge>
@@ -166,75 +178,131 @@ export default function ReviewSubmissionPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Your Review</CardTitle>
+          <CardTitle>
+            {submission.status === "PENDING" ||
+            submission.status === "UNDER_REVIEW"
+              ? "Your Review"
+              : "Review Summary"}
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div>
-            <label className="text-sm font-medium text-gray-700 block mb-2">
-              Feedback
-            </label>
-            <Textarea
-              placeholder="Provide constructive feedback to the student..."
-              value={feedback}
-              onChange={(e) => setFeedback(e.target.value)}
-              rows={4}
-            />
-          </div>
+          {submission.status === "PENDING" ||
+          submission.status === "UNDER_REVIEW" ? (
+            <>
+              <div>
+                <label className="text-sm font-medium text-gray-700 block mb-2">
+                  Feedback
+                </label>
+                <Textarea
+                  placeholder="Provide constructive feedback to the student..."
+                  value={feedback}
+                  onChange={(e) => setFeedback(e.target.value)}
+                  rows={4}
+                />
+              </div>
 
-          <div>
-            <label className="text-sm font-medium text-gray-700 block mb-2">
-              Grade (0-100)
-            </label>
-            <input
-              type="number"
-              min="0"
-              max="100"
-              value={grade || ""}
-              onChange={(e) => {
-                const value = e.target.value;
+              <div>
+                <label className="text-sm font-medium text-gray-700 block mb-2">
+                  Grade (0-100)
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={grade || ""}
+                  onChange={(e) => {
+                    const value = e.target.value;
 
-                if (value === "") {
-                  setGrade(null);
-                  return;
-                }
+                    if (value === "") {
+                      setGrade(null);
+                      return;
+                    }
 
-                const num = Number(value);
-                if (num >= 0 && num <= 100) {
-                  setGrade(num);
-                }
-              }}
-              className="w-32 px-3 py-2 border rounded-lg"
-            />
-          </div>
+                    const num = Number(value);
+                    if (num >= 0 && num <= 100) {
+                      setGrade(num);
+                    }
+                  }}
+                  className="w-32 px-3 py-2 border rounded-lg"
+                />
+              </div>
 
-          <div className="flex gap-3 pt-4">
-            <Button
-              onClick={() => handleAction("APPROVED")}
-              disabled={submitting}
-              className="bg-green-600 hover:bg-green-700 gap-2"
-            >
-              <CheckCircle className="w-4 h-4" />
-              Approve
-            </Button>
-            <Button
-              onClick={() => handleAction("RESUBMIT")}
-              disabled={submitting}
-              variant="outline"
-              className="gap-2"
-            >
-              <RotateCcw className="w-4 h-4" />
-              Request Resubmit
-            </Button>
-            <Button
-              onClick={() => handleAction("REJECTED")}
-              disabled={submitting}
-              variant="destructive"
-              className="gap-2"
-            >
-              <XCircle className="w-4 h-4" />
-              Reject
-            </Button>
-          </div>
+              <div className="flex gap-3 pt-4">
+                <Button
+                  onClick={() => handleAction("APPROVED")}
+                  disabled={submitting}
+                  className="bg-green-600 hover:bg-green-700 gap-2"
+                >
+                  <CheckCircle className="w-4 h-4" />
+                  Approve
+                </Button>
+                <Button
+                  onClick={() => handleAction("RESUBMIT")}
+                  disabled={submitting}
+                  variant="outline"
+                  className="gap-2"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  Request Resubmit
+                </Button>
+                <Button
+                  onClick={() => handleAction("REJECTED")}
+                  disabled={submitting}
+                  variant="destructive"
+                  className="gap-2"
+                >
+                  <XCircle className="w-4 h-4" />
+                  Reject
+                </Button>
+              </div>
+            </>
+          ) : (
+            <div className="space-y-6">
+              <div className="grid grid-cols-2 gap-6">
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <p className="text-sm text-gray-500 mb-1">Status</p>
+                  <div className="flex items-center gap-2">
+                    {submission.status === "APPROVED" ? (
+                      <CheckCircle className="w-5 h-5 text-green-600" />
+                    ) : (
+                      <XCircle className="w-5 h-5 text-red-600" />
+                    )}
+                    <span className="font-semibold text-lg">
+                      {submission.status}
+                    </span>
+                  </div>
+                </div>
+                {submission.grade !== null && (
+                  <div className="p-4 bg-gray-50 rounded-lg">
+                    <p className="text-sm text-gray-500 mb-1">Grade</p>
+                    <span className="font-bold text-2xl text-[#841a1c]">
+                      {submission.grade}/100
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <p className="text-sm font-medium text-gray-700 mb-2">
+                  Feedback Provided
+                </p>
+                <div className="p-4 bg-orange-50 border border-orange-100 rounded-lg text-gray-800 italic">
+                  "{submission.mentorFeedback || "No feedback provided."}"
+                </div>
+              </div>
+
+              <div className="pt-4 border-t">
+                <Button
+                  variant="outline"
+                  onClick={() =>
+                    router.push("/mentor/submissions?view=history")
+                  }
+                >
+                  Back to History
+                </Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

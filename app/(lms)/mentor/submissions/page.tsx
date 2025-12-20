@@ -2,8 +2,9 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 import { auth } from "@/auth";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, User, FileText } from "lucide-react";
+import { Clock, User, FileText, CheckCircle, XCircle } from "lucide-react";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -22,7 +23,10 @@ interface Submission {
   };
 }
 
-async function getSubmissions(mentorId: string): Promise<Submission[]> {
+async function getSubmissions(
+  mentorId: string,
+  view: "pending" | "history" = "pending"
+): Promise<Submission[]> {
   interface AppRow {
     userId: string;
   }
@@ -52,12 +56,17 @@ async function getSubmissions(mentorId: string): Promise<Submission[]> {
 
   if (assignedUserIds.length === 0) return [];
 
+  const statusFilter =
+    view === "pending"
+      ? ["PENDING", "UNDER_REVIEW"]
+      : ["APPROVED", "REJECTED", "RESUBMIT"];
+
   const { data: subs } = await supabaseAdmin
     .from("Submission")
     .select("id, status, submittedAt, userId, lessonId")
-    .in("status", ["PENDING", "UNDER_REVIEW"])
+    .in("status", statusFilter)
     .in("userId", assignedUserIds)
-    .order("submittedAt", { ascending: true });
+    .order("submittedAt", { ascending: view === "pending" ? true : false });
 
   const submissions = (subs || []) as SubRow[];
 
@@ -126,34 +135,83 @@ async function getSubmissions(mentorId: string): Promise<Submission[]> {
   return result;
 }
 
-export default async function SubmissionsPage() {
+export default async function SubmissionsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ view?: string }>;
+}) {
   const session = await auth();
+  const { view = "pending" } = await searchParams;
+  const currentView = view === "history" ? "history" : "pending";
 
   if (!session?.user?.id) {
     return <div className="p-8">Please log in.</div>;
   }
 
-  const submissions = await getSubmissions(session.user.id);
+  const submissions = await getSubmissions(session.user.id, currentView);
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Submissions</h1>
-        <p className="text-gray-500 mt-1">
-          {submissions.length} submissions awaiting review
-        </p>
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Submissions</h1>
+          <p className="text-gray-500 mt-1">
+            {currentView === "pending"
+              ? `${submissions.length} submissions awaiting review`
+              : `${submissions.length} submissions in history`}
+          </p>
+        </div>
+
+        <div className="flex bg-gray-100 p-1 rounded-lg w-fit">
+          <Link
+            href="/mentor/submissions?view=pending"
+            className={cn(
+              "px-4 py-2 text-sm font-medium rounded-md transition-all",
+              currentView === "pending"
+                ? "bg-white text-gray-900 shadow-sm"
+                : "text-gray-500 hover:text-gray-700"
+            )}
+          >
+            Pending
+          </Link>
+          <Link
+            href="/mentor/submissions?view=history"
+            className={cn(
+              "px-4 py-2 text-sm font-medium rounded-md transition-all",
+              currentView === "history"
+                ? "bg-white text-gray-900 shadow-sm"
+                : "text-gray-500 hover:text-gray-700"
+            )}
+          >
+            History
+          </Link>
+        </div>
       </div>
 
       {submissions.length === 0 ? (
         <Card className="border-dashed border-2">
           <CardContent className="p-12 text-center">
-            <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-700 mb-2">
-              All Caught Up!
-            </h3>
-            <p className="text-gray-500">
-              No pending submissions from your assigned students.
-            </p>
+            {currentView === "pending" ? (
+              <>
+                <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-gray-700 mb-2">
+                  All Caught Up!
+                </h3>
+                <p className="text-gray-500">
+                  No pending submissions from your assigned students.
+                </p>
+              </>
+            ) : (
+              <>
+                <Clock className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-gray-700 mb-2">
+                  No History Yet
+                </h3>
+                <p className="text-gray-500">
+                  You haven't reviewed any submissions yet.
+                </p>
+              </>
+            )}
           </CardContent>
         </Card>
       ) : (
@@ -182,15 +240,30 @@ export default async function SubmissionsPage() {
                         </span>
                       </div>
                     </div>
-                    <Badge
-                      className={
-                        sub.status === "PENDING"
-                          ? "bg-orange-100 text-orange-700"
-                          : "bg-blue-100 text-blue-700"
-                      }
-                    >
-                      {sub.status}
-                    </Badge>
+                    <div className="flex flex-col items-end gap-2">
+                      <Badge
+                        className={cn(
+                          sub.status === "PENDING" &&
+                            "bg-orange-100 text-orange-700 hover:bg-orange-100",
+                          sub.status === "UNDER_REVIEW" &&
+                            "bg-blue-100 text-blue-700 hover:bg-blue-100",
+                          sub.status === "APPROVED" &&
+                            "bg-green-100 text-green-700 hover:bg-green-100",
+                          sub.status === "REJECTED" &&
+                            "bg-red-100 text-red-700 hover:bg-red-100",
+                          sub.status === "RESUBMIT" &&
+                            "bg-purple-100 text-purple-700 hover:bg-purple-100"
+                        )}
+                      >
+                        {sub.status}
+                      </Badge>
+                      {sub.status === "APPROVED" && (
+                        <CheckCircle className="w-5 h-5 text-green-600" />
+                      )}
+                      {sub.status === "REJECTED" && (
+                        <XCircle className="w-5 h-5 text-red-600" />
+                      )}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
