@@ -55,6 +55,11 @@ const ApplyPage = () => {
   );
   const [eligibilityScore, setEligibilityScore] = useState(0);
 
+  const [referralCode, setReferralCode] = useState("");
+  const [appliedDiscount, setAppliedDiscount] = useState(0);
+  const [referralError, setReferralError] = useState("");
+  const [isApplyingReferral, setIsApplyingReferral] = useState(false);
+
   const fetchInternship = useCallback(async () => {
     try {
       const res = await fetch(`/api/internships/${internshipId}`);
@@ -99,6 +104,33 @@ const ApplyPage = () => {
     }
   };
 
+  const handleApplyReferral = async () => {
+    if (!referralCode || !session?.user?.id) return;
+    setIsApplyingReferral(true);
+    setReferralError("");
+
+    try {
+      const res = await fetch("/api/referral", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: referralCode, userId: session.user.id }),
+      });
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        setAppliedDiscount(data.discount);
+        toast.success(`Referral applied! You saved ₹${data.discount}`);
+      } else {
+        setReferralError(data.error || "Invalid referral code");
+        setAppliedDiscount(0);
+      }
+    } catch {
+      setReferralError("Failed to apply referral");
+    } finally {
+      setIsApplyingReferral(false);
+    }
+  };
+
   const loadRazorpay = () => {
     return new Promise((resolve) => {
       const script = document.createElement("script");
@@ -123,9 +155,11 @@ const ApplyPage = () => {
       return;
     }
 
+    const finalAmount = Math.max(0, internship.price - appliedDiscount);
+
     const orderRes = await fetch("/api/payments/create-order", {
       method: "POST",
-      body: JSON.stringify({ amount: internship.price }),
+      body: JSON.stringify({ amount: finalAmount }),
     });
 
     if (!orderRes.ok) {
@@ -144,9 +178,9 @@ const ApplyPage = () => {
       image: "/assets/logo.png",
       order_id: orderData.id,
       handler: function (response: RazorpayResponse) {
-        alert(
-          `Payment Successful! Payment ID: ${response.razorpay_paymentId}`
-        );
+        // Here we could verify payment on server and record the referral usage
+        // For now trusting client side success flow as per existing code
+        alert(`Payment Successful! Payment ID: ${response.razorpay_paymentId}`);
         setStep("completed");
       },
       prefill: {
@@ -225,15 +259,81 @@ const ApplyPage = () => {
             <div className="bg-gray-50 p-4 rounded-lg mb-6">
               <div className="flex justify-between mb-2">
                 <span>Program Fee</span>
-                <span className="font-semibold">
+                <span
+                  className={
+                    appliedDiscount
+                      ? "line-through text-gray-400"
+                      : "font-semibold"
+                  }
+                >
                   ₹{internship.price.toLocaleString()}
                 </span>
               </div>
-              <div className="flex justify-between text-sm text-gray-500">
+              {appliedDiscount > 0 && (
+                <div className="flex justify-between mb-2 text-green-600">
+                  <span>Referral Discount</span>
+                  <span className="font-semibold">
+                    -₹{appliedDiscount.toLocaleString()}
+                  </span>
+                </div>
+              )}
+              {appliedDiscount > 0 && (
+                <div className="flex justify-between mb-2 pt-2 border-t">
+                  <span className="font-bold">Total Pay</span>
+                  <span className="font-bold text-xl text-[#841a1c]">
+                    ₹{(internship.price - appliedDiscount).toLocaleString()}
+                  </span>
+                </div>
+              )}
+
+              <div className="flex justify-between text-sm text-gray-500 mt-2">
                 <span>Duration</span>
                 <span>{internship.duration}</span>
               </div>
             </div>
+
+            {/* Referral Code Input */}
+            <div className="mb-6 text-left">
+              <label className="text-sm font-medium text-gray-700 block mb-1">
+                Have a referral code?
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={referralCode}
+                  onChange={(e) =>
+                    setReferralCode(e.target.value.toUpperCase())
+                  }
+                  placeholder="Enter code"
+                  disabled={appliedDiscount > 0}
+                  className="flex-1 px-3 py-2 border rounded-lg uppercase tracking-wide focus:ring-2 focus:ring-[#841a1c] outline-none"
+                />
+                <Button
+                  type="button"
+                  onClick={handleApplyReferral}
+                  disabled={
+                    !referralCode || isApplyingReferral || appliedDiscount > 0
+                  }
+                  variant="outline"
+                  className="border-[#841a1c] text-[#841a1c] hover:bg-[#841a1c] hover:text-white"
+                >
+                  {isApplyingReferral ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    "Apply"
+                  )}
+                </Button>
+              </div>
+              {referralError && (
+                <p className="text-xs text-red-500 mt-1">{referralError}</p>
+              )}
+              {appliedDiscount > 0 && (
+                <p className="text-xs text-green-600 mt-1">
+                  Code applied successfully!
+                </p>
+              )}
+            </div>
+
             <Button
               onClick={handlePayment}
               className="w-full bg-[#841a1c] hover:bg-[#681416] py-6 text-lg"
