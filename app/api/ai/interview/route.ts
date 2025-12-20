@@ -1,5 +1,5 @@
 import { createGroq } from "@ai-sdk/groq";
-import { streamText } from "ai";
+import { LanguageModel, streamText } from "ai";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { auth } from "@/auth";
@@ -64,8 +64,7 @@ export async function POST(request: Request) {
     );
 
     const result = streamText({
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      model: groq("llama-3.3-70b-versatile") as any,
+      model: groq("llama-3.3-70b-versatile") as LanguageModel,
       system: `${systemPrompt}
 
 Interview Guidelines:
@@ -155,7 +154,6 @@ async function handleInterviewComplete(
   }
 }
 
-// GET - Check if user has completed interview
 export async function GET(request: Request) {
   try {
     const session = await auth();
