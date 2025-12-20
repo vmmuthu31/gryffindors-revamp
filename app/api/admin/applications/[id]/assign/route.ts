@@ -29,7 +29,7 @@ export async function POST(
 
     const { data: updated, error } = await supabaseAdmin
       .from("Application")
-      .update({ mentor_id: mentorId })
+      .update({ mentorId: mentorId })
       .eq("id", id)
       .select()
       .single();

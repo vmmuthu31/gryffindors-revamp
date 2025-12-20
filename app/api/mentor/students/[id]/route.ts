@@ -18,7 +18,7 @@ export async function GET(
       .from("Application")
       .select("*")
       .eq("id", id)
-      .eq("mentor_id", session.user.id)
+      .eq("mentorId", session.user.id)
       .single();
 
     if (error || !application) {

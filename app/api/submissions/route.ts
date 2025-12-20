@@ -92,17 +92,17 @@ export async function POST(request: Request) {
         if (course?.internshipId) {
           const { data: application } = await supabaseAdmin
             .from("Application")
-            .select("mentor_id")
+            .select("mentorId")
             .eq("userId", session.user.id)
             .eq("internshipId", course.internshipId)
-            .not("mentor_id", "is", null)
+            .not("mentorId", "is", null)
             .single();
 
-          if (application?.mentor_id) {
+          if (application?.mentorId) {
             const { data: mentor } = await supabaseAdmin
               .from("User")
               .select("name, email")
-              .eq("id", application.mentor_id)
+              .eq("id", application.mentorId)
               .single();
 
             if (mentor?.email) {

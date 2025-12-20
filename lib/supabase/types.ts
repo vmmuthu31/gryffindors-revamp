@@ -49,12 +49,12 @@ export interface Account {
   type: string;
   provider: string;
   providerAccountId: string;
-  refreshToken: string | null;
-  accessToken: string | null;
-  expiresAt: number | null;
-  tokenType: string | null;
+  refresh_token: string | null;
+  access_token: string | null;
+  expires_at: number | null;
+  token_type: string | null;
   scope: string | null;
-  idToken: string | null;
+  id_token: string | null;
 }
 
 export interface Internship {
@@ -73,7 +73,7 @@ export interface Application {
   id: string;
   userId: string;
   internshipId: string;
-  mentor_id: string | null;
+  mentorId: string | null;
   status: AppStatus;
   eligibilityScore: number | null;
   interviewScore: number | null;

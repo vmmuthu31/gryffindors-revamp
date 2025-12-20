@@ -12,7 +12,7 @@ export async function GET() {
     const { data: students, error } = await supabaseAdmin
       .from("Application")
       .select("*")
-      .eq("mentor_id", session.user.id)
+      .eq("mentorId", session.user.id)
       .in("status", ["ENROLLED", "IN_PROGRESS", "COMPLETED"])
       .order("createdAt", { ascending: false });
 

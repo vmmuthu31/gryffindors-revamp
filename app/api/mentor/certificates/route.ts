@@ -23,7 +23,7 @@ export async function POST(request: Request) {
       .from("Application")
       .select("id, userId")
       .eq("id", applicationId)
-      .eq("mentor_id", session.user.id)
+      .eq("mentorId", session.user.id)
       .single();
 
     if (appError || !application) {

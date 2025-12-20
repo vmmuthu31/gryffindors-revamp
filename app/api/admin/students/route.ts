@@ -26,11 +26,11 @@ export async function GET() {
           .single();
 
         let mentor = null;
-        if (student.mentor_id) {
+        if (student.mentorId) {
           const { data: mentorData } = await supabaseAdmin
             .from("User")
             .select("id, name")
-            .eq("id", student.mentor_id)
+            .eq("id", student.mentorId)
             .single();
           mentor = mentorData;
         }

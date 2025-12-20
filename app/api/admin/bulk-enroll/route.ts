@@ -153,7 +153,7 @@ export async function POST(request: Request) {
         await supabaseAdmin.from("Application").insert({
           userId: user.id,
           internshipId: internshipId,
-          mentor_id: mentorId || null,
+          mentorId: mentorId || null,
           status: "ENROLLED",
           paymentStatus: "SUCCESS",
           paymentId: `BULK_${nanoid(8)}`,
