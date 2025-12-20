@@ -34,7 +34,6 @@ const RunningText = ({
           ))}
         </div>
 
-        {/* Duplicate for seamless loop */}
         <div
           className={`ticker-wrapper animate-marquee ${
             direction === "left" ? "animate-marquee-reverse" : ""
