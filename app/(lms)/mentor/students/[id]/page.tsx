@@ -88,7 +88,6 @@ export default function MentorStudentDetailPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center gap-4">
         <Button
           variant="ghost"
@@ -100,7 +99,6 @@ export default function MentorStudentDetailPage() {
         </Button>
       </div>
 
-      {/* Student Info Card */}
       <Card>
         <CardContent className="p-6">
           <div className="flex items-start gap-6">
@@ -143,7 +141,6 @@ export default function MentorStudentDetailPage() {
         </CardContent>
       </Card>
 
-      {/* Progress Overview */}
       <div className="grid md:grid-cols-3 gap-6">
         <Card>
           <CardContent className="p-6">
@@ -192,7 +189,6 @@ export default function MentorStudentDetailPage() {
         </Card>
       </div>
 
-      {/* Certificate */}
       {student.certificate && (
         <Card className="border-purple-200 bg-purple-50">
           <CardContent className="p-6">
@@ -228,7 +224,6 @@ export default function MentorStudentDetailPage() {
         </Card>
       )}
 
-      {/* Lesson Progress */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">

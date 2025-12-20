@@ -184,7 +184,6 @@ export default function AdminCoursesPage() {
         </Button>
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="border-l-4 border-l-[#841a1c]">
           <CardContent className="p-6">
@@ -221,7 +220,6 @@ export default function AdminCoursesPage() {
         </Card>
       </div>
 
-      {/* Courses List */}
       <Card>
         <CardHeader>
           <CardTitle>All Courses</CardTitle>
@@ -298,7 +296,6 @@ export default function AdminCoursesPage() {
         </CardContent>
       </Card>
 
-      {/* Add Dialog */}
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
         <DialogContent>
           <DialogHeader>
@@ -362,7 +359,6 @@ export default function AdminCoursesPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Edit Dialog */}
       <Dialog open={!!editCourse} onOpenChange={() => setEditCourse(null)}>
         <DialogContent>
           <DialogHeader>
@@ -405,7 +401,6 @@ export default function AdminCoursesPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Dialog */}
       <Dialog open={!!deleteCourse} onOpenChange={() => setDeleteCourse(null)}>
         <DialogContent>
           <DialogHeader>

@@ -333,7 +333,6 @@ export default function CustomCursor() {
           <rect width="100%" height="100%" fill="url(#hexagons)" />
         </svg>
 
-        {/* Glow effect layer */}
         <div
           className="absolute inset-0 rounded-full"
           style={{
@@ -345,7 +344,6 @@ export default function CustomCursor() {
           }}
         />
 
-        {/* Icon container with hover effect */}
         <motion.div
           className="z-10 relative p-2 rounded-full"
           animate={{
@@ -362,7 +360,6 @@ export default function CustomCursor() {
           {getBlockchainIcon()}
         </motion.div>
 
-        {/* Animated inner blockchain nodes */}
         {cursorVariant !== "clicking" && (
           <motion.div
             className="absolute inset-0 w-full h-full"
@@ -422,7 +419,6 @@ export default function CustomCursor() {
         )}
       </motion.div>
 
-      {/* Core dot follower - blockchain node */}
       <motion.div
         style={{
           left: dotX,
@@ -449,7 +445,6 @@ export default function CustomCursor() {
         }}
       />
 
-      {/* Technical blockchain network visualization */}
       <motion.div
         style={{
           left: cursorXSpring,
@@ -508,7 +503,6 @@ export default function CustomCursor() {
               />
             </linearGradient>
 
-            {/* Hash pattern */}
             <pattern
               id="hashPattern"
               width="10"
@@ -527,7 +521,6 @@ export default function CustomCursor() {
             </pattern>
           </defs>
 
-          {/* Hash pattern background */}
           <rect
             width="100"
             height="100"
@@ -539,7 +532,6 @@ export default function CustomCursor() {
           />
 
           <g stroke="url(#lineGradient)" strokeWidth="0.4" filter="url(#glow)">
-            {/* Animated network lines */}
             <motion.line
               x1="50"
               y1="50"
@@ -648,7 +640,6 @@ export default function CustomCursor() {
               }}
             />
 
-            {/* Data pulses */}
             <motion.circle
               cx="50"
               cy="50"
@@ -744,7 +735,6 @@ export default function CustomCursor() {
           >
             <div className="w-32 h-32 flex items-center justify-center rounded-full">
               {" "}
-              {/* Larger effect */}
               <svg width="100%" height="100%" viewBox="0 0 100 100">
                 <defs>
                   <radialGradient
@@ -778,7 +768,6 @@ export default function CustomCursor() {
                     strokeOpacity="0.6"
                   />
 
-                  {/* Binary-like data stream animation */}
                   <text
                     x="20"
                     y="25"
@@ -840,7 +829,6 @@ export default function CustomCursor() {
         )}
       </AnimatePresence>
 
-      {/* Technical grid background - subtle */}
       <motion.div
         style={{
           left: cursorXSpring,

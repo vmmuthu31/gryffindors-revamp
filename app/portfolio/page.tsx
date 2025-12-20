@@ -190,7 +190,6 @@ const PortfolioPage = () => {
       />
 
       <div className="max-w-7xl mx-auto mt-20">
-        {/* Project filters */}
         <div className="mb-10">
           <Tab.Group>
             <Tab.List className="flex space-x-1 rounded-xl bg-white/50 p-1">
@@ -218,7 +217,6 @@ const PortfolioPage = () => {
           </Tab.Group>
         </div>
 
-        {/* Projects grid */}
         <motion.div
           variants={containerVariants}
           initial="hidden"
@@ -264,7 +262,6 @@ const PortfolioPage = () => {
                     {project.description}
                   </p>
 
-                  {/* Project Metrics */}
                   <div className="grid grid-cols-3 gap-2 mb-5">
                     {project.metrics.map((metric, idx) => (
                       <div
@@ -324,7 +321,6 @@ const PortfolioPage = () => {
                     ))}
                   </div>
 
-                  {/* Technologies */}
                   <div className="mb-5">
                     <p className="text-xs text-gray-500 mb-2">Technologies</p>
                     <div className="flex flex-wrap gap-2">
@@ -348,7 +344,6 @@ const PortfolioPage = () => {
                     </div>
                   </div>
 
-                  {/* Completion Progress */}
                   <div>
                     <div className="flex justify-between items-center mb-1">
                       <p className="text-xs text-gray-500">Completion</p>
@@ -383,7 +378,6 @@ const PortfolioPage = () => {
           ))}
         </motion.div>
 
-        {/* Portfolio Summary Section */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -477,7 +471,6 @@ const PortfolioPage = () => {
           </Card>
         </motion.div>
 
-        {/* Recent Achievements Section */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -580,7 +573,6 @@ const PortfolioPage = () => {
           </div>
         </motion.div>
 
-        {/* Client Testimonials */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -647,7 +639,6 @@ const PortfolioPage = () => {
           </div>
         </motion.div>
 
-        {/* Call to Action */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}

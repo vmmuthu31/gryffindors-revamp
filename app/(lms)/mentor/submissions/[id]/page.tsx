@@ -87,7 +87,6 @@ export default function ReviewSubmissionPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">
@@ -106,7 +105,6 @@ export default function ReviewSubmissionPage() {
         </Badge>
       </div>
 
-      {/* Student Info */}
       <Card>
         <CardContent className="p-6">
           <div className="flex items-center gap-4">
@@ -129,7 +127,6 @@ export default function ReviewSubmissionPage() {
         </CardContent>
       </Card>
 
-      {/* Task Description */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -142,7 +139,6 @@ export default function ReviewSubmissionPage() {
         </CardContent>
       </Card>
 
-      {/* Submission Content */}
       <Card>
         <CardHeader>
           <CardTitle>Student Submission</CardTitle>
@@ -168,7 +164,6 @@ export default function ReviewSubmissionPage() {
         </CardContent>
       </Card>
 
-      {/* Review Form */}
       <Card>
         <CardHeader>
           <CardTitle>Your Review</CardTitle>

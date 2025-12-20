@@ -120,7 +120,6 @@ export default async function StudentDashboard() {
 
   return (
     <div className="space-y-8">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">
@@ -128,7 +127,6 @@ export default async function StudentDashboard() {
           </h1>
           <p className="text-gray-500 mt-1">Track your learning progress</p>
         </div>
-        {/* Streak Badge */}
         <div className="flex items-center gap-2 bg-gradient-to-r from-orange-400 to-red-500 text-white px-4 py-2 rounded-full">
           <Flame className="w-5 h-5" />
           <span className="font-bold">
@@ -137,7 +135,6 @@ export default async function StudentDashboard() {
         </div>
       </div>
 
-      {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card className="border-l-4 border-l-[#841a1c]">
           <CardContent className="p-6">
@@ -152,7 +149,6 @@ export default async function StudentDashboard() {
                 <Target className="w-6 h-6 text-[#841a1c]" />
               </div>
             </div>
-            {/* Progress bar */}
             <div className="mt-3 h-2 bg-gray-200 rounded-full overflow-hidden">
               <div
                 className="h-full bg-[#841a1c] rounded-full transition-all"
@@ -209,9 +205,7 @@ export default async function StudentDashboard() {
         </Card>
       </div>
 
-      {/* Leaderboard & Referral */}
       <div className="grid lg:grid-cols-2 gap-6">
-        {/* Leaderboard */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -259,7 +253,6 @@ export default async function StudentDashboard() {
           </CardContent>
         </Card>
 
-        {/* Referral Card */}
         <Card className="bg-gradient-to-br from-[#841a1c] to-[#a52528] text-white">
           <CardContent className="p-6">
             <div className="flex items-center gap-2 mb-4">
@@ -281,7 +274,6 @@ export default async function StudentDashboard() {
         </Card>
       </div>
 
-      {/* Current Course */}
       {application?.internship.courses.map((course) => (
         <Card key={course.id}>
           <CardHeader className="border-b">

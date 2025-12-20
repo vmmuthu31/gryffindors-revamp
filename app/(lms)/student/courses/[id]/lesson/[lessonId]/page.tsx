@@ -207,7 +207,6 @@ export default function LessonPage() {
 
   return (
     <div className="space-y-6">
-      {/* Breadcrumb */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-sm text-gray-500">
           <button
@@ -220,7 +219,6 @@ export default function LessonPage() {
           <span>{lesson.module.title}</span>
         </div>
 
-        {/* Progress Badge */}
         <div className="flex items-center gap-2">
           {lesson.completed ? (
             <span className="flex items-center gap-1 text-green-600 text-sm font-medium bg-green-50 px-3 py-1 rounded-full">
@@ -239,7 +237,6 @@ export default function LessonPage() {
         </div>
       </div>
 
-      {/* Lesson Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900">{lesson.title}</h1>
         <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
@@ -253,7 +250,6 @@ export default function LessonPage() {
         </div>
       </div>
 
-      {/* Content Area */}
       {lesson.type === "VIDEO" && lesson.videoUrl && (
         <Card className="overflow-hidden">
           <div className="aspect-video bg-black">
@@ -287,12 +283,10 @@ export default function LessonPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            {/* Task Description */}
             <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
               <p className="text-gray-700">{lesson.content}</p>
             </div>
 
-            {/* Submission Status */}
             {lesson.submission && submissionStatus && (
               <div
                 className={`p-4 rounded-lg border ${
@@ -345,7 +339,6 @@ export default function LessonPage() {
               </div>
             )}
 
-            {/* Submission Form */}
             {lesson.submission?.status === "APPROVED" ? (
               <div className="text-center p-8 bg-green-50 rounded-lg">
                 <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-4" />
@@ -417,7 +410,6 @@ export default function LessonPage() {
         </Card>
       )}
 
-      {/* Navigation & Complete Button */}
       <div className="flex justify-between items-center pt-6 border-t">
         <Button
           variant="outline"
