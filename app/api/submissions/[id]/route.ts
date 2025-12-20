@@ -1,47 +1,76 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import { auth } from "@/auth";
 import { sendTaskReviewedEmail, sendCertificateEmail } from "@/lib/email";
 import { nanoid } from "nanoid";
 
 export async function GET(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
 
-    const submission = await prisma.submission.findUnique({
-      where: { id },
-      include: {
-        user: {
-          select: { name: true, email: true },
-        },
-        lesson: {
-          select: {
-            title: true,
-            content: true,
-            module: {
-              select: {
-                title: true,
-                course: {
-                  select: { id: true, title: true },
-                },
-              },
-            },
-          },
-        },
-      },
-    });
+    const { data: submission, error } = await supabaseAdmin
+      .from("submissions")
+      .select("*")
+      .eq("id", id)
+      .single();
 
-    if (!submission) {
+    if (error || !submission) {
       return NextResponse.json(
         { error: "Submission not found" },
         { status: 404 }
       );
     }
 
-    return NextResponse.json(submission);
+    const { data: user } = await supabaseAdmin
+      .from("users")
+      .select("name, email")
+      .eq("id", submission.user_id)
+      .single();
+
+    const { data: lesson } = await supabaseAdmin
+      .from("lessons")
+      .select("title, content, module_id")
+      .eq("id", submission.lesson_id)
+      .single();
+
+    let lessonModule = null;
+    let course = null;
+    if (lesson) {
+      const { data: moduleData } = await supabaseAdmin
+        .from("modules")
+        .select("title, course_id")
+        .eq("id", lesson.module_id)
+        .single();
+      lessonModule = moduleData;
+
+      if (moduleData) {
+        const { data: courseData } = await supabaseAdmin
+          .from("courses")
+          .select("id, title")
+          .eq("id", moduleData.course_id)
+          .single();
+        course = courseData;
+      }
+    }
+
+    return NextResponse.json({
+      ...submission,
+      submittedAt: submission.submitted_at,
+      lessonId: submission.lesson_id,
+      userId: submission.user_id,
+      mentorFeedback: submission.mentor_feedback,
+      user,
+      lesson: lesson
+        ? {
+            title: lesson.title,
+            content: lesson.content,
+            module: lessonModule ? { title: lessonModule.title, course } : null,
+          }
+        : null,
+    });
   } catch (error) {
     console.error("Failed to fetch submission:", error);
     return NextResponse.json(
@@ -64,76 +93,86 @@ export async function PATCH(
     const { id } = await params;
     const { status, mentorFeedback, grade } = await request.json();
 
-    const submission = await prisma.submission.findUnique({
-      where: { id },
-      include: {
-        user: {
-          select: { id: true, name: true, email: true },
-        },
-        lesson: {
-          select: {
-            id: true,
-            title: true,
-            module: {
-              select: {
-                course: {
-                  select: { id: true },
-                },
-              },
-            },
-          },
-        },
-      },
-    });
+    const { data: submission, error: subError } = await supabaseAdmin
+      .from("submissions")
+      .select("*")
+      .eq("id", id)
+      .single();
 
-    if (!submission) {
+    if (subError || !submission) {
       return NextResponse.json(
         { error: "Submission not found" },
         { status: 404 }
       );
     }
 
-    const updated = await prisma.submission.update({
-      where: { id },
-      data: {
+    const { data: user } = await supabaseAdmin
+      .from("users")
+      .select("id, name, email")
+      .eq("id", submission.user_id)
+      .single();
+
+    const { data: lesson } = await supabaseAdmin
+      .from("lessons")
+      .select("id, title, module_id")
+      .eq("id", submission.lesson_id)
+      .single();
+
+    const { data: updated, error } = await supabaseAdmin
+      .from("submissions")
+      .update({
         status,
-        mentorFeedback,
+        mentor_feedback: mentorFeedback,
         grade,
-        reviewedAt: new Date(),
-      },
-    });
+        reviewed_at: new Date().toISOString(),
+      })
+      .eq("id", id)
+      .select()
+      .single();
 
-    if (status === "APPROVED") {
-      await prisma.lessonProgress.upsert({
-        where: {
-          userId_lessonId: {
-            userId: submission.userId,
-            lessonId: submission.lessonId,
-          },
-        },
-        update: {
-          completed: true,
-          completedAt: new Date(),
-        },
-        create: {
-          userId: submission.userId,
-          lessonId: submission.lessonId,
-          completed: true,
-          completedAt: new Date(),
-        },
-      });
+    if (error) throw error;
 
-      await checkAndIssueCertificate(
-        submission.userId,
-        submission.lesson.module.course.id
-      );
+    if (status === "APPROVED" && lesson) {
+      const { data: existing } = await supabaseAdmin
+        .from("lesson_progress")
+        .select("id")
+        .eq("user_id", submission.user_id)
+        .eq("lesson_id", submission.lesson_id)
+        .single();
+
+      if (existing) {
+        await supabaseAdmin
+          .from("lesson_progress")
+          .update({
+            completed: true,
+            completed_at: new Date().toISOString(),
+          })
+          .eq("id", existing.id);
+      } else {
+        await supabaseAdmin.from("lesson_progress").insert({
+          user_id: submission.user_id,
+          lesson_id: submission.lesson_id,
+          completed: true,
+          completed_at: new Date().toISOString(),
+        });
+      }
+
+      const { data: module } = await supabaseAdmin
+        .from("modules")
+        .select("course_id")
+        .eq("id", lesson.module_id)
+        .single();
+
+      if (module) {
+        await checkAndIssueCertificate(submission.user_id, module.course_id);
+      }
     }
 
-    if (submission.user.email) {
+    if (user?.email && lesson) {
       await sendTaskReviewedEmail(
-        submission.user.email,
-        submission.user.name || "Student",
-        submission.lesson.title,
+        user.email,
+        user.name || "Student",
+        lesson.title,
         status,
         mentorFeedback
       );
@@ -151,80 +190,87 @@ export async function PATCH(
 
 async function checkAndIssueCertificate(userId: string, courseId: string) {
   try {
-    const course = await prisma.course.findUnique({
-      where: { id: courseId },
-      include: {
-        internship: true,
-        modules: {
-          include: {
-            lessons: {
-              where: { type: "TASK" },
-              select: { id: true },
-            },
-          },
-        },
-      },
-    });
+    const { data: course } = await supabaseAdmin
+      .from("courses")
+      .select("id, internship_id")
+      .eq("id", courseId)
+      .single();
 
     if (!course) return;
 
-    const allTaskLessonIds = course.modules.flatMap((m) =>
-      m.lessons.map((l) => l.id)
-    );
+    const { data: internship } = await supabaseAdmin
+      .from("internships")
+      .select("id, title")
+      .eq("id", course.internship_id)
+      .single();
+
+    const { data: modules } = await supabaseAdmin
+      .from("modules")
+      .select("id")
+      .eq("course_id", courseId);
+
+    const moduleIds = (modules || []).map((m) => m.id);
+
+    const { data: taskLessons } = await supabaseAdmin
+      .from("lessons")
+      .select("id")
+      .in("module_id", moduleIds)
+      .eq("type", "TASK");
+
+    const allTaskLessonIds = (taskLessons || []).map((l) => l.id);
 
     if (allTaskLessonIds.length === 0) return;
 
-    const completedCount = await prisma.lessonProgress.count({
-      where: {
-        userId,
-        lessonId: { in: allTaskLessonIds },
-        completed: true,
-      },
-    });
+    const { count } = await supabaseAdmin
+      .from("lesson_progress")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .in("lesson_id", allTaskLessonIds)
+      .eq("completed", true);
 
-    if (completedCount >= allTaskLessonIds.length) {
-      const application = await prisma.application.findFirst({
-        where: {
-          userId,
-          internshipId: course.internshipId,
-          status: { in: ["ENROLLED", "IN_PROGRESS"] },
-        },
-        include: {
-          user: {
-            select: { name: true, email: true },
-          },
-        },
-      });
+    if ((count || 0) >= allTaskLessonIds.length) {
+      const { data: application } = await supabaseAdmin
+        .from("applications")
+        .select("id, user_id")
+        .eq("user_id", userId)
+        .eq("internship_id", course.internship_id)
+        .in("status", ["ENROLLED", "IN_PROGRESS"])
+        .single();
 
       if (!application) return;
 
-      const existingCert = await prisma.certificate.findFirst({
-        where: { applicationId: application.id },
-      });
+      const { data: existingCert } = await supabaseAdmin
+        .from("certificates")
+        .select("id")
+        .eq("application_id", application.id)
+        .single();
 
       if (existingCert) return;
 
+      const { data: user } = await supabaseAdmin
+        .from("users")
+        .select("name, email")
+        .eq("id", userId)
+        .single();
+
       const uniqueCode = `GRYF-${nanoid(8).toUpperCase()}`;
-      await prisma.certificate.create({
-        data: {
-          applicationId: application.id,
-          userId,
-          uniqueCode,
-          grade: "Pass",
-        },
-      });
-      console.log(`Certificate created with code: ${uniqueCode}`);
-
-      await prisma.application.update({
-        where: { id: application.id },
-        data: { status: "COMPLETED" },
+      await supabaseAdmin.from("certificates").insert({
+        application_id: application.id,
+        user_id: userId,
+        unique_code: uniqueCode,
+        grade: "Pass",
       });
 
-      if (application.user.email) {
+      await supabaseAdmin
+        .from("applications")
+        .update({ status: "COMPLETED" })
+        .eq("id", application.id);
+
+      if (user?.email && internship) {
         await sendCertificateEmail(
-          application.user.email,
-          application.user.name || "Student",
-          course.internship.title,
+          user.email,
+          user.name || "Student",
+          internship.title,
           uniqueCode,
           "Pass"
         );
