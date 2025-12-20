@@ -28,14 +28,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "No OTP requested" }, { status: 400 });
     }
 
-    console.log("[Verify] User:", user);
-    console.log(
-      "[Verify] Expiry Check:",
-      new Date().toISOString(),
-      " > ",
-      user.otpExpiry
-    );
-
     const expiryStr = user.otpExpiry.endsWith("Z")
       ? user.otpExpiry
       : `${user.otpExpiry}Z`;

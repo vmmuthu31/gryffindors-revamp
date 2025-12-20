@@ -23,7 +23,6 @@ export async function POST(request: Request) {
     }
 
     const otp = generateOTP();
-    console.log(`[DEV ONLY] OTP for ${email}: ${otp}`);
     const otpExpiry = new Date(Date.now() + 10 * 60 * 1000).toISOString();
 
     await supabaseAdmin
