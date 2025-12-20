@@ -186,7 +186,7 @@ export default async function CourseDetailPage({
           <h1 className="text-3xl font-bold mb-4">{course.title}</h1>
           <p className="opacity-90 mb-6">{course.description}</p>
 
-          <div className="flex items-center gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             <div>
               <div className="text-2xl font-bold">{course.modules.length}</div>
               <div className="text-sm opacity-80">Modules</div>

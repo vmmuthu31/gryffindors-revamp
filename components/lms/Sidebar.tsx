@@ -65,14 +65,14 @@ export default function LMSSidebar() {
 
   if (status === "loading") {
     return (
-      <aside className="w-64 h-screen bg-white border-r border-gray-200 flex items-center justify-center fixed left-0 top-0 z-50">
+      <aside className="w-64 h-screen bg-white border-r border-gray-200 hidden md:flex items-center justify-center fixed left-0 top-0 z-50">
         <Loader2 className="w-6 h-6 animate-spin text-[#841a1c]" />
       </aside>
     );
   }
 
   return (
-    <aside className="w-64 h-screen bg-white border-r border-gray-200 flex flex-col fixed left-0 top-0 z-50">
+    <aside className="w-64 h-screen bg-white border-r border-gray-200 hidden md:flex flex-col fixed left-0 top-0 z-50">
       <div className="p-6 border-b border-gray-100">
         <Link href="/" className="flex items-center gap-3">
           <div className="w-10 h-10 bg-[#841a1c] rounded-lg flex items-center justify-center">
