@@ -99,13 +99,20 @@ export async function POST(request: Request) {
       );
     }
 
-    const { data: referrer } = await supabaseAdmin
+    const { data: referrers, error: referrerError } = await supabaseAdmin
       .from("User")
       .select("id")
-      .eq("referralCode", code)
-      .single();
+      .ilike("referralCode", code)
+      .limit(1);
+
+    if (referrerError) {
+      console.error("Referral lookup error:", referrerError);
+    }
+
+    const referrer = referrers?.[0];
 
     if (!referrer) {
+      console.error(`Referral code not found: "${code}"`);
       return NextResponse.json(
         { error: "Invalid referral code" },
         { status: 400 }
