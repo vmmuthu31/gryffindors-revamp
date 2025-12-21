@@ -121,3 +121,25 @@ export function validateFileUpload(
 
   return { valid: true };
 }
+
+export function isUrl(str: string): boolean {
+  if (!str) return false;
+  try {
+    const url = new URL(str);
+    return ["http:", "https:"].includes(url.protocol);
+  } catch {
+    return false;
+  }
+}
+
+export function isValidEmail(email: string): boolean {
+  if (!email) return false;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email.trim());
+}
+
+export function isValidNumber(value: unknown): boolean {
+  if (value === null || value === undefined || value === "") return false;
+  const num = Number(value);
+  return !isNaN(num) && isFinite(num);
+}
