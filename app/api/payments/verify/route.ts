@@ -97,7 +97,7 @@ export async function POST(req: Request) {
           name: studentName,
           passwordHash: hashedPassword,
           role: "STUDENT",
-          emailVerified: true,
+          emailVerified: false,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         });

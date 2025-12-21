@@ -27,6 +27,8 @@ export default auth((req) => {
     "/internships",
     "/auth/login",
     "/auth/register",
+    "/auth/verify-email",
+    "/auth/forgot-password",
     "/verify-certificate",
   ];
   const isPublicRoute =
