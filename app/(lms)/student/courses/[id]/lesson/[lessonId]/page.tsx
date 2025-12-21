@@ -4,9 +4,9 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { MarkdownViewer } from "@/components/MarkdownViewer";
+import { CodeEditor } from "@/components/CodeEditor";
 import {
   PlayCircle,
   FileText,
@@ -20,6 +20,7 @@ import {
   AlertCircle,
   RotateCcw,
   XCircle,
+  ExternalLink,
 } from "lucide-react";
 import { toast } from "sonner";
 import type { LucideIcon } from "lucide-react";
@@ -30,6 +31,7 @@ interface SubmissionData {
   mentorFeedback: string | null;
   grade: number | null;
   submittedAt: string;
+  content: string | null;
 }
 
 interface LessonData {
@@ -85,6 +87,80 @@ const statusConfig: Record<
   },
 };
 
+function getYouTubeEmbedUrl(url: string): string | null {
+  if (!url) return null;
+
+  // Already an embed URL
+  if (
+    url.includes("youtube.com/embed/") ||
+    url.includes("youtube-nocookie.com/embed/")
+  ) {
+    return url.replace("youtube.com", "youtube-nocookie.com");
+  }
+
+  // Extract video ID from various YouTube URL formats
+  let videoId: string | null = null;
+
+  if (url.includes("youtube.com/watch")) {
+    const match = url.match(/v=([^&\s]+)/);
+    videoId = match?.[1] || null;
+  } else if (url.includes("youtu.be/")) {
+    videoId = url.split("youtu.be/")[1]?.split(/[?&]/)[0] || null;
+  } else if (url.includes("youtube.com/v/")) {
+    videoId = url.split("youtube.com/v/")[1]?.split(/[?&]/)[0] || null;
+  }
+
+  if (videoId) {
+    return `https://www.youtube-nocookie.com/embed/${videoId}`;
+  }
+
+  return url;
+}
+
+function getLanguageFromContent(content: string): string {
+  if (
+    content.includes("python") ||
+    content.includes("Python") ||
+    content.includes("def ")
+  ) {
+    return "python";
+  }
+  if (
+    content.includes("javascript") ||
+    content.includes("JavaScript") ||
+    content.includes("const ") ||
+    content.includes("function")
+  ) {
+    return "javascript";
+  }
+  if (
+    content.includes("typescript") ||
+    content.includes("TypeScript") ||
+    content.includes(": string") ||
+    content.includes(": number")
+  ) {
+    return "typescript";
+  }
+  if (
+    content.includes("solidity") ||
+    content.includes("Solidity") ||
+    content.includes("pragma solidity")
+  ) {
+    return "solidity";
+  }
+  if (
+    content.includes("html") ||
+    content.includes("HTML") ||
+    content.includes("<!DOCTYPE")
+  ) {
+    return "html";
+  }
+  if (content.includes("css") || content.includes("CSS")) {
+    return "css";
+  }
+  return "javascript";
+}
+
 export default function LessonPage() {
   const params = useParams();
   const router = useRouter();
@@ -94,7 +170,8 @@ export default function LessonPage() {
   const [lesson, setLesson] = useState<LessonData | null>(null);
   const [loading, setLoading] = useState(true);
   const [completing, setCompleting] = useState(false);
-  const [submissionText, setSubmissionText] = useState("");
+  const [submissionCode, setSubmissionCode] = useState("");
+  const [submissionNotes, setSubmissionNotes] = useState("");
   const [fileUrl, setFileUrl] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -146,12 +223,16 @@ export default function LessonPage() {
   const handleSubmit = async () => {
     setSubmitting(true);
     try {
+      const submissionContent = submissionCode
+        ? `## Code Submission\n\`\`\`\n${submissionCode}\n\`\`\`\n\n## Notes\n${submissionNotes}`
+        : submissionNotes;
+
       const res = await fetch("/api/submissions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           lessonId,
-          content: submissionText,
+          content: submissionContent,
           fileUrl: fileUrl,
         }),
       });
@@ -161,7 +242,8 @@ export default function LessonPage() {
       if (res.ok) {
         toast.success("Task submitted successfully!");
         await fetchLesson();
-        setSubmissionText("");
+        setSubmissionCode("");
+        setSubmissionNotes("");
         setFileUrl("");
       } else {
         toast.error(data.error || "Failed to submit task");
@@ -204,6 +286,10 @@ export default function LessonPage() {
   const submissionStatus = lesson.submission
     ? statusConfig[lesson.submission.status]
     : null;
+  const embedUrl = lesson.videoUrl ? getYouTubeEmbedUrl(lesson.videoUrl) : null;
+  const detectedLanguage = lesson.content
+    ? getLanguageFromContent(lesson.content)
+    : "javascript";
 
   return (
     <div className="space-y-6">
@@ -244,36 +330,79 @@ export default function LessonPage() {
             {lesson.type === "VIDEO" && <PlayCircle className="w-4 h-4" />}
             {lesson.type === "READING" && <FileText className="w-4 h-4" />}
             {lesson.type === "TASK" && <ClipboardCheck className="w-4 h-4" />}
+            {lesson.type === "QUIZ" && <ClipboardCheck className="w-4 h-4" />}
             {lesson.type}
           </span>
           {lesson.duration && <span>{lesson.duration} min</span>}
         </div>
       </div>
 
-      {lesson.type === "VIDEO" && lesson.videoUrl && (
+      {/* VIDEO LESSON */}
+      {lesson.type === "VIDEO" && (
         <Card className="overflow-hidden">
           <div className="aspect-video bg-black">
-            <iframe
-              src={lesson.videoUrl}
-              className="w-full h-full"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            />
+            {embedUrl ? (
+              <iframe
+                src={embedUrl}
+                className="w-full h-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                title={lesson.title}
+              />
+            ) : lesson.videoUrl ? (
+              <div className="flex flex-col items-center justify-center h-full text-white">
+                <PlayCircle className="w-16 h-16 mb-4 opacity-50" />
+                <p className="mb-4">Unable to embed video directly</p>
+                <a
+                  href={lesson.videoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-4 py-2 bg-[#841a1c] rounded-lg hover:bg-[#681416]"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  Watch on YouTube
+                </a>
+              </div>
+            ) : (
+              <div className="flex items-center justify-center h-full text-gray-400">
+                <p>No video available</p>
+              </div>
+            )}
           </div>
+          {lesson.content && (
+            <CardContent className="p-6 border-t">
+              <h3 className="font-semibold text-gray-900 mb-4">Lesson Notes</h3>
+              <MarkdownViewer markdown={lesson.content} />
+            </CardContent>
+          )}
         </Card>
       )}
 
+      {/* READING LESSON */}
       {lesson.type === "READING" && lesson.content && (
         <Card>
-          <CardContent className="prose max-w-none p-8">
-            <div
-              dangerouslySetInnerHTML={{ __html: lesson.content }}
-              className="text-gray-700 leading-relaxed"
-            />
+          <CardContent className="p-8">
+            <MarkdownViewer markdown={lesson.content} />
           </CardContent>
         </Card>
       )}
 
+      {/* QUIZ LESSON */}
+      {lesson.type === "QUIZ" && lesson.content && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ClipboardCheck className="w-5 h-5 text-blue-500" />
+              Quiz
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <MarkdownViewer markdown={lesson.content} />
+          </CardContent>
+        </Card>
+      )}
+
+      {/* TASK LESSON */}
       {lesson.type === "TASK" && (
         <Card>
           <CardHeader>
@@ -283,10 +412,18 @@ export default function LessonPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
+            {/* Task Description */}
             <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
-              <p className="text-gray-700">{lesson.content}</p>
+              {lesson.content ? (
+                <MarkdownViewer markdown={lesson.content} />
+              ) : (
+                <p className="text-gray-500 italic">
+                  No task description available
+                </p>
+              )}
             </div>
 
+            {/* Previous Submission Status */}
             {lesson.submission && submissionStatus && (
               <div
                 className={`p-4 rounded-lg border ${
@@ -322,9 +459,9 @@ export default function LessonPage() {
                     <div className="text-sm font-medium text-gray-700 mb-1">
                       Mentor Feedback:
                     </div>
-                    <p className="text-gray-600 italic">
-                      &quot;{lesson.submission.mentorFeedback}&quot;
-                    </p>
+                    <MarkdownViewer
+                      markdown={lesson.submission.mentorFeedback}
+                    />
                   </div>
                 )}
 
@@ -339,6 +476,7 @@ export default function LessonPage() {
               </div>
             )}
 
+            {/* Submission Form */}
             {lesson.submission?.status === "APPROVED" ? (
               <div className="text-center p-8 bg-green-50 rounded-lg">
                 <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-4" />
@@ -361,33 +499,54 @@ export default function LessonPage() {
                   </div>
                 )}
 
+                {/* Code Editor */}
                 <div>
                   <label className="text-sm font-medium text-gray-700 block mb-2">
-                    Your Submission
+                    Your Code
                   </label>
-                  <Textarea
-                    placeholder="Describe your work, share your approach, or add notes for the reviewer..."
-                    value={submissionText}
-                    onChange={(e) => setSubmissionText(e.target.value)}
-                    rows={6}
-                    className="resize-none"
+                  <CodeEditor
+                    defaultValue={`// Write your ${detectedLanguage} code here\n`}
+                    value={submissionCode}
+                    onChange={(val) => setSubmissionCode(val || "")}
+                    language={detectedLanguage}
+                    height="300px"
                   />
                 </div>
 
+                {/* Notes */}
+                <div>
+                  <label className="text-sm font-medium text-gray-700 block mb-2">
+                    Notes for Reviewer
+                  </label>
+                  <textarea
+                    placeholder="Describe your approach, explain your code, or add any notes..."
+                    value={submissionNotes}
+                    onChange={(e) => setSubmissionNotes(e.target.value)}
+                    rows={4}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#841a1c] focus:border-transparent resize-none"
+                  />
+                </div>
+
+                {/* GitHub/Live Link */}
                 <div>
                   <label className="text-sm font-medium text-gray-700 block mb-2">
                     GitHub/Live Link (Optional)
                   </label>
-                  <Input
+                  <input
+                    type="url"
                     placeholder="https://github.com/..."
                     value={fileUrl}
                     onChange={(e) => setFileUrl(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#841a1c] focus:border-transparent"
                   />
                 </div>
 
                 <Button
                   onClick={handleSubmit}
-                  disabled={!submissionText.trim() || submitting}
+                  disabled={
+                    (!submissionCode.trim() && !submissionNotes.trim()) ||
+                    submitting
+                  }
                   className="w-full bg-[#841a1c] hover:bg-[#681416]"
                 >
                   {submitting ? (
@@ -410,6 +569,7 @@ export default function LessonPage() {
         </Card>
       )}
 
+      {/* Navigation */}
       <div className="flex justify-between items-center pt-6 border-t">
         <Button
           variant="outline"
