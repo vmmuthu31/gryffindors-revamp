@@ -187,44 +187,6 @@ function LoginForm() {
                 Register here
               </Link>
             </div>
-
-            <div className="mt-8 pt-6 border-t">
-              <p className="text-xs text-gray-400 text-center mb-3">
-                Demo Accounts
-              </p>
-              <div className="grid grid-cols-3 gap-2 text-xs">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEmail("student@demo.com");
-                    setPassword("demo123");
-                  }}
-                  className="p-2 border rounded hover:bg-gray-50 text-center"
-                >
-                  <div className="font-medium">Student</div>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEmail("mentor@gryffindors.in");
-                    setPassword("demo123");
-                  }}
-                  className="p-2 border rounded hover:bg-gray-50 text-center"
-                >
-                  <div className="font-medium">Mentor</div>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEmail("admin@gryffindors.in");
-                    setPassword("demo123");
-                  }}
-                  className="p-2 border rounded hover:bg-gray-50 text-center"
-                >
-                  <div className="font-medium">Admin</div>
-                </button>
-              </div>
-            </div>
           </CardContent>
         </Card>
       </div>
