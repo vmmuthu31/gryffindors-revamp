@@ -405,3 +405,150 @@ export async function sendNewSubmissionEmail(
     return false;
   }
 }
+
+interface PaymentSuccessEmailParams {
+  email: string;
+  name: string;
+  programTitle: string;
+  amountPaid: number;
+  paymentId: string;
+  tempPassword?: string | null;
+}
+
+export async function sendPaymentSuccessEmail(
+  params: PaymentSuccessEmailParams
+): Promise<boolean> {
+  const { email, name, programTitle, amountPaid, paymentId, tempPassword } =
+    params;
+
+  const credentialsSection = tempPassword
+    ? `
+    <div class="highlight-box" style="background: #fef3c7; border-color: #f59e0b;">
+      <div style="font-size: 14px; color: #92400e; margin-bottom: 8px;">🔐 Your Login Credentials</div>
+      <div class="info-grid" style="text-align: left;">
+        <div class="info-item">
+          <div class="info-label">Email</div>
+          <div class="info-value">${email}</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Temporary Password</div>
+          <div class="info-value" style="font-family: monospace; font-size: 18px;">${tempPassword}</div>
+        </div>
+      </div>
+      <p style="font-size: 12px; color: #92400e; margin-top: 12px;">
+        Please change your password after your first login.
+      </p>
+    </div>
+    `
+    : "";
+
+  const content = `
+    <h1 class="title">Payment Successful! 🎉</h1>
+    <p class="text">Hi ${name || "there"},</p>
+    <p class="text">Your payment has been received and your enrollment in <strong>${programTitle}</strong> is now complete!</p>
+    
+    <div class="highlight-box">
+      <div style="font-size: 14px; color: #718096;">Amount Paid</div>
+      <div style="font-size: 28px; font-weight: 700; color: #22c55e;">₹${amountPaid.toLocaleString()}</div>
+      <div style="font-size: 12px; color: #a0aec0; margin-top: 4px;">Payment ID: ${paymentId}</div>
+    </div>
+
+    ${credentialsSection}
+
+    <div class="info-grid">
+      <div class="info-item">
+        <div class="info-label">Program</div>
+        <div class="info-value">${programTitle}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">Status</div>
+        <div class="info-value"><span class="badge" style="background: #22c55e;">ENROLLED</span></div>
+      </div>
+    </div>
+
+    <div style="text-align: center;">
+      <a href="https://gryffindors.in/student/dashboard" class="button">Go to Dashboard</a>
+    </div>
+
+    <div class="divider"></div>
+    <p class="text" style="font-size: 14px;">
+      <strong>What's next?</strong>
+      <br>• Access your course materials from the student dashboard
+      <br>• Complete lessons and submit tasks for mentor review
+      <br>• Earn your certificate upon successful completion
+    </p>
+    <p class="text" style="font-size: 13px; color: #718096;">
+      If you have any questions, reply to this email or contact our support team.
+    </p>
+  `;
+
+  try {
+    await transporter.sendMail({
+      from: fromEmail,
+      to: email,
+      subject: `✅ Payment Confirmed: ${programTitle} - Gryffindors`,
+      html: baseTemplate(content, "Payment Successful"),
+    });
+    return true;
+  } catch (error) {
+    console.error("Failed to send payment success email:", error);
+    return false;
+  }
+}
+
+interface PasswordResetEmailParams {
+  email: string;
+  name: string;
+  newPassword: string;
+}
+
+export async function sendPasswordResetEmail(
+  params: PasswordResetEmailParams
+): Promise<boolean> {
+  const { email, name, newPassword } = params;
+
+  const content = `
+    <h1 class="title">Password Reset 🔐</h1>
+    <p class="text">Hi ${name || "there"},</p>
+    <p class="text">Your password has been reset. Here are your new login credentials:</p>
+    
+    <div class="highlight-box" style="background: #fef3c7; border-color: #f59e0b;">
+      <div style="font-size: 14px; color: #92400e; margin-bottom: 8px;">🔐 Your New Credentials</div>
+      <div class="info-grid" style="text-align: left;">
+        <div class="info-item">
+          <div class="info-label">Email</div>
+          <div class="info-value">${email}</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">New Password</div>
+          <div class="info-value" style="font-family: monospace; font-size: 18px;">${newPassword}</div>
+        </div>
+      </div>
+      <p style="font-size: 12px; color: #92400e; margin-top: 12px;">
+        Please change your password after logging in for security.
+      </p>
+    </div>
+
+    <div style="text-align: center;">
+      <a href="https://gryffindors.in/auth/login" class="button">Login Now</a>
+    </div>
+
+    <div class="divider"></div>
+    <p class="text" style="font-size: 13px; color: #718096;">
+      If you didn't request this password reset, please contact our support team immediately.
+    </p>
+  `;
+
+  try {
+    await transporter.sendMail({
+      from: fromEmail,
+      to: email,
+      subject: `🔐 Password Reset - Gryffindors`,
+      html: baseTemplate(content, "Password Reset"),
+    });
+    return true;
+  } catch (error) {
+    console.error("Failed to send password reset email:", error);
+    return false;
+  }
+}

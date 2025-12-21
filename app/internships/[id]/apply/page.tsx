@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import EligibilityTest from "@/components/internship/EligibilityTest";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, User, Mail } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useSession } from "next-auth/react";
@@ -18,7 +18,7 @@ interface Internship {
 }
 
 interface RazorpayResponse {
-  razorpay_paymentId: string;
+  razorpay_payment_id: string;
   razorpay_order_id: string;
   razorpay_signature: string;
 }
@@ -32,6 +32,9 @@ interface RazorpayOptions {
   image: string;
   order_id: string;
   handler: (response: RazorpayResponse) => void;
+  modal?: {
+    ondismiss?: () => void;
+  };
   prefill: { name: string; email: string };
   theme: { color: string };
 }
@@ -42,6 +45,8 @@ declare global {
   }
 }
 
+type Step = "eligibility" | "userDetails" | "payment" | "completed";
+
 const ApplyPage = () => {
   const params = useParams();
   const router = useRouter();
@@ -50,15 +55,19 @@ const ApplyPage = () => {
 
   const [internship, setInternship] = useState<Internship | null>(null);
   const [loading, setLoading] = useState(true);
-  const [step, setStep] = useState<"eligibility" | "payment" | "completed">(
-    "eligibility"
-  );
+  const [step, setStep] = useState<Step>("eligibility");
   const [eligibilityScore, setEligibilityScore] = useState(0);
+
+  const [studentName, setStudentName] = useState("");
+  const [studentEmail, setStudentEmail] = useState("");
+  const [nameError, setNameError] = useState("");
+  const [emailError, setEmailError] = useState("");
 
   const [referralCode, setReferralCode] = useState("");
   const [appliedDiscount, setAppliedDiscount] = useState(0);
   const [referralError, setReferralError] = useState("");
   const [isApplyingReferral, setIsApplyingReferral] = useState(false);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
   const fetchInternship = useCallback(async () => {
     try {
@@ -100,6 +109,39 @@ const ApplyPage = () => {
   const handleEligibilityComplete = (passed: boolean, score: number) => {
     setEligibilityScore(score);
     if (passed) {
+      setStep("userDetails");
+    }
+  };
+
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const handleUserDetailsSubmit = () => {
+    let hasError = false;
+
+    if (!studentName.trim()) {
+      setNameError("Name is required");
+      hasError = true;
+    } else if (studentName.trim().length < 2) {
+      setNameError("Name must be at least 2 characters");
+      hasError = true;
+    } else {
+      setNameError("");
+    }
+
+    if (!studentEmail.trim()) {
+      setEmailError("Email is required");
+      hasError = true;
+    } else if (!validateEmail(studentEmail)) {
+      setEmailError("Please enter a valid email address");
+      hasError = true;
+    } else {
+      setEmailError("");
+    }
+
+    if (!hasError) {
       setStep("payment");
     }
   };
@@ -131,8 +173,13 @@ const ApplyPage = () => {
     }
   };
 
-  const loadRazorpay = () => {
+  const loadRazorpay = (): Promise<boolean> => {
     return new Promise((resolve) => {
+      if (window.Razorpay) {
+        resolve(true);
+        return;
+      }
+
       const script = document.createElement("script");
       script.src = "https://checkout.razorpay.com/v1/checkout.js";
       script.onload = () => resolve(true);
@@ -141,59 +188,159 @@ const ApplyPage = () => {
     });
   };
 
+  const verifyPayment = async (
+    response: RazorpayResponse
+  ): Promise<boolean> => {
+    try {
+      const verifyRes = await fetch("/api/payments/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          razorpay_order_id: response.razorpay_order_id,
+          razorpay_payment_id: response.razorpay_payment_id,
+          razorpay_signature: response.razorpay_signature,
+          internshipId: internship.id,
+          internshipTitle: internship.title,
+          discountApplied: appliedDiscount,
+          studentName: studentName.trim(),
+          studentEmail: studentEmail.trim().toLowerCase(),
+        }),
+      });
+
+      const data = await verifyRes.json();
+
+      if (verifyRes.ok && data.success) {
+        return true;
+      } else {
+        console.error("Payment verification failed:", data.error);
+        return false;
+      }
+    } catch (error) {
+      console.error("Payment verification error:", error);
+      return false;
+    }
+  };
+
   const handlePayment = async () => {
-    if (!session?.user) {
-      toast.error("Please log in to continue");
-      router.push(`/auth/login?callbackUrl=/internships/${internshipId}/apply`);
+    if (!studentEmail || !studentName) {
+      toast.error("Please fill in your details first");
+      setStep("userDetails");
       return;
     }
 
-    const res = await loadRazorpay();
-
-    if (!res) {
-      toast.error("Razorpay SDK failed to load. Are you online?");
+    if (isProcessingPayment) {
       return;
     }
 
-    const finalAmount = Math.max(0, internship.price - appliedDiscount);
+    setIsProcessingPayment(true);
 
-    const orderRes = await fetch("/api/payments/create-order", {
-      method: "POST",
-      body: JSON.stringify({ amount: finalAmount }),
-    });
+    try {
+      const scriptLoaded = await loadRazorpay();
 
-    if (!orderRes.ok) {
-      toast.error("Server error. Are API keys set?");
-      return;
+      if (!scriptLoaded) {
+        toast.error("Razorpay SDK failed to load. Are you online?");
+        setIsProcessingPayment(false);
+        return;
+      }
+
+      const finalAmount = Math.max(0, internship.price - appliedDiscount);
+
+      const orderRes = await fetch("/api/payments/create-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: finalAmount,
+          internshipId: internship.id,
+          internshipTitle: internship.title,
+          studentEmail: studentEmail.trim().toLowerCase(),
+          studentName: studentName.trim(),
+        }),
+      });
+
+      if (!orderRes.ok) {
+        const errorData = await orderRes.json();
+        toast.error(errorData.error || "Failed to create order");
+        setIsProcessingPayment(false);
+        return;
+      }
+
+      const orderData = await orderRes.json();
+
+      const options: RazorpayOptions = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        amount: orderData.amount,
+        currency: orderData.currency,
+        name: "Gryffindors",
+        description: `Internship Enrollment: ${internship.title}`,
+        image: "/assets/logo.png",
+        order_id: orderData.id,
+        handler: async function (response: RazorpayResponse) {
+          toast.loading("Verifying payment...", { id: "payment-verify" });
+
+          const verified = await verifyPayment(response);
+
+          toast.dismiss("payment-verify");
+
+          if (verified) {
+            toast.success("Payment Successful! Please verify your email.");
+            router.push(
+              `/auth/verify-email?email=${encodeURIComponent(
+                studentEmail.trim().toLowerCase()
+              )}`
+            );
+          } else {
+            toast.error(
+              "Payment received but verification failed. Please contact support."
+            );
+          }
+
+          setIsProcessingPayment(false);
+        },
+        modal: {
+          ondismiss: function () {
+            setIsProcessingPayment(false);
+            toast.info("Payment cancelled. You can try again.");
+          },
+        },
+        prefill: {
+          name: studentName,
+          email: studentEmail,
+        },
+        theme: {
+          color: "#841a1c",
+        },
+      };
+
+      const paymentObject = new window.Razorpay(options);
+      paymentObject.open();
+    } catch (error) {
+      console.error("Payment error:", error);
+      toast.error("An error occurred. Please try again.");
+      setIsProcessingPayment(false);
     }
+  };
 
-    const orderData = await orderRes.json();
+  const getStepNumber = (currentStep: Step): number => {
+    const steps: Step[] = [
+      "eligibility",
+      "userDetails",
+      "payment",
+      "completed",
+    ];
+    return steps.indexOf(currentStep) + 1;
+  };
 
-    const options: RazorpayOptions = {
-      key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-      amount: orderData.amount,
-      currency: orderData.currency,
-      name: "Gryffindors",
-      description: `Internship Enrollment: ${internship.title}`,
-      image: "/assets/logo.png",
-      order_id: orderData.id,
-      handler: function (response: RazorpayResponse) {
-        toast.success(
-          `Payment Successful! Payment ID: ${response.razorpay_paymentId}`
-        );
-        setStep("completed");
-      },
-      prefill: {
-        name: session.user.name || "Student",
-        email: session.user.email || "",
-      },
-      theme: {
-        color: "#841a1c",
-      },
-    };
-
-    const paymentObject = new window.Razorpay(options);
-    paymentObject.open();
+  const getStepTitle = (currentStep: Step): string => {
+    switch (currentStep) {
+      case "eligibility":
+        return "Step 1: Eligibility Check";
+      case "userDetails":
+        return "Step 2: Your Details";
+      case "payment":
+        return "Step 3: Secure Enrollment";
+      default:
+        return "";
+    }
   };
 
   return (
@@ -210,9 +357,7 @@ const ApplyPage = () => {
         {step !== "completed" && (
           <div className="text-center mb-10">
             <h1 className="text-3xl font-bold text-[#841a1c] mb-2">
-              {step === "eligibility"
-                ? "Step 1: Eligibility Check"
-                : "Step 2: Secure Enrollment"}
+              {getStepTitle(step)}
             </h1>
             <p className="text-gray-600">
               Application for:{" "}
@@ -221,20 +366,16 @@ const ApplyPage = () => {
               </span>
             </p>
             <div className="flex justify-center gap-2 mt-4">
-              <div
-                className={`h-2 w-16 rounded-full ${
-                  ["eligibility", "payment", "completed"].includes(step)
-                    ? "bg-[#841a1c]"
-                    : "bg-gray-200"
-                }`}
-              />
-              <div
-                className={`h-2 w-16 rounded-full ${
-                  ["payment", "completed"].includes(step)
-                    ? "bg-[#841a1c]"
-                    : "bg-gray-200"
-                }`}
-              />
+              {[1, 2, 3].map((stepNum) => (
+                <div
+                  key={stepNum}
+                  className={`h-2 w-16 rounded-full ${
+                    getStepNumber(step) >= stepNum
+                      ? "bg-[#841a1c]"
+                      : "bg-gray-200"
+                  }`}
+                />
+              ))}
             </div>
           </div>
         )}
@@ -246,16 +387,106 @@ const ApplyPage = () => {
           />
         )}
 
+        {step === "userDetails" && (
+          <div className="max-w-md mx-auto bg-white p-8 rounded-xl shadow-xl">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-3xl">🎉</span>
+              </div>
+              <h2 className="text-2xl font-bold mb-2">Congratulations!</h2>
+              <p className="text-gray-600">
+                You scored <strong>{eligibilityScore.toFixed(0)}%</strong> and
+                qualify for the program.
+              </p>
+            </div>
+
+            <div className="border-t pt-6">
+              <h3 className="text-lg font-semibold mb-4">Enter Your Details</h3>
+              <p className="text-sm text-gray-500 mb-6">
+                We&apos;ll use this information to create your account and send
+                login credentials after payment.
+              </p>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-700 block mb-1">
+                    Full Name *
+                  </label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <input
+                      type="text"
+                      value={studentName}
+                      onChange={(e) => {
+                        setStudentName(e.target.value);
+                        setNameError("");
+                      }}
+                      placeholder="Enter your full name"
+                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#841a1c] outline-none ${
+                        nameError ? "border-red-500" : ""
+                      }`}
+                    />
+                  </div>
+                  {nameError && (
+                    <p className="text-xs text-red-500 mt-1">{nameError}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-gray-700 block mb-1">
+                    Email Address *
+                  </label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <input
+                      type="email"
+                      value={studentEmail}
+                      onChange={(e) => {
+                        setStudentEmail(e.target.value);
+                        setEmailError("");
+                      }}
+                      placeholder="Enter your email address"
+                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#841a1c] outline-none ${
+                        emailError ? "border-red-500" : ""
+                      }`}
+                    />
+                  </div>
+                  {emailError && (
+                    <p className="text-xs text-red-500 mt-1">{emailError}</p>
+                  )}
+                  <p className="text-xs text-gray-400 mt-1">
+                    Login credentials will be sent to this email
+                  </p>
+                </div>
+              </div>
+
+              <Button
+                onClick={handleUserDetailsSubmit}
+                className="w-full mt-6 bg-[#841a1c] hover:bg-[#681416] py-6 text-lg"
+              >
+                Continue to Payment
+              </Button>
+            </div>
+          </div>
+        )}
+
         {step === "payment" && (
           <div className="max-w-md mx-auto bg-white p-8 rounded-xl shadow-xl text-center">
             <h2 className="text-2xl font-bold mb-4">
-              You&apos;re Eligible! 🎉
+              Complete Your Enrollment
             </h2>
             <p className="text-gray-600 mb-6">
-              Congratulations! You scored{" "}
-              <strong>{eligibilityScore.toFixed(0)}%</strong> and qualify for
-              the <strong>{internship.title}</strong> internship program.
+              Almost there, <strong>{studentName}</strong>! Complete payment to
+              start your journey.
             </p>
+
+            <div className="bg-gray-50 p-4 rounded-lg mb-4">
+              <div className="flex justify-between mb-2 text-sm text-gray-500">
+                <span>Email</span>
+                <span className="text-gray-700">{studentEmail}</span>
+              </div>
+            </div>
+
             <div className="bg-gray-50 p-4 rounded-lg mb-6">
               <div className="flex justify-between mb-2">
                 <span>Program Fee</span>
@@ -335,13 +566,28 @@ const ApplyPage = () => {
 
             <Button
               onClick={handlePayment}
-              className="w-full bg-[#841a1c] hover:bg-[#681416] py-6 text-lg"
+              disabled={isProcessingPayment}
+              className="w-full bg-[#841a1c] hover:bg-[#681416] py-6 text-lg disabled:opacity-50"
             >
-              Pay & Enroll Now
+              {isProcessingPayment ? (
+                <span className="flex items-center justify-center gap-2">
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Processing...
+                </span>
+              ) : (
+                "Pay & Enroll Now"
+              )}
             </Button>
             <p className="text-xs text-gray-400 mt-4">
               Secured by Razorpay. 100% Refundable within 7 days.
             </p>
+
+            <button
+              onClick={() => setStep("userDetails")}
+              className="mt-4 text-sm text-gray-500 hover:text-[#841a1c]"
+            >
+              ← Edit your details
+            </button>
           </div>
         )}
 
@@ -356,16 +602,23 @@ const ApplyPage = () => {
                 <strong>{eligibilityScore.toFixed(0)}%</strong>
               </p>
               <p className="text-gray-600">
-                Payment Status: <strong>Success</strong>
+                Payment Status:{" "}
+                <strong className="text-green-600">Success</strong>
+              </p>
+            </div>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8">
+              <p className="text-blue-800">
+                📧 We&apos;ve sent your login credentials to{" "}
+                <strong>{studentEmail}</strong>
               </p>
             </div>
             <p className="text-lg text-gray-700 mb-8">
-              Welcome aboard! You will receive an email shortly with access to
-              your dashboard and course materials.
+              Welcome aboard, <strong>{studentName}</strong>! Check your email
+              for access details.
             </p>
-            <Link href="/student/dashboard">
+            <Link href="/auth/login">
               <Button className="bg-[#841a1c] hover:bg-[#681416] w-full max-w-sm">
-                Go to Dashboard
+                Go to Login
               </Button>
             </Link>
           </div>
