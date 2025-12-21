@@ -30,6 +30,10 @@ export default auth((req) => {
     "/auth/verify-email",
     "/auth/forgot-password",
     "/verify-certificate",
+    "/refund-policy",
+    "/privacy-policy",
+    "/terms-and-conditions",
+    "/contact",
   ];
   const isPublicRoute =
     publicRoutes.some((route) => pathname.startsWith(route)) ||

@@ -1,6 +1,7 @@
 import HeroSection from "@/components/HeroSection";
 import VisionMission from "@/components/VisionMission";
 import StatsSection from "@/components/StatsSection";
+import InternshipsSection from "@/components/InternshipsSection";
 import ServicesSection from "@/components/ServicesSection";
 import TeamSection from "@/components/TeamSection";
 import TestimonialsSection from "@/components/TestimonialsSection";
@@ -10,6 +11,7 @@ export default function Home() {
     <main>
       <HeroSection />
       <VisionMission />
+      <InternshipsSection />
       <StatsSection />
       <ServicesSection />
       <TeamSection />

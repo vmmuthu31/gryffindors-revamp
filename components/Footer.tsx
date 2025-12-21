@@ -7,19 +7,60 @@ const Footer = () => {
         <div className="flex flex-row justify-between w-full gap-7 items-start md:items-center mb-8">
           <div className="mb-6 md:mb-0 max-w-sm">
             <p className="text-sm hidden lg:block lg:text-lg  mb-4">
-              Fueling innovation. Building the <br /> future of Web3. Join us in{" "}
-              <br /> redefining the decentralized <br /> world.
+              Learn industry-ready skills with our <br /> expert-led internship
+              programs. <br /> Build real projects and launch <br /> your tech
+              career.
             </p>
             <p className="text-sm block lg:hidden mb-4">
-              Fueling innovation. Building the future of Web3. Join us in
-              redefining the decentralized world.
+              Learn industry-ready skills with our expert-led internship
+              programs. Build real projects and launch your tech career.
             </p>
           </div>
 
           <div className="flex lg:gap-16 gap-4">
             <div>
               <p className="lg:text-lg text-sm font-semibold font-dmsans mb-3">
-                COMMUNITY
+                PROGRAMS
+              </p>
+              <ul className="space-y-2 text-sm">
+                <li>
+                  <Link
+                    href="/internships"
+                    className="whitespace-nowrap hover:text-primary transition-colors"
+                  >
+                    All Internships
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/internships"
+                    className="hover:text-primary transition-colors"
+                  >
+                    Full Stack Development
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/internships"
+                    className="hover:text-primary transition-colors"
+                  >
+                    AI/ML Engineering
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/internships"
+                    className="hover:text-primary transition-colors"
+                  >
+                    Web3/Blockchain
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <p className="lg:text-lg text-sm font-semibold font-dmsans mb-3">
+                LEGAL
               </p>
               <ul className="space-y-2 text-sm">
                 <li>
@@ -40,6 +81,14 @@ const Footer = () => {
                 </li>
                 <li>
                   <Link
+                    href="/refund-policy"
+                    className=" hover:text-primary transition-colors"
+                  >
+                    Cancellation & Refunds
+                  </Link>
+                </li>
+                <li>
+                  <Link
                     href="/contact"
                     className=" hover:text-primary transition-colors"
                   >
@@ -51,15 +100,27 @@ const Footer = () => {
 
             <div>
               <p className="lg:text-lg text-sm font-semibold font-dmsans mb-3">
-                SOCIAL MEDIA
+                SOCIAL
               </p>
               <ul className="space-y-2 text-sm">
                 <li>
                   <Link
                     href="https://x.com/Gryffindor_W3"
                     className=" hover:text-primary transition-colors"
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
                     Twitter
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="http://linkedin.com/company/gryffindors"
+                    className=" hover:text-primary transition-colors"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    LinkedIn
                   </Link>
                 </li>
                 <li>
@@ -68,14 +129,6 @@ const Footer = () => {
                     className=" hover:text-primary transition-colors"
                   >
                     Portfolio
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="http://linkedin.com/company/gryffindors"
-                    className=" hover:text-primary transition-colors"
-                  >
-                    LinkedIn
                   </Link>
                 </li>
               </ul>
