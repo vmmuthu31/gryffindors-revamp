@@ -1,10 +1,9 @@
-// Copyright 2019-2025 @polkassembly/polkassembly authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
-
 .markdown-body {
-	@apply m-0 break-words p-0 text-sm leading-relaxed text-text_primary;
-	font-family: var(--font-dmSans);
+	color: #1f2937;
+	font-size: 0.875rem;
+	line-height: 1.625;
+	word-wrap: break-word;
+	font-family: var(--font-dmSans), system-ui, sans-serif;
 
 	h1,
 	h2,
@@ -12,148 +11,237 @@
 	h4,
 	h5,
 	h6 {
-		@apply mb-4 ml-0 font-semibold leading-5 text-text_primary;
+		margin-bottom: 1rem;
+		margin-left: 0;
+		font-weight: 600;
+		line-height: 1.25;
+		color: #111827;
 	}
 
 	h1 {
-		@apply border-b border-border_grey pb-[0.3em] text-[2em] leading-10;
+		font-size: 2em;
+		line-height: 2.5rem;
+		padding-bottom: 0.3em;
+		border-bottom: 1px solid #e5e7eb;
 	}
 
 	h2 {
-		@apply border-b border-border_grey pb-[0.3em] text-[1.5em];
+		font-size: 1.5em;
+		padding-bottom: 0.3em;
+		border-bottom: 1px solid #e5e7eb;
 	}
 
 	h3 {
-		@apply text-[1.25em];
+		font-size: 1.25em;
 	}
 
 	h4 {
-		@apply text-[1em];
+		font-size: 1em;
 	}
 
 	h5 {
-		@apply text-[0.875em];
+		font-size: 0.875em;
 	}
 
 	h6 {
-		@apply text-[0.85em];
+		font-size: 0.85em;
 	}
 
 	a {
-		@apply text-text_pink no-underline transition-colors duration-200 ease-in-out;
+		color: #841a1c;
+		text-decoration: none;
+		transition: color 0.2s ease-in-out;
 
 		&:hover {
-			@apply text-text_pink underline;
+			color: #841a1c;
+			text-decoration: underline;
 		}
 
 		&:visited {
-			@apply text-text_pink;
+			color: #841a1c;
 		}
 
 		&:focus {
-			@apply outline-2 outline-offset-2 outline-text_pink;
+			outline: 2px solid #841a1c;
+			outline-offset: 2px;
 		}
 	}
 
 	p {
-		@apply mb-4 ml-0 mt-0 pl-0 text-sm;
+		margin-bottom: 1rem;
+		margin-left: 0;
+		margin-top: 0;
+		padding-left: 0;
+		font-size: 0.875rem;
 	}
 
 	table {
-		@apply m-0 mb-2 border-border_grey font-medium leading-[160%] text-text_primary;
+		margin: 0;
+		margin-bottom: 0.5rem;
+		border-color: #e5e7eb;
+		font-weight: 500;
+		line-height: 160%;
+		color: #1f2937;
+		width: 100%;
+		border-collapse: collapse;
 
 		th,
 		td {
-			@apply border border-border_grey p-2;
+			border: 1px solid #e5e7eb;
+			padding: 0.5rem;
+		}
+
+		th {
+			background-color: #f9fafb;
+			font-weight: 600;
+			text-align: left;
 		}
 	}
 
 	blockquote {
-		@apply border-l-4 border-border_grey px-4 italic text-btn_secondary_text;
+		border-left: 4px solid #841a1c;
+		padding-left: 1rem;
+		padding-right: 1rem;
+		font-style: italic;
+		color: #6b7280;
+		background-color: #fef2f2;
+		margin: 1rem 0;
+		padding-top: 0.5rem;
+		padding-bottom: 0.5rem;
+		border-radius: 0 0.5rem 0.5rem 0;
 	}
 
 	ul,
 	ol {
-		@apply mb-4 mt-0 pl-8;
+		margin-bottom: 1rem;
+		margin-top: 0;
+		padding-left: 2rem;
 	}
 
 	ul ul,
 	ul ol,
 	ol ol,
 	ol ul {
-		@apply mb-0 mt-0;
+		margin-bottom: 0;
+		margin-top: 0;
 	}
 
 	ol {
-		@apply list-decimal pl-8;
+		list-style-type: decimal;
+		padding-left: 2rem;
 
-		> li {
-			@apply relative mb-2 pl-1;
+		>li {
+			position: relative;
+			margin-bottom: 0.5rem;
+			padding-left: 0.25rem;
 			display: list-item;
 		}
 	}
 
 	ul:not(ol ul) {
-		@apply list-disc;
+		list-style-type: disc;
 
 		li::marker {
-			@apply text-base;
+			font-size: 1rem;
 		}
 	}
 
 	li {
-		@apply mb-1;
+		margin-bottom: 0.25rem;
 
 		&::marker {
-			@apply text-btn_secondary_text;
+			color: #6b7280;
 		}
 	}
 
 	img {
-		@apply my-1 box-content max-w-full rounded border border-border_grey bg-bg_modal;
+		margin: 0.25rem 0;
+		box-sizing: content-box;
+		max-width: 100%;
+		border-radius: 0.5rem;
+		border: 1px solid #e5e7eb;
+		background-color: #fff;
 	}
 
 	code {
-		@apply font-mono;
-		font-family:
-			ui-monospace,
-			SFMono-Regular,
-			SF Mono,
-			Menlo,
-			Consolas,
-			Liberation Mono,
-			monospace;
+		font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+		font-size: 0.875em;
+		background-color: #f3f4f6;
+		padding: 0.2em 0.4em;
+		border-radius: 0.25rem;
 	}
 
 	pre {
-		@apply overflow-auto break-normal rounded-md p-4 text-[85%] leading-[1.45];
+		overflow: auto;
+		word-break: normal;
+		border-radius: 0.5rem;
+		padding: 1rem;
+		font-size: 85%;
+		line-height: 1.45;
+		background-color: #1f2937;
+		margin: 1rem 0;
 
 		code {
-			@apply m-0 block max-w-full overflow-visible break-normal border-0 bg-bg_code p-1 leading-normal;
+			margin: 0;
+			display: block;
+			max-width: 100%;
+			overflow: visible;
+			word-break: normal;
+			border: 0;
+			background-color: transparent;
+			padding: 0.25rem;
+			line-height: normal;
+			color: #e5e7eb;
 		}
 	}
 
 	hr {
-		@apply my-6 h-1 border-0 bg-border_grey p-0;
+		margin: 1.5rem 0;
+		height: 1px;
+		border: 0;
+		background-color: #e5e7eb;
+		padding: 0;
 	}
 
 	input[type='checkbox'] {
-		@apply mr-2 align-middle;
+		margin-right: 0.5rem;
+		vertical-align: middle;
 	}
 
 	mark {
-		@apply rounded bg-text_pink bg-opacity-20 p-[0.1em_0.2em];
+		border-radius: 0.25rem;
+		background-color: rgba(132, 26, 28, 0.2);
+		padding: 0.1em 0.2em;
 	}
 
 	a[href^='http'],
 	a[href^='https'],
 	a[href^='www.'],
 	a[href^='mailto:'] {
-		@apply text-text_pink no-underline hover:underline;
+		color: #841a1c;
+		text-decoration: none;
+
+		&:hover {
+			text-decoration: underline;
+		}
 	}
 
 	iframe,
 	video {
-		@apply mb-4 max-w-full rounded border border-border_grey;
+		margin-bottom: 1rem;
+		max-width: 100%;
+		border-radius: 0.5rem;
+		border: 1px solid #e5e7eb;
+	}
+
+	.video-container {
+		margin: 1rem 0;
+
+		iframe,
+		video {
+			aspect-ratio: 16/9;
+			width: 100%;
+			height: auto;
+		}
 	}
 }
