@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MarkdownViewer } from "@/components/MarkdownViewer";
-import { CodeEditor } from "@/components/CodeEditor";
+import { YouTubeTranscript } from "@/components/YouTubeTranscript";
 import {
   PlayCircle,
   FileText,
@@ -21,9 +21,39 @@ import {
   RotateCcw,
   XCircle,
   ExternalLink,
+  Link as LinkIcon,
+  File,
 } from "lucide-react";
 import { toast } from "sonner";
 import type { LucideIcon } from "lucide-react";
+
+declare global {
+  interface Window {
+    YT: {
+      Player: new (
+        elementId: string,
+        config: YouTubePlayerConfig
+      ) => YouTubePlayer;
+      PlayerState: { PLAYING: number; PAUSED: number; ENDED: number };
+    };
+    onYouTubeIframeAPIReady: () => void;
+  }
+}
+
+interface YouTubePlayer {
+  getCurrentTime: () => number;
+  seekTo: (seconds: number, allowSeekAhead: boolean) => void;
+  destroy: () => void;
+}
+
+interface YouTubePlayerConfig {
+  videoId: string;
+  playerVars?: Record<string, string | number>;
+  events?: {
+    onReady?: (event: { target: YouTubePlayer }) => void;
+    onStateChange?: (event: { data: number }) => void;
+  };
+}
 
 interface SubmissionData {
   id: string;
@@ -32,6 +62,7 @@ interface SubmissionData {
   grade: number | null;
   submittedAt: string;
   content: string | null;
+  fileUrl: string | null;
 }
 
 interface LessonData {
@@ -87,78 +118,22 @@ const statusConfig: Record<
   },
 };
 
-function getYouTubeEmbedUrl(url: string): string | null {
+function extractVideoId(url: string): string | null {
   if (!url) return null;
-
-  // Already an embed URL
+  if (url.includes("youtube.com/watch")) {
+    const match = url.match(/v=([^&\s]+)/);
+    return match?.[1] || null;
+  }
+  if (url.includes("youtu.be/")) {
+    return url.split("youtu.be/")[1]?.split(/[?&]/)[0] || null;
+  }
   if (
     url.includes("youtube.com/embed/") ||
     url.includes("youtube-nocookie.com/embed/")
   ) {
-    return url.replace("youtube.com", "youtube-nocookie.com");
+    return url.split("/embed/")[1]?.split(/[?&]/)[0] || null;
   }
-
-  // Extract video ID from various YouTube URL formats
-  let videoId: string | null = null;
-
-  if (url.includes("youtube.com/watch")) {
-    const match = url.match(/v=([^&\s]+)/);
-    videoId = match?.[1] || null;
-  } else if (url.includes("youtu.be/")) {
-    videoId = url.split("youtu.be/")[1]?.split(/[?&]/)[0] || null;
-  } else if (url.includes("youtube.com/v/")) {
-    videoId = url.split("youtube.com/v/")[1]?.split(/[?&]/)[0] || null;
-  }
-
-  if (videoId) {
-    return `https://www.youtube-nocookie.com/embed/${videoId}`;
-  }
-
-  return url;
-}
-
-function getLanguageFromContent(content: string): string {
-  if (
-    content.includes("python") ||
-    content.includes("Python") ||
-    content.includes("def ")
-  ) {
-    return "python";
-  }
-  if (
-    content.includes("javascript") ||
-    content.includes("JavaScript") ||
-    content.includes("const ") ||
-    content.includes("function")
-  ) {
-    return "javascript";
-  }
-  if (
-    content.includes("typescript") ||
-    content.includes("TypeScript") ||
-    content.includes(": string") ||
-    content.includes(": number")
-  ) {
-    return "typescript";
-  }
-  if (
-    content.includes("solidity") ||
-    content.includes("Solidity") ||
-    content.includes("pragma solidity")
-  ) {
-    return "solidity";
-  }
-  if (
-    content.includes("html") ||
-    content.includes("HTML") ||
-    content.includes("<!DOCTYPE")
-  ) {
-    return "html";
-  }
-  if (content.includes("css") || content.includes("CSS")) {
-    return "css";
-  }
-  return "javascript";
+  return null;
 }
 
 export default function LessonPage() {
@@ -167,13 +142,19 @@ export default function LessonPage() {
   const courseId = params.id as string;
   const lessonId = params.lessonId as string;
 
+  const playerRef = useRef<YouTubePlayer | null>(null);
+  const timeIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
   const [lesson, setLesson] = useState<LessonData | null>(null);
   const [loading, setLoading] = useState(true);
   const [completing, setCompleting] = useState(false);
-  const [submissionCode, setSubmissionCode] = useState("");
   const [submissionNotes, setSubmissionNotes] = useState("");
-  const [fileUrl, setFileUrl] = useState("");
+  const [githubUrl, setGithubUrl] = useState("");
+  const [liveUrl, setLiveUrl] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [playerReady, setPlayerReady] = useState(false);
+  const [apiLoaded, setApiLoaded] = useState(false);
 
   const fetchLesson = useCallback(async () => {
     try {
@@ -193,6 +174,80 @@ export default function LessonPage() {
     fetchLesson();
   }, [fetchLesson]);
 
+  useEffect(() => {
+    if (lesson?.type !== "VIDEO" || !lesson.videoUrl) return;
+
+    const videoId = extractVideoId(lesson.videoUrl);
+    if (!videoId) return;
+
+    const initPlayer = () => {
+      if (!window.YT || !window.YT.Player) return;
+
+      const playerElement = document.getElementById("youtube-player");
+      if (!playerElement) return;
+
+      playerRef.current = new window.YT.Player("youtube-player", {
+        videoId,
+        playerVars: {
+          autoplay: 0,
+          modestbranding: 1,
+          rel: 0,
+          origin: window.location.origin,
+        },
+        events: {
+          onReady: () => {
+            setPlayerReady(true);
+          },
+          onStateChange: (event) => {
+            if (event.data === 1) {
+              timeIntervalRef.current = setInterval(() => {
+                if (playerRef.current) {
+                  setCurrentTime(playerRef.current.getCurrentTime());
+                }
+              }, 500);
+            } else {
+              if (timeIntervalRef.current) {
+                clearInterval(timeIntervalRef.current);
+              }
+            }
+          },
+        },
+      });
+    };
+
+    if (!window.YT) {
+      const tag = document.createElement("script");
+      tag.src = "https://www.youtube.com/iframe_api";
+      tag.async = true;
+      document.body.appendChild(tag);
+
+      window.onYouTubeIframeAPIReady = () => {
+        setApiLoaded(true);
+        initPlayer();
+      };
+    } else {
+      setApiLoaded(true);
+      initPlayer();
+    }
+
+    return () => {
+      if (timeIntervalRef.current) {
+        clearInterval(timeIntervalRef.current);
+      }
+      if (playerRef.current) {
+        playerRef.current.destroy();
+        playerRef.current = null;
+      }
+    };
+  }, [lesson?.type, lesson?.videoUrl, apiLoaded]);
+
+  const handleTimestampClick = (seconds: number) => {
+    if (playerRef.current && playerReady) {
+      playerRef.current.seekTo(seconds, true);
+      setCurrentTime(seconds);
+    }
+  };
+
   const handleMarkComplete = async () => {
     setCompleting(true);
     try {
@@ -202,7 +257,6 @@ export default function LessonPage() {
       if (res.ok) {
         setLesson((prev) => (prev ? { ...prev, completed: true } : null));
         toast.success("Lesson marked as complete!");
-
         if (lesson?.nextLesson) {
           setTimeout(() => {
             router.push(
@@ -223,9 +277,11 @@ export default function LessonPage() {
   const handleSubmit = async () => {
     setSubmitting(true);
     try {
-      const submissionContent = submissionCode
-        ? `## Code Submission\n\`\`\`\n${submissionCode}\n\`\`\`\n\n## Notes\n${submissionNotes}`
-        : submissionNotes;
+      const submissionContent = `## Submission Notes\n${
+        submissionNotes || "No notes provided"
+      }\n\n## Links\n- **GitHub**: ${
+        githubUrl || "Not provided"
+      }\n- **Live Demo**: ${liveUrl || "Not provided"}`;
 
       const res = await fetch("/api/submissions", {
         method: "POST",
@@ -233,18 +289,17 @@ export default function LessonPage() {
         body: JSON.stringify({
           lessonId,
           content: submissionContent,
-          fileUrl: fileUrl,
+          fileUrl: githubUrl || liveUrl || null,
         }),
       });
 
       const data = await res.json();
-
       if (res.ok) {
         toast.success("Task submitted successfully!");
         await fetchLesson();
-        setSubmissionCode("");
         setSubmissionNotes("");
-        setFileUrl("");
+        setGithubUrl("");
+        setLiveUrl("");
       } else {
         toast.error(data.error || "Failed to submit task");
       }
@@ -255,17 +310,11 @@ export default function LessonPage() {
     }
   };
 
-  const navigateTo = (lessonId: string) => {
-    router.push(`/student/courses/${courseId}/lesson/${lessonId}`);
-  };
-
-  const canSubmit = () => {
-    if (!lesson?.submission) return true;
-    return (
-      lesson.submission.status === "REJECTED" ||
-      lesson.submission.status === "RESUBMIT"
-    );
-  };
+  const navigateTo = (id: string) =>
+    router.push(`/student/courses/${courseId}/lesson/${id}`);
+  const canSubmit = () =>
+    !lesson?.submission ||
+    ["REJECTED", "RESUBMIT"].includes(lesson.submission.status);
 
   if (loading) {
     return (
@@ -286,10 +335,6 @@ export default function LessonPage() {
   const submissionStatus = lesson.submission
     ? statusConfig[lesson.submission.status]
     : null;
-  const embedUrl = lesson.videoUrl ? getYouTubeEmbedUrl(lesson.videoUrl) : null;
-  const detectedLanguage = lesson.content
-    ? getLanguageFromContent(lesson.content)
-    : "javascript";
 
   return (
     <div className="space-y-6">
@@ -304,17 +349,14 @@ export default function LessonPage() {
           <span>/</span>
           <span>{lesson.module.title}</span>
         </div>
-
         <div className="flex items-center gap-2">
           {lesson.completed ? (
             <span className="flex items-center gap-1 text-green-600 text-sm font-medium bg-green-50 px-3 py-1 rounded-full">
-              <CheckCircle className="w-4 h-4" />
-              Completed
+              <CheckCircle className="w-4 h-4" /> Completed
             </span>
           ) : (
             <span className="flex items-center gap-1 text-gray-500 text-sm bg-gray-100 px-3 py-1 rounded-full">
-              <Circle className="w-4 h-4" />
-              In Progress
+              <Circle className="w-4 h-4" /> In Progress
             </span>
           )}
           <span className="text-sm text-gray-400">
@@ -329,56 +371,44 @@ export default function LessonPage() {
           <span className="flex items-center gap-1">
             {lesson.type === "VIDEO" && <PlayCircle className="w-4 h-4" />}
             {lesson.type === "READING" && <FileText className="w-4 h-4" />}
-            {lesson.type === "TASK" && <ClipboardCheck className="w-4 h-4" />}
-            {lesson.type === "QUIZ" && <ClipboardCheck className="w-4 h-4" />}
+            {(lesson.type === "TASK" || lesson.type === "QUIZ") && (
+              <ClipboardCheck className="w-4 h-4" />
+            )}
             {lesson.type}
           </span>
           {lesson.duration && <span>{lesson.duration} min</span>}
         </div>
       </div>
 
-      {/* VIDEO LESSON */}
       {lesson.type === "VIDEO" && (
-        <Card className="overflow-hidden">
-          <div className="aspect-video bg-black">
-            {embedUrl ? (
-              <iframe
-                src={embedUrl}
-                className="w-full h-full"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                title={lesson.title}
-              />
-            ) : lesson.videoUrl ? (
-              <div className="flex flex-col items-center justify-center h-full text-white">
-                <PlayCircle className="w-16 h-16 mb-4 opacity-50" />
-                <p className="mb-4">Unable to embed video directly</p>
-                <a
-                  href={lesson.videoUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-4 py-2 bg-[#841a1c] rounded-lg hover:bg-[#681416]"
-                >
-                  <ExternalLink className="w-4 h-4" />
-                  Watch on YouTube
-                </a>
-              </div>
-            ) : (
-              <div className="flex items-center justify-center h-full text-gray-400">
-                <p>No video available</p>
-              </div>
-            )}
-          </div>
-          {lesson.content && (
-            <CardContent className="p-6 border-t">
-              <h3 className="font-semibold text-gray-900 mb-4">Lesson Notes</h3>
-              <MarkdownViewer markdown={lesson.content} />
-            </CardContent>
+        <>
+          <Card className="overflow-hidden">
+            <div className="aspect-video bg-black">
+              <div id="youtube-player" className="w-full h-full" />
+            </div>
+          </Card>
+
+          {lesson.videoUrl && (
+            <YouTubeTranscript
+              videoUrl={lesson.videoUrl}
+              currentTime={currentTime}
+              onTimestampClick={handleTimestampClick}
+            />
           )}
-        </Card>
+
+          {lesson.content && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Lesson Notes</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <MarkdownViewer markdown={lesson.content} />
+              </CardContent>
+            </Card>
+          )}
+        </>
       )}
 
-      {/* READING LESSON */}
       {lesson.type === "READING" && lesson.content && (
         <Card>
           <CardContent className="p-8">
@@ -387,13 +417,11 @@ export default function LessonPage() {
         </Card>
       )}
 
-      {/* QUIZ LESSON */}
       {lesson.type === "QUIZ" && lesson.content && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <ClipboardCheck className="w-5 h-5 text-blue-500" />
-              Quiz
+              <ClipboardCheck className="w-5 h-5 text-blue-500" /> Quiz
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -402,35 +430,31 @@ export default function LessonPage() {
         </Card>
       )}
 
-      {/* TASK LESSON */}
       {lesson.type === "TASK" && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <ClipboardCheck className="w-5 h-5 text-orange-500" />
-              Task Assignment
+              <ClipboardCheck className="w-5 h-5 text-orange-500" /> Task
+              Assignment
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            {/* Task Description */}
             <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
               {lesson.content ? (
                 <MarkdownViewer markdown={lesson.content} />
               ) : (
-                <p className="text-gray-500 italic">
-                  No task description available
-                </p>
+                <p className="text-gray-500 italic">No task description</p>
               )}
             </div>
 
-            {/* Previous Submission Status */}
             {lesson.submission && submissionStatus && (
               <div
                 className={`p-4 rounded-lg border ${
                   lesson.submission.status === "APPROVED"
                     ? "bg-green-50 border-green-200"
-                    : lesson.submission.status === "REJECTED" ||
-                      lesson.submission.status === "RESUBMIT"
+                    : ["REJECTED", "RESUBMIT"].includes(
+                        lesson.submission.status
+                      )
                     ? "bg-red-50 border-red-200"
                     : "bg-gray-50 border-gray-200"
                 }`}
@@ -453,7 +477,6 @@ export default function LessonPage() {
                     ).toLocaleDateString()}
                   </span>
                 </div>
-
                 {lesson.submission.mentorFeedback && (
                   <div className="mt-3 p-3 bg-white rounded border">
                     <div className="text-sm font-medium text-gray-700 mb-1">
@@ -464,7 +487,6 @@ export default function LessonPage() {
                     />
                   </div>
                 )}
-
                 {lesson.submission.grade !== null && (
                   <div className="mt-2 text-sm">
                     <span className="text-gray-500">Grade: </span>
@@ -476,7 +498,6 @@ export default function LessonPage() {
               </div>
             )}
 
-            {/* Submission Form */}
             {lesson.submission?.status === "APPROVED" ? (
               <div className="text-center p-8 bg-green-50 rounded-lg">
                 <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-4" />
@@ -489,8 +510,9 @@ export default function LessonPage() {
               </div>
             ) : canSubmit() ? (
               <div className="space-y-4">
-                {(lesson.submission?.status === "REJECTED" ||
-                  lesson.submission?.status === "RESUBMIT") && (
+                {["REJECTED", "RESUBMIT"].includes(
+                  lesson.submission?.status || ""
+                ) && (
                   <div className="flex items-center gap-2 p-3 bg-orange-50 border border-orange-200 rounded-lg text-orange-700">
                     <AlertCircle className="w-5 h-5" />
                     <span>
@@ -499,54 +521,66 @@ export default function LessonPage() {
                   </div>
                 )}
 
-                {/* Code Editor */}
-                <div>
-                  <label className="text-sm font-medium text-gray-700 block mb-2">
-                    Your Code
-                  </label>
-                  <CodeEditor
-                    defaultValue={`// Write your ${detectedLanguage} code here\n`}
-                    value={submissionCode}
-                    onChange={(val) => setSubmissionCode(val || "")}
-                    language={detectedLanguage}
-                    height="300px"
-                  />
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <h4 className="font-medium text-blue-800 mb-2 flex items-center gap-2">
+                    <File className="w-4 h-4" /> How to Submit
+                  </h4>
+                  <ol className="text-sm text-blue-700 space-y-1 list-decimal list-inside">
+                    <li>Complete the task on your local machine</li>
+                    <li>Push your code to GitHub</li>
+                    <li>Deploy if required (Vercel, Netlify, etc.)</li>
+                    <li>Submit your GitHub repo link and live URL below</li>
+                  </ol>
                 </div>
 
-                {/* Notes */}
                 <div>
                   <label className="text-sm font-medium text-gray-700 block mb-2">
-                    Notes for Reviewer
+                    GitHub Repository URL *
+                  </label>
+                  <div className="relative">
+                    <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <input
+                      type="url"
+                      placeholder="https://github.com/username/repo"
+                      value={githubUrl}
+                      onChange={(e) => setGithubUrl(e.target.value)}
+                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#841a1c] focus:border-transparent"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-gray-700 block mb-2">
+                    Live Demo URL (Optional)
+                  </label>
+                  <div className="relative">
+                    <ExternalLink className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <input
+                      type="url"
+                      placeholder="https://your-app.vercel.app"
+                      value={liveUrl}
+                      onChange={(e) => setLiveUrl(e.target.value)}
+                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#841a1c] focus:border-transparent"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-gray-700 block mb-2">
+                    Additional Notes
                   </label>
                   <textarea
-                    placeholder="Describe your approach, explain your code, or add any notes..."
+                    placeholder="Any notes for the reviewer..."
                     value={submissionNotes}
                     onChange={(e) => setSubmissionNotes(e.target.value)}
                     rows={4}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#841a1c] focus:border-transparent resize-none"
-                  />
-                </div>
-
-                {/* GitHub/Live Link */}
-                <div>
-                  <label className="text-sm font-medium text-gray-700 block mb-2">
-                    GitHub/Live Link (Optional)
-                  </label>
-                  <input
-                    type="url"
-                    placeholder="https://github.com/..."
-                    value={fileUrl}
-                    onChange={(e) => setFileUrl(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#841a1c] focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#841a1c] focus:border-transparent resize-none"
                   />
                 </div>
 
                 <Button
                   onClick={handleSubmit}
-                  disabled={
-                    (!submissionCode.trim() && !submissionNotes.trim()) ||
-                    submitting
-                  }
+                  disabled={!githubUrl.trim() || submitting}
                   className="w-full bg-[#841a1c] hover:bg-[#681416]"
                 >
                   {submitting ? (
@@ -569,7 +603,6 @@ export default function LessonPage() {
         </Card>
       )}
 
-      {/* Navigation */}
       <div className="flex justify-between items-center pt-6 border-t">
         <Button
           variant="outline"
@@ -577,8 +610,7 @@ export default function LessonPage() {
           disabled={!lesson.prevLesson}
           onClick={() => lesson.prevLesson && navigateTo(lesson.prevLesson.id)}
         >
-          <ChevronLeft className="w-4 h-4" />
-          Previous
+          <ChevronLeft className="w-4 h-4" /> Previous
         </Button>
 
         {lesson.type !== "TASK" && (
@@ -593,17 +625,10 @@ export default function LessonPage() {
           >
             {completing ? (
               <Loader2 className="w-4 h-4 animate-spin" />
-            ) : lesson.completed ? (
-              <>
-                <CheckCircle className="w-4 h-4" />
-                Completed
-              </>
             ) : (
-              <>
-                <CheckCircle className="w-4 h-4" />
-                Mark as Complete
-              </>
+              <CheckCircle className="w-4 h-4" />
             )}
+            {lesson.completed ? "Completed" : "Mark as Complete"}
           </Button>
         )}
 
@@ -613,8 +638,7 @@ export default function LessonPage() {
           disabled={!lesson.nextLesson}
           onClick={() => lesson.nextLesson && navigateTo(lesson.nextLesson.id)}
         >
-          Next
-          <ChevronRight className="w-4 h-4" />
+          Next <ChevronRight className="w-4 h-4" />
         </Button>
       </div>
     </div>
