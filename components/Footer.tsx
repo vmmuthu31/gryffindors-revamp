@@ -18,7 +18,7 @@ const Footer = () => {
           </div>
 
           <div className="flex lg:gap-16 gap-4">
-            <div>
+            {/* <div>
               <p className="lg:text-lg text-sm font-semibold font-dmsans mb-3">
                 PROGRAMS
               </p>
@@ -56,7 +56,7 @@ const Footer = () => {
                   </Link>
                 </li>
               </ul>
-            </div>
+            </div> */}
 
             <div>
               <p className="lg:text-lg text-sm font-semibold font-dmsans mb-3">
